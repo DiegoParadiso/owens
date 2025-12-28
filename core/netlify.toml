@@ -1,0 +1,22 @@
+[build]
+  # Netlify build settings for frontend assets
+  base = "core"
+  publish = "core/public"
+  command = "cd core && npm install && npm run build"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+# Redirect all API requests to Render backend
+[[redirects]]
+  from = "/api/*"
+  to = "https://your-render-app.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+# Handle SPA routing (if needed)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+

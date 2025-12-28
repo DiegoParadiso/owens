@@ -1,0 +1,7 @@
+# Netlify redirects file
+# Redirect API calls to Render backend
+/api/*  https://your-render-app.onrender.com/api/:splat  200
+
+# Handle SPA routing
+/*  /index.html  200
+
