@@ -60,6 +60,6 @@ core/storage/logs/*.log
 core/database/*.sqlite
 
 # Documentation with sensitive information
-DEPLOYMENT.md
 *ENV_SETUP.md
 *setup-neondb.sh
+# DEPLOYMENT.md is allowed (clean version without credentials)
