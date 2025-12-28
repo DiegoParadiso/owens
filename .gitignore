@@ -58,3 +58,8 @@ core/storage/logs/*.log
 *.sqlite
 *.sqlite-journal
 core/database/*.sqlite
+
+# Documentation with sensitive information
+DEPLOYMENT.md
+*ENV_SETUP.md
+*setup-neondb.sh
