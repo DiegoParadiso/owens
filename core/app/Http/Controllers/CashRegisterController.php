@@ -12,26 +12,36 @@ class CashRegisterController extends Controller
 {
     public function index()
     {
-        $title = 'Caja';
-        $subtitle = "Dashboard";
         
-        // Check if there is an open register for the current user
+        // Verificar si hay una caja abierta para el usuario actual
         $openRegister = CashRegister::where('user_id', Auth::id())
             ->where('status', 'open')
             ->first();
 
         if (!$openRegister) {
-            return view('admin.cash_register.create', compact('title', 'subtitle'));
+            return \Inertia\Inertia::render('CashRegister/Index', [
+                'openRegister' => null,
+                'currentBalance' => 0,
+                'income' => 0,
+                'expense' => 0,
+                'movements' => []
+            ]);
         }
 
-        // Calculate totals
+        // Calcular totales
         $income = $openRegister->movements()->where('type', 'income')->sum('amount');
         $expense = $openRegister->movements()->where('type', 'expense')->sum('amount');
         $currentBalance = $openRegister->opening_amount + $income - $expense;
 
         $movements = $openRegister->movements()->latest()->get();
 
-        return view('admin.cash_register.index', compact('title', 'subtitle', 'openRegister', 'currentBalance', 'income', 'expense', 'movements'));
+        return \Inertia\Inertia::render('CashRegister/Index', [
+            'openRegister' => $openRegister,
+            'currentBalance' => $currentBalance,
+            'income' => $income,
+            'expense' => $expense,
+            'movements' => $movements
+        ]);
     }
 
     public function create()
@@ -47,7 +57,7 @@ class CashRegisterController extends Controller
             'opening_amount' => 'required|numeric|min:0',
         ]);
 
-        // Ensure no other register is open for this user
+        // Asegurar que no haya otra caja abierta para este usuario
         $existingOpen = CashRegister::where('user_id', Auth::id())->where('status', 'open')->first();
         if ($existingOpen) {
             return redirect()->route('cash_register.index')->with('error', 'Ya tienes una caja abierta.');

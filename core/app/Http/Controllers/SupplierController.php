@@ -9,10 +9,10 @@ class SupplierController extends Controller
 {
     public function index()
     {
-        $title = 'Proveedores';
-        $subtitle = 'Índice';
         $suppliers = Supplier::latest()->get();
-        return view('admin.supplier.index', compact('title', 'subtitle', 'suppliers'));
+        return \Inertia\Inertia::render('Suppliers/Index', [
+            'suppliers' => $suppliers
+        ]);
     }
 
     public function create()
@@ -34,11 +34,12 @@ class SupplierController extends Controller
         return redirect()->route('supplier.index')->with('highlight_id', $supplier->id);
     }
 
-    public function edit(Supplier $supplier)
+    public function edit($id)
     {
-        $title = 'Proveedores';
-        $subtitle = 'Editar';
-        return view('admin.supplier.edit', compact('title', 'subtitle', 'supplier'));
+        $supplier = Supplier::findOrFail($id);
+        return \Inertia\Inertia::render('Suppliers/Edit', [
+            'supplier' => $supplier
+        ]);
     }
 
     public function update(Request $request, Supplier $supplier)

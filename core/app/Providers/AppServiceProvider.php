@@ -20,6 +20,5 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Views are now in resources/views (standard Laravel structure)
     }
 }

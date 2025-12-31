@@ -2,37 +2,33 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
-
-
-    public function login()
-    {
-        return view('auth.login');
-    }
-
-
     public function loginCheck(Request $request)
     {
-        $validate = $request->validate([
+        $credentials = $request->validate([
             'email' => 'required|email',
-            'password' => 'required|min:8',
+            'password' => 'required',
         ]);
 
-        if (Auth::attempt($validate)) {
+        if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
             return redirect()->intended('/dashboard');
-        } else {
-            return back()->with('error', 'Error al iniciar sesión, nombre de usuario o contraseña inválidos');
         }
+
+        return back()->withErrors([
+            'email' => 'Las credenciales no coinciden.',
+        ])->onlyInput('email');
     }
 
-    public function logout(){
+    public function logout(Request $request)
+    {
         Auth::logout();
-        return redirect()->route('login')->with('success', 'Sesión cerrada con éxito');
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect()->route('login');
     }
 }

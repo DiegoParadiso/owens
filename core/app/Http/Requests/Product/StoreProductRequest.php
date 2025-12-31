@@ -49,3 +49,4 @@ class StoreProductRequest extends FormRequest
     }
 }
 
+

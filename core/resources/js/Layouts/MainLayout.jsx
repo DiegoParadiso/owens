@@ -1,0 +1,79 @@
+import React, { useState, useEffect } from 'react';
+import Sidebar from '../Components/Sidebar';
+import Footer from '../Components/Footer';
+import { Player } from '@lottiefiles/react-lottie-player';
+import { router, usePage } from '@inertiajs/react';
+
+export default function MainLayout({ children }) {
+    const { url } = usePage();
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (darkMode) {
+            document.body.classList.add('dark-mode');
+        } else {
+            document.body.classList.remove('dark-mode');
+        }
+        localStorage.setItem('darkMode', darkMode);
+    }, [darkMode]);
+
+    useEffect(() => {
+        const removeStart = router.on('start', () => setLoading(true));
+        const removeFinish = router.on('finish', () => setLoading(false));
+
+        return () => {
+            removeStart();
+            removeFinish();
+        };
+    }, []);
+
+    const toggleSidebar = () => {
+        setIsSidebarOpen(!isSidebarOpen);
+    };
+
+    const toggleDarkMode = () => {
+        setDarkMode(!darkMode);
+    };
+
+    return (
+
+        <>
+            <button
+                onClick={toggleDarkMode}
+                className="btn btn-lg-square position-fixed top-0 end-0 m-3"
+                style={{ zIndex: 100, background: 'transparent', border: 'none', color: 'var(--text-muted)' }}
+            >
+                {darkMode ? (
+                    <i className="bi bi-sun" style={{ fontSize: '1.3rem' }}></i>
+                ) : (
+                    <i className="bi bi-moon" style={{ fontSize: '1.3rem' }}></i>
+                )}
+            </button>
+
+            <div className="container-xxl position-relative d-flex p-0" style={{ background: 'var(--light)' }}>
+                <div id="loading-screen" className={loading ? '' : 'hidden'}>
+                    <Player
+                        autoplay
+                        loop
+                        src="/lottie/Scene-1.json"
+                        style={{ height: '110px', width: '110px' }}
+                    />
+                </div>
+
+                <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} darkMode={darkMode} />
+
+
+
+                <div className={`content position-relative ${isSidebarOpen ? 'open' : ''}`}>
+                    <div className="container-fluid pt-4 px-4">
+                        {children}
+                    </div>
+
+                    {url === '/dashboard' && <Footer />}
+                </div>
+            </div>
+        </>
+    );
+}

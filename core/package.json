@@ -15,6 +15,16 @@
         "vite": "^5.0"
     },
     "dependencies": {
-        "jquery": "^3.7.1"
+        "@fortawesome/fontawesome-free": "^7.1.0",
+        "@inertiajs/react": "^2.3.4",
+        "@lottiefiles/react-lottie-player": "^3.6.0",
+        "@vitejs/plugin-react": "^5.1.2",
+        "bootstrap": "^5.3.8",
+        "chart.js": "^4.5.1",
+        "jquery": "^3.7.1",
+        "react": "^19.2.3",
+        "react-chartjs-2": "^5.3.1",
+        "react-dom": "^19.2.3",
+        "sweetalert2": "^11.26.17"
     }
 }

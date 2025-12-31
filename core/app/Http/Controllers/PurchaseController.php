@@ -14,19 +14,28 @@ class PurchaseController extends Controller
 {
     public function index()
     {
-        $title = 'Compras';
-        $subtitle = 'Índice';
         $purchases = Purchase::with('supplier', 'user')->latest()->get();
-        return view('admin.purchase.index', compact('title', 'subtitle', 'purchases'));
+        return \Inertia\Inertia::render('Purchases/Index', [
+            'purchases' => $purchases->map(function($purchase) {
+                return [
+                    'id' => $purchase->id,
+                    'date' => $purchase->date,
+                    'supplier' => $purchase->supplier->name ?? 'N/A',
+                    'total_cost' => $purchase->total_cost,
+                    'user' => $purchase->user->name ?? 'Sistema',
+                ];
+            })
+        ]);
     }
 
     public function create()
     {
-        $title = 'Compras';
-        $subtitle = 'Registrar Compra';
         $suppliers = Supplier::all();
-        $products = Product::where('type', 'single')->get(); // Only buy single products, not combos
-        return view('admin.purchase.create', compact('title', 'subtitle', 'suppliers', 'products'));
+        $products = Product::where('type', 'single')->get();
+        return \Inertia\Inertia::render('Purchases/Create', [
+            'suppliers' => $suppliers,
+            'products' => $products
+        ]);
     }
 
     public function store(Request $request)

@@ -15,15 +15,9 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $title = 'Inventario';
-        $subtitle = 'Productos Individuales';
         $search = $request->input('search');
-        
-        if ($request->has('highlight_id')) {
-            session()->flash('highlight_id', $request->highlight_id);
-        }
 
-        $products = Product::where('type', 'single'); // Only show single products
+        $products = Product::where('type', 'single');
         
         if ($search) {
             $products->where(function($q) use ($search) {
@@ -34,21 +28,20 @@ class ProductController extends Controller
 
         $products = $products->latest()->get();
 
-        return view('admin.product.index', compact('title', 'subtitle', 'products'));
+        return \Inertia\Inertia::render('Products/Index', [
+            'products' => $products
+        ]);
     }
 
     public function indexCombo(Request $request)
     {
-        $title = 'Combos';
-        $subtitle = 'Menú de Combos';
+        $combos = Product::where('type', 'combo')->with('components.childProduct')->latest()->get();
+        $products = Product::where('type', 'single')->get();
         
-        if ($request->has('highlight_id')) {
-            session()->flash('highlight_id', $request->highlight_id);
-        }
-
-        $products = Product::where('type', 'combo')->with('components.childProduct')->latest()->get();
-
-        return view('admin.product.combo_index', compact('title', 'subtitle', 'products'));
+        return \Inertia\Inertia::render('Combos/Index', [
+            'combos' => $combos,
+            'products' => $products
+        ]);
     }
     public function create()
     {
@@ -58,19 +51,19 @@ class ProductController extends Controller
     }
     public function store(Request $request)
     {
-        $validate = $request->validate([
-            'name' => 'required',
-            'price' => 'required|numeric',
-            'stock' => 'required|numeric',
-
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+            'cost' => 'nullable|numeric|min:0',
         ]);
-        $validate['user_id'] = Auth::user()->id;
-        $product = Product::create($validate);
-        if ($product) {
-            return response()->json(['status' => 200, 'message' => 'Producto agregado con éxito', 'id' => $product->id]);
-        } else {
-            return response()->json(['status' => 500, 'message' => 'Error al agregar producto']);
-        }
+        
+        $validated['type'] = 'single';
+        $validated['user_id'] = auth()->id();
+        
+        Product::create($validated);
+        
+        return redirect()->route('product.index');
     }
 
     public function edit($id)

@@ -35,16 +35,16 @@ class SaleService
                 $product = Product::find($productData['product_id']);
                 $quantity = $productData['quantity'];
                 
-                // Check stock availability
+                // Verificar disponibilidad de stock
                 if (!$this->productService->hasSufficientStock($product, $quantity)) {
                     DB::rollBack();
                     throw new \Exception('Stock insuficiente para el producto: ' . $product->name);
                 }
                 
-                // Deduct stock
+                // Deducir stock
                 $this->productService->deductStock($product, $quantity);
                 
-                // Create sale detail
+                // Crear detalle de venta
                 SaleDetail::create([
                     'sale_id' => $sale->id,
                     'product_id' => $productData['product_id'],
@@ -81,4 +81,5 @@ class SaleService
         ]);
     }
 }
+
 

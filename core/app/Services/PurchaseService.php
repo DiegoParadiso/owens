@@ -18,7 +18,7 @@ class PurchaseService
         DB::beginTransaction();
         
         try {
-            // Calculate total cost
+            // Calcular costo total
             $totalCost = 0;
             foreach ($products as $productData) {
                 $totalCost += $productData['quantity'] * $productData['unit_cost'];
@@ -31,7 +31,7 @@ class PurchaseService
                 'user_id' => Auth::id(),
             ]);
             
-            // Create purchase details and update product stock
+            // Crear detalles de compra y actualizar stock de producto
             foreach ($products as $productData) {
                 PurchaseDetail::create([
                     'purchase_id' => $purchase->id,
@@ -41,7 +41,7 @@ class PurchaseService
                     'total_cost' => $productData['quantity'] * $productData['unit_cost'],
                 ]);
                 
-                // Update product stock and cost
+                // Actualizar stock y costo del producto
                 $product = Product::find($productData['product_id']);
                 $product->stock += $productData['quantity'];
                 $product->cost = $productData['unit_cost'];
@@ -57,4 +57,5 @@ class PurchaseService
         }
     }
 }
+
 

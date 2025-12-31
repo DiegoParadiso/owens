@@ -54,3 +54,4 @@ class StoreSaleRequest extends FormRequest
     }
 }
 
+

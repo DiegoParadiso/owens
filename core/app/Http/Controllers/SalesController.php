@@ -15,28 +15,26 @@ class SalesController extends Controller
 
     public function index(Request $request)
     {
-        $title = 'Ventas';
-        $subtitle = 'Índice';
-        
-        if ($request->has('highlight_id')) {
-            session()->flash('highlight_id', $request->highlight_id);
-        }
-
-        $sales = Sale::join('users', 'sales.user_id', '=', 'users.id')
-            ->Leftjoin('payments', 'sales.id', '=', 'payments.sale_id')
-            ->select('sales.*', 'users.name', 'payments.payment_status')
-            ->with(['saleDetails.product'])
-            ->latest() // Ensure latest order
-            ->get();
-        return view('admin.sales.index', compact('sales', 'title', 'subtitle'));
+        $sales = Sale::with(['user', 'payment', 'saleDetails.product'])->latest()->get();
+        return \Inertia\Inertia::render('Sales/Index', [
+            'sales' => $sales->map(function($sale) {
+                return [
+                    'id' => $sale->id,
+                    'date' => $sale->sale_date->format('Y-m-d H:i'),
+                    'user' => $sale->user->name ?? 'Sistema',
+                    'total' => $sale->total_price,
+                    'status' => $sale->payment ? 'Pagado' : 'Pendiente',
+                ];
+            })
+        ]);
     }
 
     public function create()
     {
-        $title = 'Ventas';
-        $subtitle = 'Crear';
         $products = Product::where('stock', '>', 0)->get();
-        return view('admin.sales.create', compact('title', 'subtitle', 'products'));
+        return \Inertia\Inertia::render('Sales/Create', [
+            'products' => $products
+        ]);
     }
 
 

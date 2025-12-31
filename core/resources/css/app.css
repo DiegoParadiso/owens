@@ -1,3 +1,693 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/********** Template CSS **********/
+:root {
+    --primary: #df0f13;
+    --light: #F3F6F9;
+    --dark: #191C24;
+
+    /* Theme Variables (Light Mode Default) */
+    --bg-body: #F3F6F9;
+    --bg-card: #FFFFFF;
+    --text-main: #191C24;
+    --text-muted: #6c757d;
+    --border-color: #dee2e6;
+    --table-header-bg: #F3F6F9;
+    --input-bg: transparent;
+    --input-border: #e9ecef;
+}
+
+body.dark-mode {
+    --bg-body: #111318;
+    --bg-card: #191C24;
+    --text-main: #ffffff;
+    --text-muted: #adb5bd;
+    --border-color: #191C24;
+    --table-header-bg: #2c3038;
+    --input-bg: #191C24;
+    --input-border: #2c3038;
+    --light: #111318;
+    /* Override bootstrap light var if needed */
+}
+
+/* Apply Theme Variables */
+body {
+    color: var(--text-main);
+    background-color: var(--bg-body);
+    font-family: 'Inter', sans-serif;
+    /* Added font family */
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6 {
+    color: var(--text-main);
+}
+
+/* Minimalist Theme Overrides */
+.text-primary {
+    color: var(--primary) !important;
+}
+
+.btn-primary {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+}
+
+.btn-primary:hover {
+    background-color: #b90c10 !important;
+    border-color: #b90c10 !important;
+}
+
+.bg-primary {
+    background-color: var(--primary) !important;
+}
+
+.border-primary {
+    border-color: var(--primary) !important;
+}
+
+/* Secondary/Success/Warning/Info -> Grayscale/Dark for Minimalism */
+.btn-success,
+.bg-success {
+    background-color: var(--text-main) !important;
+    /* Adaptive dark/light */
+    border-color: var(--text-main) !important;
+    color: var(--bg-card) !important;
+    /* Inverse text */
+}
+
+.btn-warning,
+.bg-warning {
+    background-color: var(--text-muted) !important;
+    border-color: var(--text-muted) !important;
+    color: #fff !important;
+}
+
+.btn-info,
+.bg-info {
+    background-color: #adb5bd !important;
+    border-color: #adb5bd !important;
+    color: #fff !important;
+}
+
+.text-success {
+    color: var(--text-main) !important;
+}
+
+.text-warning {
+    color: var(--text-muted) !important;
+}
+
+.text-info {
+    color: #adb5bd !important;
+}
+
+/* Keep Danger Red (or align with Primary) */
+.btn-danger,
+.bg-danger {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+}
+
+
+
+
+/*** Spinner ***/
+#spinner {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .5s ease-out, visibility 0s linear .5s;
+    z-index: 99999;
+}
+
+#spinner.show {
+    transition: opacity .5s ease-out, visibility 0s linear 0s;
+    visibility: visible;
+    opacity: 1;
+}
+
+
+/*** Button ***/
+.btn {
+    transition: .5s;
+}
+
+.btn.btn-primary {
+    color: #FFFFFF;
+}
+
+.btn-square {
+    width: 38px;
+    height: 38px;
+}
+
+.btn-sm-square {
+    width: 32px;
+    height: 32px;
+}
+
+.btn-lg-square {
+    width: 48px;
+    height: 48px;
+}
+
+.btn-square,
+.btn-sm-square,
+.btn-lg-square {
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: normal;
+    border-radius: 50px;
+}
+
+
+/*** Layout ***/
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 250px;
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--bg-card) !important;
+    transition: 0.5s;
+    z-index: 999;
+}
+
+.content {
+    margin-left: 250px;
+    min-height: 100vh;
+    background: var(--bg-body);
+    transition: 0.5s;
+}
+
+@media (min-width: 992px) {
+    .sidebar {
+        margin-left: 0;
+    }
+
+    .sidebar.open {
+        margin-left: -250px;
+    }
+
+    .content {
+        width: calc(100% - 250px);
+    }
+
+    .content.open {
+        width: 100%;
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .sidebar {
+        margin-left: -250px;
+    }
+
+    .sidebar.open {
+        margin-left: 0;
+    }
+
+    .content {
+        width: 100%;
+        margin-left: 0;
+    }
+}
+
+
+/*** Navbar ***/
+/* Minimalist Sidebar Links */
+.sidebar .navbar .navbar-nav .nav-link {
+    padding: 10px 25px;
+    color: var(--text-muted);
+    /* Muted text by default */
+    font-weight: 500;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    border: none;
+    /* Remove border-left */
+    border-radius: 0;
+    /* Remove rounded corners */
+    outline: none;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.sidebar .navbar .navbar-nav .nav-link:hover,
+.sidebar .navbar .navbar-nav .nav-link.active {
+    color: var(--primary);
+    background: transparent;
+    /* No background change, just text */
+    border: none;
+}
+
+/* Minimalist Sidebar Icons */
+.sidebar .navbar .navbar-nav .nav-link i {
+    width: 30px;
+    /* Smaller width */
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent !important;
+    /* Remove white background */
+    border-radius: 0;
+    margin-right: 10px;
+    font-size: 1rem;
+    color: inherit;
+    /* Inherit color from link (muted or primary) */
+    transition: none;
+}
+
+.sidebar .navbar .navbar-nav .nav-link:hover i,
+.sidebar .navbar .navbar-nav .nav-link.active i {
+    background: transparent;
+    color: var(--primary);
+}
+
+.sidebar .navbar .dropdown-toggle::after {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    border: none;
+    content: "\f107";
+    font-weight: 900;
+    font-weight: 900;
+    transition: none;
+}
+
+.sidebar .navbar .dropdown-toggle[aria-expanded=true]::after {
+    transform: rotate(-180deg);
+}
+
+.sidebar .navbar .dropdown-item {
+    padding-left: 55px;
+    /* Align with text of parent link */
+    padding-top: 8px;
+    padding-bottom: 8px;
+    border-radius: 0;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+.sidebar .navbar .dropdown-item:hover,
+.sidebar .navbar .dropdown-item.active {
+    background-color: transparent !important;
+    color: var(--primary) !important;
+}
+
+.content .navbar .navbar-nav .nav-link {
+    margin-left: 25px;
+    padding: 12px 0;
+    color: var(--text-main);
+    outline: none;
+}
+
+.content .navbar .navbar-nav .nav-link:hover,
+.content .navbar .navbar-nav .nav-link.active {
+    color: var(--primary);
+}
+
+.content .navbar .sidebar-toggler,
+.content .navbar .navbar-nav .nav-link i {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-card);
+    border-radius: 40px;
+}
+
+.content .navbar .dropdown-toggle[aria-expanded=true]::after {
+    transform: rotate(-180deg);
+}
+
+@media (max-width: 575.98px) {
+    .content .navbar .navbar-nav .nav-link {
+        margin-left: 15px;
+    }
+}
+
+
+/*** Date Picker ***/
+.bootstrap-datetimepicker-widget.bottom {
+    top: auto !important;
+}
+
+.bootstrap-datetimepicker-widget .table * {
+    border-bottom-width: 0px;
+}
+
+.bootstrap-datetimepicker-widget .table th {
+    font-weight: 500;
+}
+
+.bootstrap-datetimepicker-widget.dropdown-menu {
+    padding: 10px;
+    border-radius: 2px;
+}
+
+.bootstrap-datetimepicker-widget table td.active,
+.bootstrap-datetimepicker-widget table td.active:hover {
+    background: var(--primary);
+}
+
+.bootstrap-datetimepicker-widget table td.today::before {
+    border-bottom-color: var(--primary);
+}
+
+
+/*** Testimonial ***/
+.progress .progress-bar {
+    width: 0px;
+    transition: 2s;
+}
+
+
+/*** Testimonial ***/
+.testimonial-carousel .owl-dots {
+    margin-top: 24px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.testimonial-carousel .owl-dot {
+    position: relative;
+    display: inline-block;
+    margin: 0 5px;
+    width: 15px;
+    height: 15px;
+    border: 5px solid var(--primary);
+    border-radius: 15px;
+    transition: .5s;
+}
+
+.testimonial-carousel .owl-dot.active {
+    background: var(--dark);
+    border-color: var(--primary);
+}
+
+/* Sidebar Toggler Arrow Animation */
+.sidebar-toggler-container {
+    position: fixed;
+    bottom: 20px;
+    /* Move to top */
+    left: 200px;
+    /* Default position (Sidebar Visible) */
+    width: 40px;
+    /* Smaller size */
+    height: 40px;
+    transition: left 0.5s ease;
+    z-index: 1000;
+}
+
+.sidebar-toggler-container.open {
+    left: 20px;
+    /* Position when Sidebar is Hidden */
+}
+
+.transition-transform {
+    transition: none;
+}
+
+.sidebar-toggler-container.open #sidebar-arrow {
+    transform: rotate(180deg);
+}
+
+/* Breadcrumb Fixes */
+.breadcrumb-item a {
+    color: var(--primary) !important;
+    text-decoration: none;
+}
+
+.breadcrumb-item.active {
+    color: var(--text-muted);
+    /* Gray for active item */
+}
+
+/* Ensure items are aligned */
+.breadcrumb-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Fix Dropdown Item Active Color */
+.dropdown-item.active,
+.dropdown-item:active {
+    background-color: #e9ecef !important;
+    color: var(--text-main) !important;
+}
+
+/* Row Highlight Animation */
+@keyframes highlightFade {
+    0% {
+        background-color: rgba(223, 15, 19, 0.5);
+        /* Increased opacity for visibility */
+    }
+
+    /* Primary color with low opacity */
+    100% {
+        background-color: transparent;
+    }
+}
+
+.highlight-row {
+    animation: highlightFade 3s ease-out forwards;
+}
+
+/* --- GLOBAL MINIMALIST DESIGN --- */
+
+/* Form Controls */
+.form-control,
+.form-select {
+    background-color: var(--input-bg);
+    border: 0;
+    border-bottom: 1px solid var(--input-border);
+    /* Lighter border */
+    border-radius: 0;
+    padding: 0.5rem 0;
+    box-shadow: none !important;
+    color: var(--text-main);
+}
+
+.form-control:focus,
+.form-select:focus {
+    background-color: var(--input-bg);
+    border-color: var(--primary);
+    box-shadow: none !important;
+    color: var(--text-main);
+}
+
+/* Labels */
+.form-label {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    /* text-muted */
+    margin-bottom: 0.5rem;
+}
+
+/* Tables */
+.table {
+    border-color: var(--border-color);
+    color: var(--text-main);
+}
+
+.table thead th {
+    border-bottom: 1px solid var(--border-color) !important;
+    border-top: 1px solid var(--border-color) !important;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    color: var(--text-main);
+    background-color: var(--table-header-bg) !important;
+    /* Classic Grey Header */
+}
+
+.table td,
+.table th {
+    vertical-align: middle;
+    padding: 1rem 0.75rem;
+    border: 1px solid var(--border-color) !important;
+    /* Restore borders */
+}
+
+/* Ensure borders are visible */
+.table-bordered {
+    border: 1px solid var(--border-color) !important;
+}
+
+.table-bordered td,
+.table-bordered th {
+    border: 1px solid var(--border-color) !important;
+}
+
+.table-bordered thead th {
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+/* Table Hover Override */
+.table-hover>tbody>tr:hover>* {
+    --bs-table-accent-bg: var(--table-header-bg) !important;
+    background-color: var(--table-header-bg) !important;
+    color: var(--text-main) !important;
+}
+
+/* Buttons */
+.btn {
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 2px;
+    /* Slight radius or 0 */
+    padding: 0.5rem 1.5rem;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+/* Card/Container Overrides */
+.bg-white {
+    background-color: var(--bg-card) !important;
+    box-shadow: none !important;
+    border: 1px solid var(--border-color);
+    /* Extremely subtle border instead of shadow */
+    color: var(--text-main);
+}
+
+/* Dark Mode Specific Overrides */
+body.dark-mode .text-dark {
+    color: var(--text-main) !important;
+}
+
+body.dark-mode .text-secondary {
+    color: var(--text-muted) !important;
+}
+
+body.dark-mode .text-danger,
+body.dark-mode .btn-danger {
+    color: #FF5A5F !important;
+    /* Vibrant Red */
+    border-color: #FF5A5F !important;
+}
+
+body.dark-mode .bg-danger {
+    background-color: #FF5A5F !important;
+}
+
+/* Disable transitions globally as requested */
+* {
+    transition: none !important;
+}
+
+body.dark-mode {
+    --primary: #FF5A5F;
+    /* Vibrant Red */
+}
+
+/* --- Dashboard Redesign Semantic Classes --- */
+
+/* Revenue Color */
+.text-revenue {
+    color: var(--text-main) !important;
+    /* Keep it neutral in Light Mode */
+}
+
+/* Neutral Icons */
+.icon-neutral {
+    color: var(--text-muted) !important;
+    opacity: 0.5;
+}
+
+/* Rounded Outline Button */
+.btn-outline-primary {
+    color: var(--primary);
+    border-color: var(--primary);
+    background-color: transparent;
+    /* border-radius: 50px; Removed to match app aesthetic */
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+    color: #fff;
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+/* Card Hover Effect */
+.hover-card {
+    transition: border-color 0.3s ease !important;
+}
+
+.hover-card:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    border-color: var(--text-muted) !important;
+    /* Subtle border highlight */
+}
+
+/* Loading Screen */
+/* Loading Screen */
+#loading-screen {
+    position: fixed;
+    /* Fixed to viewport to ensure centering */
+    top: 0;
+    left: 250px;
+    /* Start after sidebar */
+    width: calc(100% - 250px);
+    /* Fill remaining width */
+    height: 100vh;
+    /* Full viewport height */
+    background-color: color-mix(in srgb, var(--bg-body), transparent 15%);
+    backdrop-filter: blur(10px);
+    z-index: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+    border-radius: inherit;
+}
+
+@media (max-width: 991.98px) {
+    #loading-screen {
+        left: 0;
+        width: 100%;
+    }
+}
+
+/* Full Screen Override (for Login/Auth pages) */
+#loading-screen.loader-full-screen {
+    left: 0 !important;
+    width: 100% !important;
+    z-index: 9999999 !important;
+    /* Top of everything */
+}
+
+#loading-screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+}

@@ -13,10 +13,10 @@ class ExpenseController extends Controller
 {
     public function index()
     {
-        $title = 'Gastos';
-        $subtitle = 'Índice';
         $expenses = Expense::with('user')->latest()->get();
-        return view('admin.expense.index', compact('title', 'subtitle', 'expenses'));
+        return \Inertia\Inertia::render('Expenses/Index', [
+            'expenses' => $expenses
+        ]);
     }
 
     public function create()
