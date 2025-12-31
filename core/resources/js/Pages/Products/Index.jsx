@@ -5,6 +5,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function Index({ products }) {
     const [showDrawer, setShowDrawer] = useState(false);
+    const [selectedProducts, setSelectedProducts] = useState([]);
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         price: '',
@@ -13,6 +14,22 @@ export default function Index({ products }) {
 
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
+    };
+
+    const handleSelectAll = (e) => {
+        if (e.target.checked) {
+            setSelectedProducts(products.map(p => p.id));
+        } else {
+            setSelectedProducts([]);
+        }
+    };
+
+    const handleSelectProduct = (productId) => {
+        if (selectedProducts.includes(productId)) {
+            setSelectedProducts(selectedProducts.filter(id => id !== productId));
+        } else {
+            setSelectedProducts([...selectedProducts, productId]);
+        }
     };
 
     const handleSubmit = (e) => {
@@ -52,7 +69,13 @@ export default function Index({ products }) {
                                 <tr>
                                     <th style={{ width: '40px' }}>
                                         <div className="form-check">
-                                            <input className="form-check-input" type="checkbox" id="selectAll" />
+                                            <input
+                                                className="form-check-input"
+                                                type="checkbox"
+                                                id="selectAll"
+                                                checked={selectedProducts.length === products.length && products.length > 0}
+                                                onChange={handleSelectAll}
+                                            />
                                         </div>
                                     </th>
                                     <th scope="col">#</th>
@@ -67,7 +90,14 @@ export default function Index({ products }) {
                                     <tr key={product.id}>
                                         <td>
                                             <div className="form-check">
-                                                <input className="form-check-input" name="id_produk[]" type="checkbox" value={product.id} />
+                                                <input
+                                                    className="form-check-input"
+                                                    name="id_produk[]"
+                                                    type="checkbox"
+                                                    value={product.id}
+                                                    checked={selectedProducts.includes(product.id)}
+                                                    onChange={() => handleSelectProduct(product.id)}
+                                                />
                                             </div>
                                         </td>
                                         <td className="text-muted font-monospace">{index + 1}</td>

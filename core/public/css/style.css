@@ -598,12 +598,17 @@ body.dark-mode {
     letter-spacing: 0.5px;
     color: var(--text-muted);
     background-color: var(--table-header-bg);
+    border-top: 1px solid var(--border-color);
     border-bottom: 1px solid var(--border-color);
     border-right: 1px solid var(--border-color);
 }
 
+.table-minimal thead th:first-child {
+    border-left: 1px solid var(--border-color);
+}
+
 .table-minimal thead th:last-child {
-    border-right: none;
+    border-right: 1px solid var(--border-color);
 }
 
 .table-minimal tbody td {
@@ -613,8 +618,12 @@ body.dark-mode {
     color: var(--text-main);
 }
 
+.table-minimal tbody td:first-child {
+    border-left: 1px solid var(--border-color);
+}
+
 .table-minimal tbody td:last-child {
-    border-right: none;
+    border-right: 1px solid var(--border-color);
 }
 
 .table-minimal tbody tr:hover {
