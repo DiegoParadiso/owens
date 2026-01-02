@@ -61,7 +61,7 @@ export default function Login() {
                         autoplay
                         loop
                         src={darkMode ? "/lottie/Scene-2.json" : "/lottie/Scene-1.json"}
-                        style={{ height: '150px', width: '150px' }}
+                        style={{ height: '100px', width: '100px' }}
                     />
                 </div>
             )}

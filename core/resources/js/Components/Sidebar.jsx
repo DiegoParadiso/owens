@@ -3,7 +3,7 @@ import { Link, usePage } from '@inertiajs/react';
 
 export default function Sidebar({ isOpen, toggleSidebar, darkMode }) {
     const { url } = usePage();
-    const user = { name: 'Admin User', role: 'Administrator' };
+    const user = { name: 'Admin', role: 'Administrator' };
 
     const isActive = (route) => {
         return url.startsWith(route) ? 'active' : '';

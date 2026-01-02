@@ -15,16 +15,13 @@ class PurchaseController extends Controller
     public function index()
     {
         $purchases = Purchase::with('supplier', 'user')->latest()->get();
+        $suppliers = Supplier::all();
+        $products = Product::where('type', 'single')->get();
+        
         return \Inertia\Inertia::render('Purchases/Index', [
-            'purchases' => $purchases->map(function($purchase) {
-                return [
-                    'id' => $purchase->id,
-                    'date' => $purchase->date,
-                    'supplier' => $purchase->supplier->name ?? 'N/A',
-                    'total_cost' => $purchase->total_cost,
-                    'user' => $purchase->user->name ?? 'Sistema',
-                ];
-            })
+            'purchases' => $purchases,
+            'suppliers' => $suppliers,
+            'products' => $products
         ]);
     }
 

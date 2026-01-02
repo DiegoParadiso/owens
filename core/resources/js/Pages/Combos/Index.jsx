@@ -50,19 +50,33 @@ export default function Index({ combos = [], products = [] }) {
 
     const handleDelete = (id) => {
         Swal.fire({
-            title: '¿Estás seguro?',
-            text: "Se eliminará este combo",
-            icon: 'warning',
+            text: "¿Eliminar este combo?",
             showCancelButton: true,
-            confirmButtonColor: '#df0f13',
+            confirmButtonColor: '#dc3545',
             cancelButtonColor: '#6c757d',
-            confirmButtonText: '¡Sí, eliminar!',
-            cancelButtonText: 'Cancelar'
+            confirmButtonText: 'Eliminar',
+            cancelButtonText: 'Cancelar',
+            buttonsStyling: true,
+            customClass: {
+                popup: 'swal-minimal',
+                confirmButton: 'btn btn-danger px-4',
+                cancelButton: 'btn btn-secondary px-4'
+            }
         }).then((result) => {
             if (result.isConfirmed) {
                 destroy(route('product.destroy', id), {
                     preserveScroll: true,
-                    onSuccess: () => Swal.fire('¡Eliminado!', 'El combo ha sido eliminado.', 'success'),
+                    onSuccess: () => {
+                        Swal.fire({
+                            text: 'Combo eliminado',
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false,
+                            customClass: {
+                                popup: 'swal-minimal'
+                            }
+                        });
+                    },
                 });
             }
         });
@@ -112,14 +126,14 @@ export default function Index({ combos = [], products = [] }) {
                                         </td>
                                         <td className="text-end">
                                             <button className="btn btn-sm text-muted me-1" title="Editar">
-                                                <i className="bi bi-pencil-square"></i>
+                                                <span className="material-symbols-outlined">stylus</span>
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(combo.id)}
                                                 className="btn btn-sm text-danger"
                                                 title="Eliminar"
                                             >
-                                                <i className="bi bi-trash-fill"></i>
+                                                <span className="material-symbols-outlined">delete</span>
                                             </button>
                                         </td>
                                     </tr>
@@ -163,7 +177,7 @@ export default function Index({ combos = [], products = [] }) {
                         <label htmlFor="price" className="form-label">Precio ($)</label>
                         <input
                             type="number"
-                            className="form-control font-monospace"
+                            className="form-control"
                             id="price"
                             min="0"
                             required
@@ -193,7 +207,7 @@ export default function Index({ combos = [], products = [] }) {
                             <div style={{ width: '80px' }}>
                                 <input
                                     type="number"
-                                    className="form-control form-control-sm font-monospace text-center"
+                                    className="form-control form-control-sm text-center"
                                     value={row.quantity}
                                     min="1"
                                     onChange={(e) => updateRow(row.id, 'quantity', parseFloat(e.target.value) || 0)}
@@ -208,7 +222,7 @@ export default function Index({ combos = [], products = [] }) {
                                 disabled={rows.length === 1}
                                 style={{ width: '31px', height: '31px' }}
                             >
-                                <i className="bi bi-trash"></i>
+                                <span className="material-symbols-outlined">delete</span>
                             </button>
                         </div>
                     ))}

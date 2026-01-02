@@ -60,7 +60,7 @@ export default function Create({ products = [] }) {
     };
 
     const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
     };
 
     return (
@@ -112,36 +112,49 @@ export default function Create({ products = [] }) {
                                                     <td>
                                                         <input
                                                             type="text"
-                                                            className="form-control border-0 border-bottom rounded-0 font-monospace text-muted"
+                                                            className="form-control border-0 border-bottom rounded-0 font-tabular fw-semibold"
                                                             value={formatCurrency(row.price)}
                                                             readOnly
                                                         />
                                                     </td>
                                                     <td>
-                                                        <input
-                                                            type="number"
-                                                            className="form-control border-0 border-bottom rounded-0 font-monospace text-center"
-                                                            value={row.quantity}
-                                                            min="1"
-                                                            onChange={(e) => updateRow(row.id, 'quantity', parseFloat(e.target.value) || 0)}
-                                                            required
-                                                        />
+                                                        <div className="d-flex align-items-center justify-content-center gap-2">
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-sm text-muted p-0"
+                                                                onClick={() => updateRow(row.id, 'quantity', Math.max(1, row.quantity - 1))}
+                                                                style={{ width: '24px', height: '24px', fontSize: '1rem' }}
+                                                            >
+                                                                <i className="bi bi-dash"></i>
+                                                            </button>
+                                                            <span className="fw-semibold" style={{ minWidth: '30px', textAlign: 'center' }}>
+                                                                {row.quantity}
+                                                            </span>
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-sm text-muted p-0"
+                                                                onClick={() => updateRow(row.id, 'quantity', row.quantity + 1)}
+                                                                style={{ width: '24px', height: '24px', fontSize: '1rem' }}
+                                                            >
+                                                                <i className="bi bi-plus"></i>
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                     <td>
                                                         <input
                                                             type="text"
-                                                            className="form-control border-0 border-bottom rounded-0 font-monospace fw-bold"
+                                                            className="form-control border-0 border-bottom rounded-0 font-tabular fw-semibold"
                                                             value={formatCurrency(row.total)}
                                                             readOnly
                                                         />
                                                     </td>
                                                     <td className="text-end">
                                                         <button
-                                                            onClick={() => removeProductRow(row.id)}
+                                                            onClick={() => removeRow(row.id)}
                                                             className="btn btn-sm text-danger"
                                                             type="button"
                                                         >
-                                                            <i className="bi bi-trash-fill"></i>
+                                                            <span className="material-symbols-outlined">delete</span>
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -149,12 +162,12 @@ export default function Create({ products = [] }) {
                                         </tbody>
                                         <tfoot>
                                             <tr>
-                                                <td colSpan="3" className="text-end fw-bold text-uppercase small letter-spacing-1 pt-4">Precio Total</td>
-                                                <td colSpan="2" className="pt-3">
+                                                <td colSpan="3" className="text-end fw-bold text-uppercase small letter-spacing-1">Precio Total</td>
+                                                <td colSpan="2">
                                                     <div className="input-group">
                                                         <input
                                                             type="text"
-                                                            className="form-control border-0 font-monospace fw-bold fs-5 text-end bg-transparent"
+                                                            className="form-control border-0 font-tabular fw-semibold fs-5 text-end bg-transparent"
                                                             value={formatCurrency(grandTotal)}
                                                             readOnly
                                                         />

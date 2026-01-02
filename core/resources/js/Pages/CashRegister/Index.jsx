@@ -3,20 +3,16 @@ import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Index() {
-    const currentBalance = 1500.00;
-    const income = 2000.00;
-    const expense = 500.00;
-    const movements = [
-        { id: 1, created_at: '2025-12-29 08:00:00', type: 'income', description: 'Apertura de Caja', amount: 1000.00 },
-        { id: 2, created_at: '2025-12-29 10:30:00', type: 'income', description: 'Venta #1', amount: 150.00 },
-        { id: 3, created_at: '2025-12-29 12:00:00', type: 'expense', description: 'Compra de Insumos', amount: 50.00 },
-    ];
-    const openRegister = { id: 1 };
-
+export default function Index({ openRegister, currentBalance, income, expense, movements }) {
     const [showCloseDrawer, setShowCloseDrawer] = useState(false);
-    const { data, setData, put, processing, errors } = useForm({
+    const [showOpenDrawer, setShowOpenDrawer] = useState(false);
+
+    const { data: closeData, setData: setCloseData, post: postClose, processing: closeProsessing, errors: closeErrors, reset: resetClose } = useForm({
         closing_amount: '',
+    });
+
+    const { data: openData, setData: setOpenData, post: postOpen, processing: openProcessing, errors: openErrors, reset: resetOpen } = useForm({
+        opening_amount: '',
     });
 
     const formatCurrency = (amount) => {
@@ -30,9 +26,83 @@ export default function Index() {
 
     const submitClose = (e) => {
         e.preventDefault();
-        alert('Caja cerrada (Simulación)');
-        setShowCloseDrawer(false);
+        postClose(route('cash_register.close', openRegister.id), {
+            onSuccess: () => {
+                setShowCloseDrawer(false);
+                resetClose();
+            }
+        });
     };
+
+    const submitOpen = (e) => {
+        e.preventDefault();
+        postOpen(route('cash_register.store'), {
+            onSuccess: () => {
+                setShowOpenDrawer(false);
+                resetOpen();
+            }
+        });
+    };
+
+    // Si no hay caja abierta, mostrar UI de apertura
+    if (!openRegister) {
+        return (
+            <MainLayout>
+                <Head title="Caja Registradora" />
+                <div className="container-fluid pt-4 px-4">
+                    <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
+                        <div className="text-center">
+                            <div className="mb-4">
+                                <i className="bi bi-cash-coin" style={{ fontSize: '4rem', color: 'var(--text-muted)' }}></i>
+                            </div>
+                            <h4 className="mb-3">No hay caja abierta</h4>
+                            <p className="text-muted mb-4">Abre la caja para comenzar a registrar movimientos</p>
+                            <button
+                                className="btn btn-primary rounded-pill px-4"
+                                onClick={() => setShowOpenDrawer(true)}
+                            >
+                                <i className="bi bi-unlock me-2"></i>Abrir Caja
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <Drawer
+                    isOpen={showOpenDrawer}
+                    onClose={() => setShowOpenDrawer(false)}
+                    title="Abrir Caja"
+                    footer={
+                        <>
+                            <button type="button" className="btn btn-light" onClick={() => setShowOpenDrawer(false)}>Cancelar</button>
+                            <button type="button" className="btn btn-primary" onClick={submitOpen} disabled={openProcessing}>
+                                {openProcessing ? 'Abriendo...' : 'Abrir Caja'}
+                            </button>
+                        </>
+                    }
+                >
+                    <form id="openRegisterForm" onSubmit={submitOpen}>
+                        <div className="mb-3">
+                            <label htmlFor="opening_amount" className="form-label">Monto Inicial</label>
+                            <input
+                                type="number"
+                                className="form-control"
+                                id="opening_amount"
+                                min="0"
+                                step="0.01"
+                                required
+                                value={openData.opening_amount}
+                                onChange={(e) => setOpenData('opening_amount', e.target.value)}
+                                placeholder="0.00"
+                                autoFocus
+                            />
+                            {openErrors.opening_amount && <div className="text-danger small mt-1">{openErrors.opening_amount}</div>}
+                            <div className="form-text">Ingresa el dinero inicial con el que abres la caja.</div>
+                        </div>
+                    </form>
+                </Drawer>
+            </MainLayout>
+        );
+    }
 
     return (
         <MainLayout>
@@ -96,7 +166,7 @@ export default function Index() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {movements.map((movement) => (
+                                {movements && movements.length > 0 ? movements.map((movement) => (
                                     <tr key={movement.id}>
                                         <td className="text-muted font-monospace">{formatTime(movement.created_at)}</td>
                                         <td>
@@ -109,8 +179,7 @@ export default function Index() {
                                         <td className="fw-medium">{movement.description}</td>
                                         <td className="text-end font-tabular fw-semibold">{formatCurrency(movement.amount)}</td>
                                     </tr>
-                                ))}
-                                {movements.length === 0 && (
+                                )) : (
                                     <tr>
                                         <td colSpan="4" className="text-center py-4 text-muted">No hay movimientos</td>
                                     </tr>
@@ -128,34 +197,34 @@ export default function Index() {
                 footer={
                     <>
                         <button type="button" className="btn btn-light" onClick={() => setShowCloseDrawer(false)}>Cancelar</button>
-                        <button type="button" className="btn btn-danger" onClick={submitClose}>Confirmar Cierre</button>
+                        <button type="button" className="btn btn-danger" onClick={submitClose} disabled={closeProsessing}>
+                            {closeProsessing ? 'Cerrando...' : 'Confirmar Cierre'}
+                        </button>
                     </>
                 }
             >
                 <form id="closeRegisterForm" onSubmit={submitClose}>
                     <div className="alert alert-light border mb-4">
                         <small className="text-muted d-block text-uppercase mb-1">Saldo Esperado</small>
-                        <h3 className="font-monospace mb-0">{formatCurrency(currentBalance)}</h3>
+                        <h3 className="font-tabular fw-semibold mb-0">{formatCurrency(currentBalance)}</h3>
                     </div>
 
                     <div className="mb-3">
-                        <label htmlFor="closing_amount" className="form-label">Monto Real en Caja (Contado)</label>
+                        <label htmlFor="closing_amount" className="form-label">Efectivo Contado Físicamente</label>
                         <input
                             type="number"
-                            className="form-control font-monospace"
+                            className="form-control"
+                            id="closing_amount"
                             min="0"
+                            step="0.01"
                             required
-                            value={data.closing_amount}
-                            onChange={(e) => setData('closing_amount', e.target.value)}
-                            placeholder="0"
+                            value={closeData.closing_amount}
+                            onChange={(e) => setCloseData('closing_amount', e.target.value)}
+                            placeholder="0.00"
                             autoFocus
                         />
-                        <div className="form-text">Ingresa el total de dinero físico contado.</div>
-                    </div>
-
-                    <div className="mb-3">
-                        <label className="form-label">Notas (Opcional)</label>
-                        <textarea className="form-control" rows="3" placeholder="Observaciones del cierre..."></textarea>
+                        {closeErrors.closing_amount && <div className="text-danger small mt-1">{closeErrors.closing_amount}</div>}
+                        <div className="form-text mt-2">Ingresa SOLO el efectivo físico. No incluir transferencias.</div>
                     </div>
                 </form>
             </Drawer>

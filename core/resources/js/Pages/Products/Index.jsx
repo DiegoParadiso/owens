@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
 import { Head, Link, useForm } from '@inertiajs/react';
+import Swal from 'sweetalert2';
 
 export default function Index({ products }) {
     const [showDrawer, setShowDrawer] = useState(false);
     const [selectedProducts, setSelectedProducts] = useState([]);
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors, reset, delete: destroy } = useForm({
         name: '',
         price: '',
         stock: '',
@@ -30,6 +31,40 @@ export default function Index({ products }) {
         } else {
             setSelectedProducts([...selectedProducts, productId]);
         }
+    };
+
+    const handleDelete = (id) => {
+        Swal.fire({
+            text: "¿Eliminar este producto?",
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Eliminar',
+            cancelButtonText: 'Cancelar',
+            buttonsStyling: true,
+            customClass: {
+                popup: 'swal-minimal',
+                confirmButton: 'btn btn-danger px-4',
+                cancelButton: 'btn btn-secondary px-4'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                destroy(route('product.destroy', id), {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        Swal.fire({
+                            text: 'Producto eliminado',
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false,
+                            customClass: {
+                                popup: 'swal-minimal'
+                            }
+                        });
+                    },
+                });
+            }
+        });
     };
 
     const handleSubmit = (e) => {
@@ -109,11 +144,11 @@ export default function Index({ products }) {
                                             </span>
                                         </td>
                                         <td className="text-end">
-                                            <button className="btn btn-sm text-muted me-1" title="Editar">
-                                                <i className="bi bi-pencil-square"></i>
+                                            <button className="btn btn-sm text-muted me-1" title="Editar" onClick={() => alert('Función de editar en desarrollo')}>
+                                                <span className="material-symbols-outlined">stylus</span>
                                             </button>
-                                            <button className="btn btn-sm text-danger" title="Eliminar">
-                                                <i className="bi bi-trash-fill"></i>
+                                            <button className="btn btn-sm text-danger" title="Eliminar" onClick={() => handleDelete(product.id)}>
+                                                <span className="material-symbols-outlined">delete</span>
                                             </button>
                                         </td>
                                     </tr>
@@ -152,7 +187,7 @@ export default function Index({ products }) {
                         <label htmlFor="price" className="form-label">Precio de Venta ($)</label>
                         <input
                             type="number"
-                            className="form-control font-monospace"
+                            className="form-control"
                             id="price"
                             min="0"
                             required
@@ -165,7 +200,7 @@ export default function Index({ products }) {
                         <label htmlFor="stock" className="form-label">Stock Inicial</label>
                         <input
                             type="number"
-                            className="form-control font-monospace"
+                            className="form-control"
                             id="stock"
                             min="0"
                             required

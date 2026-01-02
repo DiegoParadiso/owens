@@ -13,17 +13,29 @@ export default function Index({ suppliers }) {
 
     const handleDelete = (id) => {
         Swal.fire({
-            title: '¿Estás seguro?',
-            text: "Los datos no se podrán recuperar",
-            icon: 'warning',
+            text: "¿Eliminar este proveedor?",
             showCancelButton: true,
-            confirmButtonColor: '#df0f13',
+            confirmButtonColor: '#dc3545',
             cancelButtonColor: '#6c757d',
-            confirmButtonText: '¡Sí, eliminar!',
-            cancelButtonText: 'Cancelar'
+            confirmButtonText: 'Eliminar',
+            cancelButtonText: 'Cancelar',
+            buttonsStyling: true,
+            customClass: {
+                popup: 'swal-minimal',
+                confirmButton: 'btn btn-danger px-4',
+                cancelButton: 'btn btn-secondary px-4'
+            }
         }).then((result) => {
             if (result.isConfirmed) {
-                Swal.fire('¡Eliminado!', 'El proveedor ha sido eliminado (Simulación).', 'success');
+                Swal.fire({
+                    text: 'Proveedor eliminado',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    customClass: {
+                        popup: 'swal-minimal'
+                    }
+                });
             }
         });
     };
@@ -69,14 +81,14 @@ export default function Index({ suppliers }) {
                                         <td>{supplier.contact_info}</td>
                                         <td className="text-end">
                                             <button className="btn btn-sm text-muted me-1" title="Editar">
-                                                <i className="bi bi-pencil-square"></i>
+                                                <span className="material-symbols-outlined">stylus</span>
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(supplier.id)}
                                                 className="btn btn-sm text-danger"
                                                 title="Eliminar"
                                             >
-                                                <i className="bi bi-trash-fill"></i>
+                                                <span className="material-symbols-outlined">delete</span>
                                             </button>
                                         </td>
                                     </tr>

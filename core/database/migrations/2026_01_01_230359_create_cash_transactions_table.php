@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('cash_movements', function (Blueprint $table) {
+        Schema::create('cash_transactions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('cash_register_id')->constrained()->onDelete('cascade');
+            $table->foreignId('cash_session_id')->constrained()->onDelete('cascade');
             $table->enum('type', ['income', 'expense']);
             $table->decimal('amount', 10, 2);
             $table->text('description')->nullable();
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cash_movements');
+        Schema::dropIfExists('cash_transactions');
     }
 };

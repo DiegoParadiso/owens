@@ -12,11 +12,13 @@ class CashRegisterController extends Controller
 {
     public function index()
     {
+        // Usar SQL raw con nueva tabla para bypass planes cacheados
+        $result = \DB::select("SELECT * FROM cash_sessions WHERE user_id = ? AND status = 'open' LIMIT 1", [Auth::id()]);
         
-        // Verificar si hay una caja abierta para el usuario actual
-        $openRegister = CashRegister::where('user_id', Auth::id())
-            ->where('status', 'open')
-            ->first();
+        $openRegister = null;
+        if (count($result) > 0) {
+            $openRegister = CashRegister::find($result[0]->id);
+        }
 
         if (!$openRegister) {
             return \Inertia\Inertia::render('CashRegister/Index', [
@@ -58,19 +60,19 @@ class CashRegisterController extends Controller
         ]);
 
         // Asegurar que no haya otra caja abierta para este usuario
-        $existingOpen = CashRegister::where('user_id', Auth::id())->where('status', 'open')->first();
-        if ($existingOpen) {
+        $existingCheck = \DB::select("SELECT id FROM cash_sessions WHERE user_id = ? AND status = 'open' LIMIT 1", [Auth::id()]);
+        if (count($existingCheck) > 0) {
             return redirect()->route('cash_register.index')->with('error', 'Ya tienes una caja abierta.');
         }
 
-        CashRegister::create([
+        $cashRegister = CashRegister::create([
             'user_id' => Auth::id(),
             'opening_amount' => $request->opening_amount,
             'status' => 'open',
             'opened_at' => Carbon::now(),
         ]);
 
-        return redirect()->route('cash_register.index');
+        return redirect()->route('cash_register.index')->with('success', 'Caja abierta exitosamente');
     }
 
     public function close(Request $request, $id)
@@ -91,6 +93,6 @@ class CashRegisterController extends Controller
             'closed_at' => Carbon::now(),
         ]);
 
-        return redirect()->route('dashboard');
+        return redirect()->route('dashboard')->with('success', 'Caja cerrada exitosamente');
     }
 }

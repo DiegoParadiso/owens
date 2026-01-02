@@ -16,16 +16,11 @@ class SalesController extends Controller
     public function index(Request $request)
     {
         $sales = Sale::with(['user', 'payment', 'saleDetails.product'])->latest()->get();
+        $products = Product::where('stock', '>', 0)->get();
+        
         return \Inertia\Inertia::render('Sales/Index', [
-            'sales' => $sales->map(function($sale) {
-                return [
-                    'id' => $sale->id,
-                    'date' => $sale->sale_date->format('Y-m-d H:i'),
-                    'user' => $sale->user->name ?? 'Sistema',
-                    'total' => $sale->total_price,
-                    'status' => $sale->payment ? 'Pagado' : 'Pendiente',
-                ];
-            })
+            'sales' => $sales,
+            'products' => $products
         ]);
     }
 

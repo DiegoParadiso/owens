@@ -113,7 +113,7 @@ export default function Index({ expenses = [] }) {
                         <label htmlFor="amount" className="form-label">Monto ($)</label>
                         <input
                             type="number"
-                            className="form-control font-monospace"
+                            className="form-control"
                             id="amount"
                             min="0"
                             required

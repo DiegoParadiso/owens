@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-export default function Drawer({ isOpen, onClose, title, children, footer }) {
+export default function Drawer({ isOpen, onClose, title, children, footer, width = '500px' }) {
     useEffect(() => {
         const handleEsc = (e) => {
             if (e.key === 'Escape') onClose();
@@ -27,7 +27,7 @@ export default function Drawer({ isOpen, onClose, title, children, footer }) {
                 onClick={onClose}
             ></div>
 
-            <div className={`drawer-panel ${isOpen ? 'open' : ''}`}>
+            <div className={`drawer-panel ${isOpen ? 'open' : ''}`} style={{ width }}>
                 <div className="drawer-header">
                     <h5 className="mb-0 fw-bold">{title}</h5>
                     <button
