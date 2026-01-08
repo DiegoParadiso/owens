@@ -219,7 +219,7 @@ export default function Index({ combos = [], products = [] }) {
                                             <div className="d-flex justify-content-end gap-2">
                                                 <button
                                                     className="btn btn-icon-only bg-transparent border-0"
-                                                    onClick={() => openEditDrawer(combo)}
+                                                    onClick={() => handleEdit(combo)}
                                                     title="Editar"
                                                 >
                                                     <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--text-muted)' }}>edit_square</span>

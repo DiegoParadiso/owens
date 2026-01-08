@@ -476,6 +476,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
             </div>
 
             <Drawer
+                isOpen={showDrawer}
                 onClose={handleCloseDrawer}
                 title={editingPurchase ? 'Editar Compra' : 'Registrar Compra'}
                 width="950px"
