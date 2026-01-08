@@ -64,6 +64,10 @@ class SettingsController extends Controller
             return redirect()->back()->with('error', 'No puedes eliminar tu propio usuario.');
         }
 
+        if ($user->role === 'admin') {
+            return redirect()->back()->with('error', 'No se puede eliminar al usuario administrador.');
+        }
+
         $user->delete();
 
         return redirect()->back()->with('success', 'Usuario eliminado correctamente.');

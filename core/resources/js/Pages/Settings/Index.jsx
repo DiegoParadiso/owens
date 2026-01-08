@@ -36,15 +36,19 @@ export default function Index({ users }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        setShowDrawer(false); // Close immediately
+
         const options = {
             onSuccess: () => {
-                handleCloseDrawer();
+                handleCloseDrawer(); // Reset state
                 Toast.fire({
                     icon: 'success',
                     title: editingUser ? 'Usuario actualizado' : 'Usuario creado'
                 });
             },
             onError: (errors) => {
+                setShowDrawer(true); // Re-open on error
                 Toast.fire({
                     icon: 'error',
                     title: 'Error al guardar usuario'
@@ -201,13 +205,15 @@ export default function Index({ users }) {
                                                     >
                                                         <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--text-muted)' }}>edit_square</span>
                                                     </button>
-                                                    <button
-                                                        className="btn btn-icon-only bg-transparent border-0"
-                                                        onClick={() => handleDelete(user)}
-                                                        title="Eliminar"
-                                                    >
-                                                        <span className="material-symbols-outlined" style={{ fontSize: '22px', color: 'var(--text-muted)', transform: 'translateY(-1px)' }}>delete</span>
-                                                    </button>
+                                                    {user.role !== 'admin' && (
+                                                        <button
+                                                            className="btn btn-icon-only bg-transparent border-0"
+                                                            onClick={() => handleDelete(user)}
+                                                            title="Eliminar"
+                                                        >
+                                                            <span className="material-symbols-outlined" style={{ fontSize: '22px', color: 'var(--text-muted)', transform: 'translateY(-1px)' }}>delete</span>
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>
