@@ -691,3 +691,74 @@ body.dark-mode {
     opacity: 0;
     visibility: hidden;
 }
+
+/* Toast Notification Styling */
+.swal2-popup.swal2-toast {
+    box-shadow: none !important;
+    border: 1px solid var(--border-color) !important;
+    border-left: 4px solid #28a745 !important;
+    background-color: var(--bg-card) !important;
+    color: var(--text-main) !important;
+    padding: 0.75rem 1rem !important;
+    border-radius: 4px !important;
+    min-width: 280px !important;
+    max-width: 400px !important;
+}
+
+.swal2-popup.swal2-toast .swal2-title,
+.swal2-popup.swal2-toast .swal2-html-container {
+    margin: 0 !important;
+    padding: 0 0.5rem 0 0 !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    color: var(--text-main) !important;
+    text-align: left !important;
+}
+
+.swal2-popup.swal2-toast .swal2-icon {
+    margin: 0 0.75rem 0 0 !important;
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    font-size: 0.75rem !important;
+}
+
+.swal2-popup.swal2-toast .swal2-icon.swal2-success {
+    border-color: #28a745 !important;
+}
+
+.swal2-popup.swal2-toast .swal2-icon.swal2-success [class^='swal2-success-line'] {
+    background-color: #28a745 !important;
+}
+
+.swal2-popup.swal2-toast .swal2-icon.swal2-success .swal2-success-ring {
+    border-color: rgba(40, 167, 69, 0.3) !important;
+}
+
+/* Close button styling */
+.swal2-popup.swal2-toast .swal2-close {
+    position: absolute !important;
+    top: 0.5rem !important;
+    right: 0.5rem !important;
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    font-size: 1.25rem !important;
+    line-height: 1rem !important;
+    color: var(--text-muted) !important;
+    opacity: 0.6 !important;
+    transition: opacity 0.2s !important;
+}
+
+.swal2-popup.swal2-toast .swal2-close:hover {
+    opacity: 1 !important;
+    color: var(--text-main) !important;
+}
+
+/* Container layout */
+.swal2-popup.swal2-toast .swal2-content {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}

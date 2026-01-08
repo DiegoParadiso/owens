@@ -7,12 +7,18 @@ use Illuminate\Http\Request;
 
 class SupplierController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $suppliers = Supplier::latest()->get();
-        return \Inertia\Inertia::render('Suppliers/Index', [
-            'suppliers' => $suppliers
-        ]);
+        $title = 'Proveedores';
+        $subtitle = 'Gestión de Proveedores';
+        
+        $perPage = $request->input('per_page', 10);
+        
+        $suppliers = Supplier::latest()
+            ->paginate($perPage)
+            ->withQueryString();
+
+        return \Inertia\Inertia::render('Suppliers/Index', compact('title', 'subtitle', 'suppliers'));
     }
 
     public function create()

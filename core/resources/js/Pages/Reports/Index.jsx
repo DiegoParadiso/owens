@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Index({ date: initialDate, sales = 0, expenses = 0, cogs = 0, grossProfit = 0, netProfit = 0 }) {
+export default function Index({ date: initialDate, sales = 0, expenses = 0, purchases = 0, cogs = 0, grossProfit = 0, netProfit = 0 }) {
     const [date, setDate] = useState(initialDate || new Date().toISOString().split('T')[0]);
 
     const formatCurrency = (amount) => {
@@ -49,30 +49,36 @@ export default function Index({ date: initialDate, sales = 0, expenses = 0, cogs
                 </div>
 
                 <div className="row g-4 mb-4">
-                    <div className="col-md-3">
+                    <div className="col-md-4">
                         <div className="card-dash h-100">
                             <span className="card-label">Ventas totales</span>
                             <h3 className="card-value">{formatCurrency(sales)}</h3>
                         </div>
                     </div>
-                    <div className="col-md-3">
+                    <div className="col-md-4">
                         <div className="card-dash h-100">
                             <span className="card-label">Costo de ventas (COGS)</span>
                             <h3 className="card-value">{formatCurrency(cogs)}</h3>
                         </div>
                     </div>
-                    <div className="col-md-3">
-                        <div className="card-dash h-100">
-                            <span className="card-label">Gastos operativos</span>
-                            <h3 className="card-value">{formatCurrency(expenses)}</h3>
-                        </div>
-                    </div>
-                    <div className="col-md-3">
+                    <div className="col-md-4">
                         <div className="card-dash h-100">
                             <span className="card-label">Resultado neto</span>
                             <h3 className={`card-value ${netProfit >= 0 ? 'text-success' : 'text-danger'}`}>
                                 {formatCurrency(netProfit)}
                             </h3>
+                        </div>
+                    </div>
+                    <div className="col-md-6">
+                        <div className="card-dash h-100">
+                            <span className="card-label">Gastos operativos</span>
+                            <h3 className="card-value">{formatCurrency(expenses)}</h3>
+                        </div>
+                    </div>
+                    <div className="col-md-6">
+                        <div className="card-dash h-100">
+                            <span className="card-label">Compras (Inventario)</span>
+                            <h3 className="card-value">{formatCurrency(purchases)}</h3>
                         </div>
                     </div>
                 </div>

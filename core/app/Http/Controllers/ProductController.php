@@ -15,7 +15,11 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
+        $title = 'Inventario';
+        $subtitle = 'Gestión de Productos';
+        
         $search = $request->input('search');
+        $perPage = $request->input('per_page', 10);
 
         $products = Product::where('type', 'single');
         
@@ -26,22 +30,28 @@ class ProductController extends Controller
             });
         }
 
-        $products = $products->latest()->get();
+        $products = $products->latest()
+            ->paginate($perPage)
+            ->withQueryString();
 
-        return \Inertia\Inertia::render('Products/Index', [
-            'products' => $products
-        ]);
+        return \Inertia\Inertia::render('Products/Index', compact('title', 'subtitle', 'products'));
     }
-
     public function indexCombo(Request $request)
     {
-        $combos = Product::where('type', 'combo')->with('components.childProduct')->latest()->get();
-        $products = Product::where('type', 'single')->get();
+        $title = 'Combos';
+        $subtitle = 'Gestión de Combos';
         
-        return \Inertia\Inertia::render('Combos/Index', [
-            'combos' => $combos,
-            'products' => $products
-        ]);
+        $perPage = $request->input('per_page', 10);
+        
+        $combos = Product::where('type', 'combo')
+            ->with('components.childProduct')
+            ->latest()
+            ->paginate($perPage)
+            ->withQueryString();
+
+        $products = Product::where('type', 'simple')->get();
+
+        return \Inertia\Inertia::render('Combos/Index', compact('title', 'subtitle', 'combos', 'products'));
     }
     public function create()
     {
@@ -77,17 +87,15 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         $validate = $request->validate([
-            'name' => 'required',
-            'price' => 'required|numeric',
-            'stock' => 'required|numeric',
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
         ]);
+        
         $validate['user_id'] = Auth::user()->id;
-        $simpan = $product->update($validate);
-        if ($simpan) {
-            return response()->json(['status' => 200, 'message' => 'Producto actualizado con éxito', 'id' => $product->id]);
-        } else {
-            return response()->json(['status' => 500, 'message' => 'Error al actualizar producto']);
-        }
+        $product->update($validate);
+        
+        return redirect()->route('product.index');
     }
 
     public function destroy($id)
@@ -195,7 +203,7 @@ class ProductController extends Controller
             $combo = Product::create([
                 'name' => $request->name,
                 'price' => $request->price,
-                'stock' => 0, // Virtual stock
+                'stock' => 0,
                 'type' => 'combo',
                 'user_id' => Auth::id(),
             ]);
@@ -209,11 +217,55 @@ class ProductController extends Controller
             }
 
             DB::commit();
-            return response()->json(['status' => 200, 'message' => 'Combo creado con éxito', 'id' => $combo->id]);
+            return redirect()->route('product.indexCombo')->with('highlight_id', $combo->id);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['status' => 500, 'message' => 'Error al crear combo: ' . $e->getMessage()]);
+            \Log::error('Error creating combo: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al crear combo: ' . $e->getMessage());
+        }
+    }
+
+    public function updateCombo(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string',
+            'price' => 'required|numeric|min:0',
+            'child_product_id' => 'required|array',
+            'child_product_id.*' => 'exists:products,id',
+            'quantity' => 'required|array',
+            'quantity.*' => 'integer|min:1',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $combo = Product::findOrFail($id);
+            $combo->update([
+                'name' => $request->name,
+                'price' => $request->price,
+                'user_id' => Auth::id(),
+            ]);
+
+            // Delete existing components
+            \App\Models\ProductComponent::where('parent_product_id', $combo->id)->delete();
+
+            // Create new components
+            foreach ($request->child_product_id as $key => $childId) {
+                \App\Models\ProductComponent::create([
+                    'parent_product_id' => $combo->id,
+                    'child_product_id' => $childId,
+                    'quantity' => $request->quantity[$key],
+                ]);
+            }
+
+            DB::commit();
+            return redirect()->route('product.indexCombo')->with('success', 'Combo actualizado exitosamente');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error updating combo: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al actualizar combo: ' . $e->getMessage());
         }
     }
 }

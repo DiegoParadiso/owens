@@ -31,11 +31,22 @@ class CashRegisterController extends Controller
         }
 
         // Calcular totales
-        $income = $openRegister->movements()->where('type', 'income')->sum('amount');
-        $expense = $openRegister->movements()->where('type', 'expense')->sum('amount');
+        $income = $openRegister->movements()->whereIn('type', ['income', 'sale'])->sum('amount');
+        $expense = $openRegister->movements()->whereIn('type', ['expense', 'purchase'])->sum('amount');
         $currentBalance = $openRegister->opening_amount + $income - $expense;
 
-        $movements = $openRegister->movements()->latest()->get();
+        $movements = $openRegister->movements()
+            ->with([
+                'related' => function ($morphTo) {
+                    $morphTo->morphWith([
+                        \App\Models\Sale::class => ['saleDetails.product'],
+                        \App\Models\Purchase::class => ['details.product'],
+                        \App\Models\Expense::class => [],
+                    ]);
+                }
+            ])
+            ->latest()
+            ->get();
 
         return \Inertia\Inertia::render('CashRegister/Index', [
             'openRegister' => $openRegister,

@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Payment;
 use App\Models\SaleDetail;
 use App\Models\Sale;
+use App\Models\SalePayment;
 use App\Models\Product;
+use App\Models\CashRegister;
+use App\Models\CashMovement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -15,8 +18,21 @@ class SalesController extends Controller
 
     public function index(Request $request)
     {
-        $sales = Sale::with(['user', 'payment', 'saleDetails.product'])->latest()->get();
-        $products = Product::where('stock', '>', 0)->get();
+        $perPage = $request->input('per_page', 10);
+        
+        $sales = Sale::with(['user', 'saleDetails.product', 'payments'])
+            ->latest()
+            ->paginate($perPage)
+            ->withQueryString();
+        
+        // Include products with stock > 0 OR all combos (virtual stock)
+        // For combos, load components to check stock availability
+        $products = Product::where(function($query) {
+            $query->where('type', 'single')->where('stock', '>', 0)
+                  ->orWhere('type', 'combo');
+        })
+        ->with('components.childProduct')
+        ->get();
         
         return \Inertia\Inertia::render('Sales/Index', [
             'sales' => $sales,
@@ -39,17 +55,22 @@ class SalesController extends Controller
             'product_id' => 'required',
             'quantity' => 'required',
             'product_id.*' => 'exists:products,id',
-            'quantity.*' => 'numeric|min:1'
+            'quantity.*' => 'numeric|min:1',
+            'payment_method' => 'required',
+            'split_payments' => 'nullable|array',
+            'split_payments.*.method' => 'required_with:split_payments|in:cash,debit_card,credit_card,transfer,qr',
+            'split_payments.*.amount' => 'required_with:split_payments|numeric|min:0.01',
         ]);
 
         DB::beginTransaction();
 
         try {
-            // Data penjualan yang akan disimpan
+            // Data penjualan yang será será guardada
             $sale_data = [
                 'sale_date' => now(),
                 'user_id' => Auth::user()->id,
                 'total_price' => $request->total,
+                'payment_method' => $request->payment_method,
             ];
 
             $savedSale = Sale::create($sale_data);
@@ -59,19 +80,18 @@ class SalesController extends Controller
                 $quantitySold = $request->quantity[$key];
 
                 if ($product->type == 'combo') {
-                    // Check stock for all components
+                    // Para combos, descontar solo los componentes que tengan stock
                     foreach ($product->components as $component) {
                         $requiredQty = $component->quantity * $quantitySold;
-                        if ($component->childProduct->stock < $requiredQty) {
-                            DB::rollBack();
-                            return redirect()->back()->with('error', 'Stock insuficiente para el componente: ' . $component->childProduct->name . ' del combo ' . $product->name);
+                        $availableStock = $component->childProduct->stock;
+                        
+                        // Solo descontar si hay stock disponible
+                        if ($availableStock > 0) {
+                            $qtyToDeduct = min($availableStock, $requiredQty);
+                            $component->childProduct->stock -= $qtyToDeduct;
+                            $component->childProduct->save();
                         }
-                    }
-                    // Deduct stock
-                    foreach ($product->components as $component) {
-                        $requiredQty = $component->quantity * $quantitySold;
-                        $component->childProduct->stock -= $requiredQty;
-                        $component->childProduct->save();
+                        // Si no hay stock, simplemente no se descuenta (venta parcial)
                     }
                 } else {
                     if ($product->stock < $quantitySold) {
@@ -90,6 +110,83 @@ class SalesController extends Controller
                     'quantity' => $quantitySold,
                     'subtotal' => $request->total_price[$key],
                 ]);
+            }
+
+            // Handle payments (split or single)
+            if ($request->payment_method === 'multiple' && $request->has('split_payments')) {
+                // Validate that split payments sum equals total
+                $splitTotal = collect($request->split_payments)->sum('amount');
+                if (abs($splitTotal - $request->total) > 0.01) {
+                    DB::rollBack();
+                    return redirect()->back()->withErrors([
+                        'error' => 'La suma de los pagos divididos debe ser igual al total de la venta'
+                    ]);
+                }
+
+                // Create sale payment records
+                foreach ($request->split_payments as $payment) {
+                    SalePayment::create([
+                        'sale_id' => $savedSale->id,
+                        'payment_method' => $payment['method'],
+                        'amount' => $payment['amount'],
+                    ]);
+
+                    // Only create cash movement for cash portions
+                    if ($payment['method'] === 'cash') {
+                        $cashRegister = CashRegister::where('user_id', Auth::id())
+                                                     ->where('status', 'open')
+                                                     ->first();
+                        
+                        if (!$cashRegister) {
+                            DB::rollBack();
+                            return redirect()->back()->withErrors([
+                                'error' => 'No tienes una caja abierta para registrar pagos en efectivo'
+                            ]);
+                        }
+                        
+                        // Generate description with product names
+                        $productNames = SaleDetail::where('sale_id', $savedSale->id)
+                            ->join('products', 'sale_details.product_id', '=', 'products.id')
+                            ->pluck('products.name')
+                            ->implode(', ');
+
+                        CashMovement::create([
+                            'cash_session_id' => $cashRegister->id,
+                            'type' => 'sale',
+                            'amount' => $payment['amount'],
+                            'description' => 'Venta de ' . $productNames . ' (Pago parcial en efectivo)',
+                            'related_id' => $savedSale->id,
+                        ]);
+                    }
+                }
+            } else {
+                // Single payment method
+                if ($request->payment_method === 'cash') {
+                    $cashRegister = CashRegister::where('user_id', Auth::id())
+                                                 ->where('status', 'open')
+                                                 ->first();
+                    
+                    if (!$cashRegister) {
+                        DB::rollBack();
+                        return redirect()->back()->withErrors([
+                            'error' => 'No tienes una caja abierta para registrar ventas en efectivo'
+                        ]);
+                    }
+                    
+                    // Generate description with product names
+                    $productNames = SaleDetail::where('sale_id', $savedSale->id)
+                        ->join('products', 'sale_details.product_id', '=', 'products.id')
+                        ->pluck('products.name')
+                        ->implode(', ');
+
+                    CashMovement::create([
+                        'cash_session_id' => $cashRegister->id,
+                        'type' => 'sale',
+                        'amount' => $request->total,
+                        'description' => 'Venta de ' . $productNames,
+                        'related_id' => $savedSale->id,
+                    ]);
+                }
             }
 
             DB::commit();
@@ -147,5 +244,51 @@ class SalesController extends Controller
             $change = $item->change;
         }
         return view('admin.sales.receipt', compact('sale', 'saleDetails', 'amountPaid', 'change'));
+    }
+
+    public function destroy($id)
+    {
+        try {
+            DB::beginTransaction();
+            
+            $sale = Sale::find($id);
+            if (!$sale) {
+                return redirect()->route('sales.index')->with('error', 'Venta no encontrada.');
+            }
+
+            // Restaurar stock y eliminar detalles
+            $saleDetails = SaleDetail::where('sale_id', $id)->get();
+            foreach ($saleDetails as $detail) {
+                $product = Product::find($detail->product_id);
+                if ($product) {
+                    if ($product->type == 'combo') {
+                        // Restaurar stock de componentes
+                        foreach ($product->components as $component) {
+                             $childProduct = $component->childProduct;
+                             if ($childProduct) {
+                                 $qtyToRestore = $component->quantity * $detail->quantity;
+                                 $childProduct->increment('stock', $qtyToRestore);
+                             }
+                        }
+                    } else {
+                        $product->increment('stock', $detail->quantity);
+                    }
+                }
+                $detail->delete();
+            }
+
+            // Eliminar movimiento de caja si existe
+            CashMovement::where('type', 'sale')->where('related_id', $id)->delete();
+            
+            // Eliminar la venta
+            $sale->delete();
+            
+            DB::commit();
+            return redirect()->route('sales.index')->with('success', 'Venta eliminada y stock restaurado.');
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('sales.index')->with('error', 'Error al eliminar la venta: ' . $e->getMessage());
+        }
     }
 }

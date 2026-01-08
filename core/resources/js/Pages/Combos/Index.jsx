@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
+import Toast from '@/Utils/Toast';
+import Pagination from '@/Components/Pagination';
 
 export default function Index({ combos = [], products = [] }) {
 
     const [showDrawer, setShowDrawer] = useState(false);
+    const [editingCombo, setEditingCombo] = useState(null);
     const [rows, setRows] = useState([{ id: Date.now(), child_product_id: '', quantity: 1 }]);
 
-    const { data, setData, post, processing, errors, delete: destroy, reset } = useForm({
+    const { data, setData, post, put, processing, errors, delete: destroy, reset } = useForm({
         name: '',
         price: '',
         items: [],
@@ -40,10 +43,97 @@ export default function Index({ combos = [], products = [] }) {
         setData('items', newRows);
     };
 
+    const handleEdit = (combo) => {
+        setEditingCombo(combo);
+        setData({
+            name: combo.name,
+            price: combo.price,
+            items: combo.components || [],
+        });
+
+        // Load combo components into rows
+        if (combo.components && combo.components.length > 0) {
+            const comboRows = combo.components.map((comp, idx) => ({
+                id: Date.now() + idx,
+                child_product_id: comp.child_product_id,
+                quantity: parseInt(comp.quantity)
+            }));
+            setRows(comboRows);
+        } else {
+            setRows([{ id: Date.now(), child_product_id: '', quantity: 1 }]);
+        }
+
+        setShowDrawer(true);
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        alert('Combo creado (Simulación)');
+
+        console.log('=== INICIO HANDLESUBMIT ===');
+        console.log('data:', data);
+        console.log('rows:', rows);
+        console.log('editingCombo:', editingCombo);
+
+        // Validar que haya filas válidas
+        const validRows = rows.filter(row => row.child_product_id !== '');
+        if (validRows.length === 0) {
+            Swal.fire({
+                text: 'Debes agregar al menos un producto al combo',
+                icon: 'warning',
+                confirmButtonColor: '#df0f13',
+                customClass: {
+                    popup: 'swal-minimal',
+                    confirmButton: 'btn btn-primary px-4'
+                }
+            });
+            return;
+        }
+
+        setShowDrawer(false); // Close immediately
+
+        const formData = {
+            name: data.name,
+            price: data.price,
+            child_product_id: validRows.map(row => row.child_product_id),
+            quantity: validRows.map(row => parseInt(row.quantity)),
+        };
+
+        const options = {
+            preserveScroll: true,
+            onSuccess: () => {
+                setEditingCombo(null);
+                reset();
+                setRows([{ id: Date.now(), child_product_id: '', quantity: 1 }]);
+                Toast.fire({
+                    icon: 'success',
+                    title: editingCombo ? 'Combo actualizado' : 'Combo guardado'
+                });
+            },
+            onError: (errors) => {
+                setShowDrawer(true); // Re-open on error
+                console.error('❌ ERROR! Errores:', errors);
+                Swal.fire({
+                    text: 'Error al guardar el combo',
+                    icon: 'error',
+                    confirmButtonColor: '#df0f13',
+                    customClass: {
+                        popup: 'swal-minimal',
+                        confirmButton: 'btn btn-primary px-4'
+                    }
+                });
+            }
+        };
+
+        if (editingCombo) {
+            router.put(route('product.updateCombo', editingCombo.id), formData, options);
+        } else {
+            router.post(route('product.storeCombo'), formData, options);
+        }
+    };
+
+    const handleCloseDrawer = () => {
         setShowDrawer(false);
+        setEditingCombo(null);
         reset();
         setRows([{ id: Date.now(), child_product_id: '', quantity: 1 }]);
     };
@@ -67,14 +157,9 @@ export default function Index({ combos = [], products = [] }) {
                 destroy(route('product.destroy', id), {
                     preserveScroll: true,
                     onSuccess: () => {
-                        Swal.fire({
-                            text: 'Combo eliminado',
+                        Toast.fire({
                             icon: 'success',
-                            timer: 2000,
-                            showConfirmButton: false,
-                            customClass: {
-                                popup: 'swal-minimal'
-                            }
+                            title: 'Eliminado'
                         });
                     },
                 });
@@ -106,57 +191,84 @@ export default function Index({ combos = [], products = [] }) {
                                     <th scope="col">Nombre</th>
                                     <th scope="col">Precio</th>
                                     <th scope="col">Componentes</th>
-                                    <th scope="col" className="text-end">Acción</th>
+                                    <th scope="col" className="text-end">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {combos.map((combo, index) => (
+                                {combos.data.map((combo, index) => (
                                     <tr key={combo.id}>
-                                        <td className="text-muted font-monospace">{index + 1}</td>
+                                        <td className="text-muted">{(combos.current_page - 1) * combos.per_page + index + 1}</td>
                                         <td className="fw-medium">{combo.name}</td>
                                         <td className="font-tabular fw-semibold">{formatCurrency(combo.price)}</td>
                                         <td>
-                                            <ul className="list-unstyled mb-0 small text-muted">
-                                                {combo.components.map((component, idx) => (
-                                                    <li key={idx}>
-                                                        {component.quantity}x {component.childProduct.name}
-                                                    </li>
-                                                ))}
+                                            <ul className="list-unstyled mb-0 small">
+                                                {combo.components && combo.components.length > 0 ? (
+                                                    combo.components.map((component, idx) => (
+                                                        component.child_product ? (
+                                                            <li key={idx}>
+                                                                <span className="text-muted">{parseInt(component.quantity)}x</span> {component.child_product.name}
+                                                            </li>
+                                                        ) : null
+                                                    ))
+                                                ) : (
+                                                    <li className="text-muted fst-italic">Sin componentes</li>
+                                                )}
                                             </ul>
                                         </td>
                                         <td className="text-end">
-                                            <button className="btn btn-sm text-muted me-1" title="Editar">
-                                                <span className="material-symbols-outlined">stylus</span>
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(combo.id)}
-                                                className="btn btn-sm text-danger"
-                                                title="Eliminar"
-                                            >
-                                                <span className="material-symbols-outlined">delete</span>
-                                            </button>
+                                            <div className="d-flex justify-content-end gap-2">
+                                                <button
+                                                    className="btn btn-icon-only bg-transparent border-0"
+                                                    onClick={() => openEditDrawer(combo)}
+                                                    title="Editar"
+                                                >
+                                                    <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--text-muted)' }}>edit_square</span>
+                                                </button>
+                                                <button
+                                                    className="btn btn-icon-only bg-transparent border-0"
+                                                    onClick={() => handleDelete(combo.id)}
+                                                    title="Eliminar"
+                                                >
+                                                    <span className="material-symbols-outlined" style={{ fontSize: '22px', color: 'var(--text-muted)', transform: 'translateY(-1px)' }}>delete</span>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
-                                {combos.length === 0 && (
+                                {combos.data.length === 0 && (
                                     <tr>
-                                        <td colSpan="5" className="text-center py-4 text-muted">No hay combos registrados</td>
+                                        <td colSpan="5" className="text-center py-4 text-muted">
+                                            No hay combos registrados
+                                        </td>
                                     </tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
+
+                    <Pagination
+                        links={combos.links}
+                        from={combos.from}
+                        to={combos.to}
+                        total={combos.total}
+                        perPage={combos.per_page}
+                        onPerPageChange={(newPerPage) => {
+                            router.get(route('combos.index'), { per_page: newPerPage }, { preserveState: true, replace: true });
+                        }}
+                    />
                 </div>
             </div>
 
             <Drawer
                 isOpen={showDrawer}
-                onClose={() => setShowDrawer(false)}
-                title="Crear Nuevo Combo"
+                onClose={handleCloseDrawer}
+                title={editingCombo ? 'Editar Combo' : 'Crear Nuevo Combo'}
                 footer={
                     <>
-                        <button type="button" className="btn btn-light" onClick={() => setShowDrawer(false)}>Cancelar</button>
-                        <button type="button" className="btn btn-primary" onClick={handleSubmit}>Guardar Combo</button>
+                        <button type="button" className="btn btn-light" onClick={handleCloseDrawer}>Cancelar</button>
+                        <button type="button" className="btn btn-primary" onClick={handleSubmit}>
+                            {editingCombo ? 'Actualizar Combo' : 'Guardar Combo'}
+                        </button>
                     </>
                 }
             >
@@ -210,7 +322,7 @@ export default function Index({ combos = [], products = [] }) {
                                     className="form-control form-control-sm text-center"
                                     value={row.quantity}
                                     min="1"
-                                    onChange={(e) => updateRow(row.id, 'quantity', parseFloat(e.target.value) || 0)}
+                                    onChange={(e) => updateRow(row.id, 'quantity', parseInt(e.target.value) || 0)}
                                     required
                                     placeholder="Cant."
                                 />

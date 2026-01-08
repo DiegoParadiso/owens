@@ -21,6 +21,9 @@ class ReportController extends Controller
         // Expenses for the day  
         $expenses = Expense::whereDate('date', $date)->sum('amount') ?? 0;
 
+        // Purchases for the day
+        $purchases = \App\Models\Purchase::whereDate('date', $date)->sum('total_cost') ?? 0;
+
         // Calculate COGS
         $salesData = Sale::with('saleDetails.product')->whereDate('sale_date', $date)->get();
         $totalCostOfGoods = 0;
@@ -37,6 +40,7 @@ class ReportController extends Controller
             'date' => $date,
             'sales' => $sales,
             'expenses' => $expenses,
+            'purchases' => $purchases,
             'cogs' => $totalCostOfGoods,
             'grossProfit' => $grossProfit,
             'netProfit' => $netProfit,

@@ -3,10 +3,13 @@ import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
 import { Head, Link, useForm } from '@inertiajs/react';
 import Swal from 'sweetalert2';
+import Toast from '@/Utils/Toast';
+import Pagination from '@/Components/Pagination';
 
 export default function Index({ suppliers }) {
     const [showDrawer, setShowDrawer] = useState(false);
-    const { data, setData, post, processing, errors, reset, delete: destroy } = useForm({
+    const [editingSupplier, setEditingSupplier] = useState(null);
+    const { data, setData, post, put, processing, errors, reset, delete: destroy } = useForm({
         name: '',
         contact_info: '',
     });
@@ -27,23 +30,66 @@ export default function Index({ suppliers }) {
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                Swal.fire({
-                    text: 'Proveedor eliminado',
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false,
-                    customClass: {
-                        popup: 'swal-minimal'
+                destroy(route('supplier.destroy', id), {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Eliminado'
+                        });
                     }
                 });
             }
         });
     };
 
+    const handleEdit = (supplier) => {
+        setEditingSupplier(supplier);
+        setData({
+            name: supplier.name,
+            contact_info: supplier.contact_info || '',
+        });
+        setShowDrawer(true);
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        alert('Proveedor registrado (Simulación)');
+        setShowDrawer(false); // Close immediately
+
+        const options = {
+            preserveScroll: true,
+            onSuccess: () => {
+                setEditingSupplier(null);
+                reset();
+                Toast.fire({
+                    icon: 'success',
+                    title: editingSupplier ? 'Proveedor actualizado' : 'Proveedor guardado'
+                });
+            },
+            onError: () => {
+                setShowDrawer(true); // Re-open on error
+                Swal.fire({
+                    text: editingSupplier ? 'Error al actualizar el proveedor' : 'Error al registrar el proveedor',
+                    icon: 'error',
+                    confirmButtonColor: '#df0f13',
+                    customClass: {
+                        popup: 'swal-minimal',
+                        confirmButton: 'btn btn-primary px-4'
+                    }
+                });
+            }
+        };
+
+        if (editingSupplier) {
+            put(route('supplier.update', editingSupplier.id), options);
+        } else {
+            post(route('supplier.store'), options);
+        }
+    };
+
+    const handleCloseDrawer = () => {
         setShowDrawer(false);
+        setEditingSupplier(null);
         reset();
     };
 
@@ -70,48 +116,69 @@ export default function Index({ suppliers }) {
                                     <th scope="col">#</th>
                                     <th scope="col">Nombre</th>
                                     <th scope="col">Información de Contacto</th>
-                                    <th scope="col" className="text-end">Acción</th>
+                                    <th scope="col" className="text-end">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {suppliers.map((supplier, index) => (
+                                {suppliers.data.map((supplier, index) => (
                                     <tr key={supplier.id}>
-                                        <td className="text-muted font-monospace">{index + 1}</td>
+                                        <td className="text-muted">{(suppliers.current_page - 1) * suppliers.per_page + index + 1}</td>
                                         <td className="fw-medium">{supplier.name}</td>
-                                        <td>{supplier.contact_info}</td>
+                                        <td>{supplier.contact_info || '-'}</td>
                                         <td className="text-end">
-                                            <button className="btn btn-sm text-muted me-1" title="Editar">
-                                                <span className="material-symbols-outlined">stylus</span>
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(supplier.id)}
-                                                className="btn btn-sm text-danger"
-                                                title="Eliminar"
-                                            >
-                                                <span className="material-symbols-outlined">delete</span>
-                                            </button>
+                                            <div className="d-flex justify-content-end gap-2">
+                                                <button
+                                                    className="btn btn-icon-only bg-transparent border-0"
+                                                    onClick={() => handleEdit(supplier)}
+                                                    title="Editar"
+                                                >
+                                                    <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--text-muted)' }}>edit_square</span>
+                                                </button>
+                                                <button
+                                                    className="btn btn-icon-only bg-transparent border-0"
+                                                    onClick={() => handleDelete(supplier.id)}
+                                                    title="Eliminar"
+                                                >
+                                                    <span className="material-symbols-outlined" style={{ fontSize: '22px', color: 'var(--text-muted)', transform: 'translateY(-1px)' }}>delete</span>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
-                                {suppliers.length === 0 && (
+                                {suppliers.data.length === 0 && (
                                     <tr>
-                                        <td colSpan="4" className="text-center py-4 text-muted">No hay datos de proveedores</td>
+                                        <td colSpan="4" className="text-center py-4 text-muted">
+                                            No hay proveedores registrados
+                                        </td>
                                     </tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
+
+                    <Pagination
+                        links={suppliers.links}
+                        from={suppliers.from}
+                        to={suppliers.to}
+                        total={suppliers.total}
+                        perPage={suppliers.per_page}
+                        onPerPageChange={(newPerPage) => {
+                            router.get(route('supplier.index'), { per_page: newPerPage }, { preserveState: true, replace: true });
+                        }}
+                    />
                 </div>
             </div>
 
             <Drawer
                 isOpen={showDrawer}
-                onClose={() => setShowDrawer(false)}
-                title="Nuevo Proveedor"
+                onClose={handleCloseDrawer}
+                title={editingSupplier ? 'Editar Proveedor' : 'Nuevo Proveedor'}
                 footer={
                     <>
-                        <button type="button" className="btn btn-light" onClick={() => setShowDrawer(false)}>Cancelar</button>
-                        <button type="button" className="btn btn-primary" onClick={handleSubmit}>Guardar Proveedor</button>
+                        <button type="button" className="btn btn-light" onClick={handleCloseDrawer}>Cancelar</button>
+                        <button type="button" className="btn btn-primary text-nowrap d-flex justify-content-center align-items-center" onClick={handleSubmit}>
+                            {editingSupplier ? 'Actualizar Proveedor' : 'Guardar Proveedor'}
+                        </button>
                     </>
                 }
             >

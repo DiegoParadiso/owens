@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
 import { Head, Link, useForm } from '@inertiajs/react';
+import Swal from 'sweetalert2';
+import Toast from '@/Utils/Toast';
 
 export default function Index({ openRegister, currentBalance, income, expense, movements }) {
     const [showCloseDrawer, setShowCloseDrawer] = useState(false);
@@ -30,6 +32,10 @@ export default function Index({ openRegister, currentBalance, income, expense, m
             onSuccess: () => {
                 setShowCloseDrawer(false);
                 resetClose();
+                Toast.fire({
+                    icon: 'success',
+                    title: 'Caja cerrada'
+                });
             }
         });
     };
@@ -40,6 +46,10 @@ export default function Index({ openRegister, currentBalance, income, expense, m
             onSuccess: () => {
                 setShowOpenDrawer(false);
                 resetOpen();
+                Toast.fire({
+                    icon: 'success',
+                    title: 'Caja abierta'
+                });
             }
         });
     };
@@ -168,15 +178,47 @@ export default function Index({ openRegister, currentBalance, income, expense, m
                             <tbody>
                                 {movements && movements.length > 0 ? movements.map((movement) => (
                                     <tr key={movement.id}>
-                                        <td className="text-muted font-monospace">{formatTime(movement.created_at)}</td>
+                                        <td>{formatTime(movement.created_at)}</td>
                                         <td>
-                                            {movement.type === 'income' ? (
+                                            {movement.type === 'income' || movement.type === 'sale' ? (
                                                 <span className="text-success fw-medium">Ingreso</span>
                                             ) : (
                                                 <span className="text-danger fw-medium">Egreso</span>
                                             )}
                                         </td>
-                                        <td className="fw-medium">{movement.description}</td>
+                                        <td className="fw-medium">
+                                            {(() => {
+                                                if (movement.related) {
+                                                    // Handle Sale
+                                                    if (movement.type === 'sale') {
+                                                        const details = movement.related.sale_details || movement.related.saleDetails;
+                                                        if (details && details.length > 0) {
+                                                            const products = details
+                                                                .map(d => d.product ? d.product.name : '')
+                                                                .filter(Boolean)
+                                                                .join(', ');
+                                                            return products ? `Venta de ${products}` : movement.description;
+                                                        }
+                                                    }
+                                                    // Handle Purchase
+                                                    if (movement.type === 'purchase') {
+                                                        const details = movement.related.details;
+                                                        if (details && details.length > 0) {
+                                                            const products = details
+                                                                .map(d => d.product ? d.product.name : '')
+                                                                .filter(Boolean)
+                                                                .join(', ');
+                                                            return products ? `Compra de ${products}` : movement.description;
+                                                        }
+                                                    }
+                                                    // Handle Expense
+                                                    if (movement.type === 'expense') {
+                                                        return `Gasto de ${movement.related.description}`;
+                                                    }
+                                                }
+                                                return movement.description;
+                                            })()}
+                                        </td>
                                         <td className="text-end font-tabular fw-semibold">{formatCurrency(movement.amount)}</td>
                                     </tr>
                                 )) : (

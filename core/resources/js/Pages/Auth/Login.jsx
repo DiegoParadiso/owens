@@ -49,9 +49,9 @@ export default function Login() {
                 style={{ zIndex: 9999, background: 'transparent', border: 'none', color: 'var(--text-muted)' }}
             >
                 {darkMode ? (
-                    <i className="bi bi-sun" style={{ fontSize: '1.3rem' }}></i>
+                    <span className="material-symbols-outlined" style={{ fontSize: '1.65rem' }}>light_mode</span>
                 ) : (
-                    <i className="bi bi-moon" style={{ fontSize: '1.3rem' }}></i>
+                    <span className="material-symbols-outlined" style={{ fontSize: '1.65rem' }}>dark_mode</span>
                 )}
             </button>
 

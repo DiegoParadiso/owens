@@ -3,11 +3,14 @@ import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
 import { Head, Link, useForm } from '@inertiajs/react';
 import Swal from 'sweetalert2';
+import Toast from '@/Utils/Toast';
+import Pagination from '@/Components/Pagination';
 
 export default function Index({ products }) {
     const [showDrawer, setShowDrawer] = useState(false);
+    const [editingProduct, setEditingProduct] = useState(null);
     const [selectedProducts, setSelectedProducts] = useState([]);
-    const { data, setData, post, processing, errors, reset, delete: destroy } = useForm({
+    const { data, setData, post, put, processing, errors, reset, delete: destroy } = useForm({
         name: '',
         price: '',
         stock: '',
@@ -52,14 +55,9 @@ export default function Index({ products }) {
                 destroy(route('product.destroy', id), {
                     preserveScroll: true,
                     onSuccess: () => {
-                        Swal.fire({
-                            text: 'Producto eliminado',
+                        Toast.fire({
                             icon: 'success',
-                            timer: 2000,
-                            showConfirmButton: false,
-                            customClass: {
-                                popup: 'swal-minimal'
-                            }
+                            title: 'Eliminado'
                         });
                     },
                 });
@@ -67,14 +65,65 @@ export default function Index({ products }) {
         });
     };
 
+    const handleEdit = (product) => {
+        setEditingProduct(product);
+        setData({
+            name: product.name,
+            price: product.price,
+            stock: product.stock,
+        });
+        setShowDrawer(true);
+    };
+
+    const openEditDrawer = (product) => {
+        setEditingProduct(product);
+        setData({
+            name: product.name,
+            price: product.price,
+            stock: product.stock,
+        });
+        setShowDrawer(true);
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        post(route('product.store'), {
+        setShowDrawer(false); // Close immediately
+
+        const options = {
+            preserveScroll: true,
             onSuccess: () => {
-                setShowDrawer(false);
+                setEditingProduct(null);
                 reset();
+                Toast.fire({
+                    icon: 'success',
+                    title: editingProduct ? 'Producto actualizado' : 'Producto guardado'
+                });
+            },
+            onError: (errors) => {
+                setShowDrawer(true); // Re-open on error
+                Swal.fire({
+                    text: 'Error al guardar el producto',
+                    icon: 'error',
+                    confirmButtonColor: '#df0f13',
+                    customClass: {
+                        popup: 'swal-minimal',
+                        confirmButton: 'btn btn-primary px-4'
+                    }
+                });
             }
-        });
+        };
+
+        if (editingProduct) {
+            put(route('product.update', editingProduct.id), options);
+        } else {
+            post(route('product.store'), options);
+        }
+    };
+
+    const handleCloseDrawer = () => {
+        setShowDrawer(false);
+        setEditingProduct(null);
+        reset();
     };
 
     return (
@@ -102,71 +151,83 @@ export default function Index({ products }) {
                         <table className="table-minimal">
                             <thead>
                                 <tr>
-                                    <th style={{ width: '40px' }}>
-                                        <div className="form-check">
-                                            <input
-                                                className="form-check-input"
-                                                type="checkbox"
-                                                id="selectAll"
-                                                checked={selectedProducts.length === products.length && products.length > 0}
-                                                onChange={handleSelectAll}
-                                            />
-                                        </div>
-                                    </th>
                                     <th scope="col">#</th>
-                                    <th scope="col">Producto</th>
+                                    <th scope="col">Nombre</th>
                                     <th scope="col">Precio</th>
+                                    <th scope="col">Costo</th>
                                     <th scope="col">Stock</th>
-                                    <th scope="col" className="text-end">Acción</th>
+                                    <th scope="col" className="text-end">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {products.map((product, index) => (
+                                {products.data.map((product, index) => (
                                     <tr key={product.id}>
-                                        <td>
-                                            <div className="form-check">
-                                                <input
-                                                    className="form-check-input"
-                                                    name="id_produk[]"
-                                                    type="checkbox"
-                                                    value={product.id}
-                                                    checked={selectedProducts.includes(product.id)}
-                                                    onChange={() => handleSelectProduct(product.id)}
-                                                />
-                                            </div>
-                                        </td>
-                                        <td className="text-muted font-monospace">{index + 1}</td>
+                                        <td className="text-muted">{(products.current_page - 1) * products.per_page + index + 1}</td>
                                         <td className="fw-medium">{product.name}</td>
                                         <td className="font-tabular fw-semibold">{formatCurrency(product.price)}</td>
+                                        <td className="font-tabular text-muted">{formatCurrency(product.cost)}</td>
                                         <td>
-                                            <span className="fw-medium">
-                                                {product.stock} u.
+                                            <span className={`badge ${product.stock > 10 ? 'bg-success-subtle text-success' : product.stock > 0 ? 'bg-warning-subtle text-warning' : 'bg-danger-subtle text-danger'}`}>
+                                                {product.stock} unidades
                                             </span>
                                         </td>
                                         <td className="text-end">
-                                            <button className="btn btn-sm text-muted me-1" title="Editar" onClick={() => alert('Función de editar en desarrollo')}>
-                                                <span className="material-symbols-outlined">stylus</span>
-                                            </button>
-                                            <button className="btn btn-sm text-danger" title="Eliminar" onClick={() => handleDelete(product.id)}>
-                                                <span className="material-symbols-outlined">delete</span>
-                                            </button>
+                                            <div className="d-flex justify-content-end gap-2">
+                                                <button
+                                                    className="btn btn-icon-only bg-transparent border-0"
+                                                    onClick={() => openEditDrawer(product)}
+                                                    title="Editar"
+                                                >
+                                                    <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--text-muted)' }}>edit_square</span>
+                                                </button>
+                                                <button
+                                                    className="btn btn-icon-only bg-transparent border-0"
+                                                    onClick={() => handleDelete(product.id)}
+                                                    title="Eliminar"
+                                                >
+                                                    <span className="material-symbols-outlined" style={{ fontSize: '22px', color: 'var(--text-muted)', transform: 'translateY(-1px)' }}>delete</span>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
+                                {products.data.length === 0 && (
+                                    <tr>
+                                        <td colSpan="6" className="text-center py-4 text-muted">
+                                            No hay productos registrados
+                                        </td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>
+
+                    <Pagination
+                        links={products.links}
+                        from={products.from}
+                        to={products.to}
+                        total={products.total}
+                        perPage={products.per_page}
+                        onPerPageChange={(newPerPage) => {
+                            const url = new URL(window.location.href);
+                            url.searchParams.set('per_page', newPerPage);
+                            url.searchParams.set('page', 1);
+                            router.get(url.toString(), {}, { preserveState: true, preserveScroll: true });
+                        }}
+                    />
                 </div>
             </div>
 
             <Drawer
                 isOpen={showDrawer}
-                onClose={() => setShowDrawer(false)}
-                title="Nuevo Producto"
+                onClose={handleCloseDrawer}
+                title={editingProduct ? 'Editar Producto' : 'Nuevo Producto'}
                 footer={
                     <>
-                        <button type="button" className="btn btn-light" onClick={() => setShowDrawer(false)}>Cancelar</button>
-                        <button type="button" className="btn btn-primary" onClick={handleSubmit}>Guardar Producto</button>
+                        <button type="button" className="btn btn-light" onClick={handleCloseDrawer}>Cancelar</button>
+                        <button type="button" className="btn btn-primary text-nowrap d-flex justify-content-center align-items-center" onClick={handleSubmit}>
+                            {editingProduct ? 'Actualizar Producto' : 'Guardar Producto'}
+                        </button>
                     </>
                 }
             >
@@ -203,6 +264,7 @@ export default function Index({ products }) {
                             className="form-control"
                             id="stock"
                             min="0"
+                            step="1"
                             required
                             value={data.stock}
                             onChange={(e) => setData('stock', e.target.value)}

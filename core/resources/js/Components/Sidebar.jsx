@@ -2,8 +2,8 @@ import React from 'react';
 import { Link, usePage } from '@inertiajs/react';
 
 export default function Sidebar({ isOpen, toggleSidebar, darkMode }) {
-    const { url } = usePage();
-    const user = { name: 'Admin', role: 'Administrator' };
+    const { url, props } = usePage();
+    const user = props.auth.user;
 
     const isActive = (route) => {
         return url.startsWith(route) ? 'active' : '';
@@ -36,7 +36,9 @@ export default function Sidebar({ isOpen, toggleSidebar, darkMode }) {
                             </div>
                             <div className="ms-3">
                                 <h6 className="mb-0">{user.name}</h6>
-                                <span className="small text-muted">{user.role}</span>
+                                <span className="small text-muted">
+                                    {user.role === 'admin' ? 'Administrador' : (user.role === 'owner' ? 'Dueño' : 'Empleado')}
+                                </span>
                             </div>
                         </div>
                         <div className="navbar-nav w-100">
@@ -67,6 +69,11 @@ export default function Sidebar({ isOpen, toggleSidebar, darkMode }) {
                             <Link href="/reports" className={`nav-item nav-link ${isActive('/reports')}`}>
                                 <i className="fa fa-chart-line me-2"></i>Reportes
                             </Link>
+                            {(user.role === 'admin' || user.role === 'owner') && (
+                                <Link href="/settings" className={`nav-item nav-link ${isActive('/settings')}`}>
+                                    <i className="fa fa-cog me-2"></i>Configuración
+                                </Link>
+                            )}
                         </div>
                     </div>
 

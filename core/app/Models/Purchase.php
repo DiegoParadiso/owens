@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Purchase extends Model
 {
-    protected $fillable = ['supplier_id', 'total_cost', 'date', 'user_id'];
+    protected $fillable = ['supplier_id', 'total_cost', 'date', 'user_id', 'payment_method'];
 
     public function supplier()
     {
@@ -21,5 +21,10 @@ class Purchase extends Model
     public function details()
     {
         return $this->hasMany(PurchaseDetail::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(PurchasePayment::class);
     }
 }

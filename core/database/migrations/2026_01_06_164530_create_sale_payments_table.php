@@ -11,14 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('cash_transactions', function (Blueprint $table) {
+        Schema::create('sale_payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('cash_session_id')->constrained()->onDelete('cascade');
-            $table->enum('type', ['income', 'expense', 'sale', 'purchase']);
+            $table->foreignId('sale_id')->constrained('sales')->onDelete('cascade');
+            $table->enum('payment_method', ['cash', 'debit_card', 'credit_card', 'transfer', 'qr']);
             $table->decimal('amount', 10, 2);
-            $table->text('description')->nullable();
-            $table->unsignedBigInteger('related_id')->nullable();
-            $table->string('related_type')->nullable();
             $table->timestamps();
         });
     }
@@ -28,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cash_transactions');
+        Schema::dropIfExists('sale_payments');
     }
 };
