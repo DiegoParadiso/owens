@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
-import Toast from '@/Utils/Toast';
+
 import Pagination from '@/Components/Pagination';
 
 export default function Index({ expenses = [], categories = [] }) {
@@ -15,8 +15,8 @@ export default function Index({ expenses = [], categories = [] }) {
         description: '',
         amount: '',
         category_id: '',
-        date: now.toISOString().split('T')[0], // Current date
-        time: now.toTimeString().slice(0, 5), // Current time HH:MM
+        date: now.toISOString().split('T')[0],
+        time: now.toTimeString().slice(0, 5),
         payment_method: 'cash',
         split_payments: [],
     });
@@ -33,7 +33,7 @@ export default function Index({ expenses = [], categories = [] }) {
         return methods[method] || method;
     };
 
-    // Split payment helper functions
+
     const updateSplitPayment = (index, field, value) => {
         const updated = [...data.split_payments];
         updated[index][field] = value;
@@ -85,10 +85,10 @@ export default function Index({ expenses = [], categories = [] }) {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        // Combine date and time for submission
+
         const datetime = `${data.date}T${data.time}:00`;
 
-        // Validate old date for cash payments
+
         if (data.payment_method === 'cash' && !editingExpense) {
             const selectedDate = new Date(datetime);
             const twoDaysAgo = new Date();
@@ -117,15 +117,11 @@ export default function Index({ expenses = [], categories = [] }) {
             }
         }
 
-        // Validate split payments if using multiple
+
         if (data.payment_method === 'multiple') {
             const splitTotal = calculateSplitTotal();
             if (Math.abs(splitTotal - parseFloat(data.amount)) > 0.01) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error en distribución',
-                    text: `La suma de los pagos (${formatCurrency(splitTotal)}) debe ser igual al total (${formatCurrency(data.amount)})`
-                });
+                window.toast.error('Error en distribución', `La suma de los pagos (${formatCurrency(splitTotal)}) debe ser igual al total (${formatCurrency(data.amount)})`);
                 return;
             }
         }
@@ -145,23 +141,12 @@ export default function Index({ expenses = [], categories = [] }) {
             onSuccess: () => {
                 setEditingExpense(null);
                 reset();
-                Toast.fire({
-                    icon: 'success',
-                    title: editingExpense ? 'Gasto actualizado' : 'Gasto guardado'
-                });
+                window.toast.success(editingExpense ? 'Gasto actualizado' : 'Gasto guardado', 'La operación se realizó con éxito.');
             },
             onError: (errors) => {
-                setShowDrawer(true); // Re-open on error
+                setShowDrawer(true);
                 const errorMessage = errors.error || (editingExpense ? 'Error al actualizar el gasto' : 'Error al registrar el gasto');
-                Swal.fire({
-                    text: errorMessage,
-                    icon: 'error',
-                    confirmButtonColor: '#df0f13',
-                    customClass: {
-                        popup: 'swal-minimal',
-                        confirmButton: 'btn btn-primary px-4'
-                    }
-                });
+                window.toast.error('Error', errorMessage);
             }
         };
 
@@ -197,10 +182,7 @@ export default function Index({ expenses = [], categories = [] }) {
                 router.delete(route('expense.destroy', id), {
                     preserveScroll: true,
                     onSuccess: () => {
-                        Toast.fire({
-                            icon: 'success',
-                            title: 'Eliminado'
-                        });
+                        window.toast.success('Eliminado', 'El gasto ha sido eliminado correctamente.');
                     },
                 });
             }
@@ -257,7 +239,7 @@ export default function Index({ expenses = [], categories = [] }) {
                                             <div className="d-flex justify-content-end gap-2">
                                                 <button
                                                     className="btn btn-icon-only bg-transparent border-0"
-                                                    onClick={() => openEditDrawer(expense)}
+                                                    onClick={() => handleEdit(expense)}
                                                     title="Editar"
                                                 >
                                                     <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--text-muted)' }}>edit_square</span>
@@ -433,7 +415,7 @@ export default function Index({ expenses = [], categories = [] }) {
                             </button>
                         </div>
 
-                        {/* Split Payment Inputs */}
+
                         {data.payment_method === 'multiple' && (
                             <div className="mt-3 p-3 border rounded" style={{ backgroundColor: 'var(--bg-card)' }}>
                                 <div className="d-flex justify-content-between align-items-center mb-3">
@@ -490,7 +472,7 @@ export default function Index({ expenses = [], categories = [] }) {
                                     Agregar Método
                                 </button>
 
-                                {/* Total and difference display */}
+
                                 {Math.abs(calculateSplitTotal() - (parseFloat(data.amount) || 0)) > 0.01 && (
                                     <div
                                         className="mt-3 p-2 rounded small border"

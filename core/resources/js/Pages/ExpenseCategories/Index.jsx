@@ -3,7 +3,7 @@ import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
-import Toast from '@/Utils/Toast';
+
 
 export default function Index({ categories }) {
     const [showDrawer, setShowDrawer] = useState(false);
@@ -33,22 +33,11 @@ export default function Index({ categories }) {
                 router.delete(route('expense-categories.destroy', id), {
                     preserveScroll: true,
                     onSuccess: () => {
-                        Toast.fire({
-                            icon: 'success',
-                            title: 'Eliminado'
-                        });
+                        window.toast.success('Eliminado', 'La categoría ha sido eliminada correctamente.');
                     },
                     onError: (errors) => {
                         const errorMessage = errors.error || 'No se puede eliminar esta categoría';
-                        Swal.fire({
-                            text: errorMessage,
-                            icon: 'error',
-                            confirmButtonColor: '#df0f13',
-                            customClass: {
-                                popup: 'swal-minimal',
-                                confirmButton: 'btn btn-primary px-4'
-                            }
-                        });
+                        window.toast.error('Error', errorMessage);
                     }
                 });
             }
@@ -72,49 +61,27 @@ export default function Index({ categories }) {
             put(route('expense-categories.update', editingCategory.id), {
                 preserveScroll: true,
                 onSuccess: () => {
-                    Toast.fire({
-                        icon: 'success',
-                        title: 'Categoría actualizada'
-                    });
+                    window.toast.success('Categoría actualizada', 'La categoría ha sido actualizada correctamente.');
                     // Drawer is already closed
                     setEditingCategory(null);
                     reset();
                 },
                 onError: () => {
                     setShowDrawer(true); // Re-open on error
-                    Swal.fire({
-                        text: 'Error al actualizar la categoría',
-                        icon: 'error',
-                        confirmButtonColor: '#df0f13',
-                        customClass: {
-                            popup: 'swal-minimal',
-                            confirmButton: 'btn btn-primary px-4'
-                        }
-                    });
+                    window.toast.error('Error', 'Error al actualizar la categoría.');
                 }
             });
         } else {
             post(route('expense-categories.store'), {
                 preserveScroll: true,
                 onSuccess: () => {
-                    Toast.fire({
-                        icon: 'success',
-                        title: 'Categoría guardada'
-                    });
+                    window.toast.success('Categoría guardada', 'La categoría ha sido guardada correctamente.');
                     // Drawer is already closed
                     reset();
                 },
                 onError: () => {
                     setShowDrawer(true); // Re-open on error
-                    Swal.fire({
-                        text: 'Error al crear la categoría',
-                        icon: 'error',
-                        confirmButtonColor: '#df0f13',
-                        customClass: {
-                            popup: 'swal-minimal',
-                            confirmButton: 'btn btn-primary px-4'
-                        }
-                    });
+                    window.toast.error('Error', 'Error al crear la categoría.');
                 }
             });
         }

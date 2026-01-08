@@ -49,7 +49,7 @@ class ProductController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        $products = Product::where('type', 'simple')->get();
+        $products = Product::where('type', 'single')->get();
 
         return \Inertia\Inertia::render('Combos/Index', compact('title', 'subtitle', 'combos', 'products'));
     }

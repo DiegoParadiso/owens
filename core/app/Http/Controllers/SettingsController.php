@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class SettingsController extends Controller
@@ -23,7 +24,7 @@ class SettingsController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
-            'role' => 'required|string|in:admin,employee,owner', // Adjust roles as needed
+            'role' => 'required|string|in:admin,employee,owner',
         ]);
 
         User::create([
@@ -75,14 +76,27 @@ class SettingsController extends Controller
 
     public function resetDatabase(Request $request)
     {
-        // Security check: ensure only admin or owner can do this
+
         if (!in_array(auth()->user()->role, ['admin', 'owner'])) {
              return redirect()->back()->with('error', 'No tienes permisos para realizar esta acción.');
         }
 
         try {
-            Artisan::call('migrate:fresh --seed');
-            return redirect()->back()->with('success', 'Base de datos reiniciada correctamente.');
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
+            $tables = DB::select('SHOW TABLES');
+            $tablesToKeep = ['users', 'migrations', 'failed_jobs', 'password_reset_tokens', 'personal_access_tokens', 'sessions', 'cache', 'jobs', 'job_batches'];
+
+            foreach ($tables as $table) {
+                $tableName = reset($table);
+                if (!in_array($tableName, $tablesToKeep)) {
+                    DB::table($tableName)->truncate();
+                }
+            }
+
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+            return redirect()->back()->with('success', 'Base de datos reiniciada correctamente (Usuarios conservados).');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error al reiniciar la base de datos: ' . $e->getMessage());
         }

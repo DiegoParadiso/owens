@@ -3,7 +3,7 @@ import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
-import Toast from '@/Utils/Toast';
+
 import Pagination from '@/Components/Pagination';
 
 export default function Index({ purchases = [], suppliers = [], products = [] }) {
@@ -129,15 +129,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
         // Validar que haya filas válidas
         const validRows = rows.filter(row => (row.product_id !== '' && !row.isNew) || (row.isNew && row.productName !== '' && row.salePrice !== ''));
         if (validRows.length === 0) {
-            Swal.fire({
-                text: 'Debes agregar al menos un producto',
-                icon: 'warning',
-                confirmButtonColor: '#df0f13',
-                customClass: {
-                    popup: 'swal-minimal',
-                    confirmButton: 'btn btn-primary px-4'
-                }
-            });
+            window.toast.warning('Advertencia', 'Debes agregar al menos un producto.');
             return;
         }
 
@@ -174,11 +166,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
         if (data.payment_method === 'multiple') {
             const splitTotal = calculateSplitTotal();
             if (Math.abs(splitTotal - grandTotal) > 0.01) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error en distribución',
-                    text: `La suma de los pagos (${formatCurrency(splitTotal)}) debe ser igual al total (${formatCurrency(grandTotal)})`
-                });
+                window.toast.error('Error en distribución', `La suma de los pagos (${formatCurrency(splitTotal)}) debe ser igual al total (${formatCurrency(grandTotal)})`);
                 return;
             }
         }
@@ -203,15 +191,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                 const flash = page.props.flash;
                 if (flash && flash.error) {
                     setShowDrawer(true);
-                    Swal.fire({
-                        text: flash.error,
-                        icon: 'error',
-                        confirmButtonColor: '#df0f13',
-                        customClass: {
-                            popup: 'swal-minimal',
-                            confirmButton: 'btn btn-primary px-4'
-                        }
-                    });
+                    window.toast.error('Error', flash.error);
                 } else {
                     setEditingPurchase(null);
                     setRows([{
@@ -225,25 +205,14 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                         salePrice: ''
                     }]);
                     reset();
-                    Toast.fire({
-                        icon: 'success',
-                        title: editingPurchase ? 'Compra actualizada' : 'Compra guardada'
-                    });
+                    window.toast.success(editingPurchase ? 'Compra actualizada' : 'Compra guardada', 'La operación se realizó con éxito.');
                 }
             },
             onError: (errors) => {
                 setShowDrawer(true); // Re-open on error
                 console.error('❌ Errores:', errors);
                 const errorMsg = Object.values(errors).flat().join(', ') || 'Error al procesar la compra';
-                Swal.fire({
-                    text: errorMsg,
-                    icon: 'error',
-                    confirmButtonColor: '#df0f13',
-                    customClass: {
-                        popup: 'swal-minimal',
-                        confirmButton: 'btn btn-primary px-4'
-                    }
-                });
+                window.toast.error('Error', errorMsg);
             }
         };
 
@@ -326,10 +295,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                 destroy(route('purchase.destroy', id), {
                     preserveScroll: true,
                     onSuccess: () => {
-                        Toast.fire({
-                            icon: 'success',
-                            title: 'Eliminado'
-                        });
+                        window.toast.success('Eliminado', 'La compra ha sido eliminada correctamente.');
                     },
                 });
             }

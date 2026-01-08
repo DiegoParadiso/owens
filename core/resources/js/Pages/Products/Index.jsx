@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
-import Toast from '@/Utils/Toast';
+
 import Pagination from '@/Components/Pagination';
 
 export default function Index({ products }) {
@@ -55,10 +55,7 @@ export default function Index({ products }) {
                 destroy(route('product.destroy', id), {
                     preserveScroll: true,
                     onSuccess: () => {
-                        Toast.fire({
-                            icon: 'success',
-                            title: 'Eliminado'
-                        });
+                        window.toast.success('Eliminado', 'El producto ha sido eliminado correctamente.');
                     },
                 });
             }
@@ -87,29 +84,18 @@ export default function Index({ products }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        setShowDrawer(false); // Close immediately
+        setShowDrawer(false);
 
         const options = {
             preserveScroll: true,
             onSuccess: () => {
                 setEditingProduct(null);
                 reset();
-                Toast.fire({
-                    icon: 'success',
-                    title: editingProduct ? 'Producto actualizado' : 'Producto guardado'
-                });
+                window.toast.success(editingProduct ? 'Producto actualizado' : 'Producto guardado', 'La operación se realizó con éxito.');
             },
             onError: (errors) => {
-                setShowDrawer(true); // Re-open on error
-                Swal.fire({
-                    text: 'Error al guardar el producto',
-                    icon: 'error',
-                    confirmButtonColor: '#df0f13',
-                    customClass: {
-                        popup: 'swal-minimal',
-                        confirmButton: 'btn btn-primary px-4'
-                    }
-                });
+                setShowDrawer(true);
+                window.toast.error('Error', 'Ocurrió un error al guardar el producto.');
             }
         };
 

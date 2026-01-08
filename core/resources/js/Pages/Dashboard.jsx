@@ -1,6 +1,7 @@
 import React from 'react';
 import MainLayout from '@/Layouts/MainLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
+import Swal from 'sweetalert2';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -59,6 +60,32 @@ export default function Dashboard({ stats, recentSales, chartData, cashRegister 
 
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
+    };
+
+    const handleDelete = (id) => {
+        Swal.fire({
+            text: "¿Eliminar esta venta?",
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Eliminar',
+            cancelButtonText: 'Cancelar',
+            buttonsStyling: true,
+            customClass: {
+                popup: 'swal-minimal',
+                confirmButton: 'btn btn-danger px-4',
+                cancelButton: 'btn btn-secondary px-4'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                router.delete(route('sales.destroy', id), {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        window.toast.success('Venta eliminada', 'La venta ha sido eliminada correctamente.');
+                    }
+                });
+            }
+        });
     };
 
     return (
@@ -127,7 +154,6 @@ export default function Dashboard({ stats, recentSales, chartData, cashRegister 
                                     <th scope="col">Factura</th>
                                     <th scope="col">Cajero</th>
                                     <th scope="col" className="text-end">Monto</th>
-                                    <th scope="col" className="text-end">Estado</th>
                                     <th scope="col" className="text-end">Acción</th>
                                 </tr>
                             </thead>
@@ -139,15 +165,12 @@ export default function Dashboard({ stats, recentSales, chartData, cashRegister 
                                         <td>{sale.cashier}</td>
                                         <td className="text-end font-tabular fw-semibold">{formatCurrency(sale.amount)}</td>
                                         <td className="text-end">
-                                            {sale.status === 'Lunas' ? (
-                                                <span className="text-success fw-medium">Pagado</span>
-                                            ) : (
-                                                <span className="text-warning fw-medium">Pendiente</span>
-                                            )}
-                                        </td>
-                                        <td className="text-end">
-                                            <button className="btn btn-sm text-muted" title="Detalle">
-                                                <i className="bi bi-eye"></i>
+                                            <button
+                                                className="btn btn-icon-only bg-transparent border-0"
+                                                onClick={() => handleDelete(sale.id)}
+                                                title="Eliminar"
+                                            >
+                                                <span className="material-symbols-outlined" style={{ fontSize: '22px', color: 'var(--text-muted)', transform: 'translateY(-1px)' }}>delete</span>
                                             </button>
                                         </td>
                                     </tr>

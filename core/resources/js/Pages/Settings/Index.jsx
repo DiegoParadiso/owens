@@ -3,7 +3,7 @@ import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
 import { Head, useForm, router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
-import Toast from '@/Utils/Toast';
+
 
 export default function Index({ users }) {
     const [activeTab, setActiveTab] = useState('profiles');
@@ -22,7 +22,7 @@ export default function Index({ users }) {
         setData({
             name: user.name,
             email: user.email,
-            password: '', // Password is optional on edit
+            password: '',
             role: user.role,
         });
         setShowDrawer(true);
@@ -37,22 +37,16 @@ export default function Index({ users }) {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        setShowDrawer(false); // Close immediately
+        setShowDrawer(false);
 
         const options = {
             onSuccess: () => {
-                handleCloseDrawer(); // Reset state
-                Toast.fire({
-                    icon: 'success',
-                    title: editingUser ? 'Usuario actualizado' : 'Usuario creado'
-                });
+                handleCloseDrawer();
+                window.toast.success(editingUser ? 'Usuario actualizado' : 'Usuario creado', 'La operación se realizó con éxito.');
             },
             onError: (errors) => {
-                setShowDrawer(true); // Re-open on error
-                Toast.fire({
-                    icon: 'error',
-                    title: 'Error al guardar usuario'
-                });
+                setShowDrawer(true);
+                window.toast.error('Error', 'Error al guardar el usuario.');
             }
         };
 
@@ -81,16 +75,10 @@ export default function Index({ users }) {
             if (result.isConfirmed) {
                 router.delete(route('settings.destroyUser', user.id), {
                     onSuccess: () => {
-                        Toast.fire({
-                            icon: 'success',
-                            title: 'Usuario eliminado'
-                        });
+                        window.toast.success('Usuario eliminado', 'El usuario ha sido eliminado correctamente.');
                     },
                     onError: (errors) => {
-                        Toast.fire({
-                            icon: 'error',
-                            title: 'No se pudo eliminar el usuario'
-                        });
+                        window.toast.error('Error', 'No se pudo eliminar el usuario.');
                     }
                 });
             }
@@ -115,18 +103,10 @@ export default function Index({ users }) {
             if (result.isConfirmed) {
                 router.post(route('settings.resetDatabase'), {}, {
                     onSuccess: () => {
-                        Swal.fire(
-                            '¡Reiniciado!',
-                            'La base de datos ha sido reiniciada.',
-                            'success'
-                        );
+                        window.toast.success('Base de datos reiniciada', 'Todos los datos han sido borrados.');
                     },
                     onError: () => {
-                        Swal.fire(
-                            'Error',
-                            'Hubo un problema al reiniciar la base de datos.',
-                            'error'
-                        );
+                        window.toast.error('Error', 'Error al reiniciar la base de datos.');
                     }
                 });
             }

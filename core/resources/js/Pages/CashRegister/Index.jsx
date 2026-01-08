@@ -3,7 +3,7 @@ import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
 import { Head, Link, useForm } from '@inertiajs/react';
 import Swal from 'sweetalert2';
-import Toast from '@/Utils/Toast';
+
 
 export default function Index({ openRegister, currentBalance, income, expense, movements }) {
     const [showCloseDrawer, setShowCloseDrawer] = useState(false);
@@ -28,33 +28,39 @@ export default function Index({ openRegister, currentBalance, income, expense, m
 
     const submitClose = (e) => {
         e.preventDefault();
+        setShowCloseDrawer(false);
+
         postClose(route('cash_register.close', openRegister.id), {
+            preserveScroll: true,
             onSuccess: () => {
-                setShowCloseDrawer(false);
                 resetClose();
-                Toast.fire({
-                    icon: 'success',
-                    title: 'Caja cerrada'
-                });
+                window.toast.success('Caja cerrada', 'La caja se ha cerrado correctamente.');
+            },
+            onError: (errors) => {
+                setShowCloseDrawer(true);
+                window.toast.error('Error', 'Error al cerrar la caja.');
             }
         });
     };
 
     const submitOpen = (e) => {
         e.preventDefault();
+        setShowOpenDrawer(false);
+
         postOpen(route('cash_register.store'), {
+            preserveScroll: true,
             onSuccess: () => {
-                setShowOpenDrawer(false);
                 resetOpen();
-                Toast.fire({
-                    icon: 'success',
-                    title: 'Caja abierta'
-                });
+                window.toast.success('Caja abierta', 'La caja se ha abierto correctamente.');
+            },
+            onError: (errors) => {
+                setShowOpenDrawer(true);
+                window.toast.error('Error', 'Error al abrir la caja.');
             }
         });
     };
 
-    // Si no hay caja abierta, mostrar UI de apertura
+
     if (!openRegister) {
         return (
             <MainLayout>
@@ -119,7 +125,7 @@ export default function Index({ openRegister, currentBalance, income, expense, m
             <Head title="Caja Registradora" />
             <div className="container-fluid pt-4 px-4">
 
-                {/* Header & Actions */}
+
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <div className="d-flex align-items-center">
                         <h4 className="mb-0 fw-bold">Caja Registradora</h4>

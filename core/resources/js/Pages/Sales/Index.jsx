@@ -3,7 +3,7 @@ import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
-import Toast from '@/Utils/Toast';
+
 import Pagination from '@/Components/Pagination';
 
 export default function Index({ sales = [], products = [] }) {
@@ -14,7 +14,7 @@ export default function Index({ sales = [], products = [] }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         items: [],
         total: 0,
-        payment_method: 'cash', // Default to cash
+        payment_method: 'cash',
         split_payments: [],
     });
 
@@ -41,7 +41,7 @@ export default function Index({ sales = [], products = [] }) {
         return methods[method] || method;
     };
 
-    // Split payment helper functions
+
     const updateSplitPayment = (index, field, value) => {
         const updated = [...data.split_payments];
         updated[index][field] = value;
@@ -82,22 +82,14 @@ export default function Index({ sales = [], products = [] }) {
                 router.delete(route('sales.destroy', id), {
                     preserveScroll: true,
                     onSuccess: () => {
-                        Swal.fire({
-                            text: 'Venta eliminada',
-                            icon: 'success',
-                            timer: 2000,
-                            showConfirmButton: false,
-                            customClass: {
-                                popup: 'swal-minimal'
-                            }
-                        });
+                        window.toast.success('Venta eliminada', 'La venta ha sido eliminada correctamente.');
                     }
                 });
             }
         });
     };
 
-    // Verificar stock (Combo o Producto Individual)
+
     const checkStock = (productId, quantity) => {
         const product = products.find(p => p.id == productId);
         if (!product) return { hasStock: true, missingComponents: [] };
@@ -121,7 +113,7 @@ export default function Index({ sales = [], products = [] }) {
                 });
             }
         } else {
-            // Producto individual
+
             if (product.stock < quantity) {
                 missingComponents.push({
                     name: product.name,
@@ -158,7 +150,7 @@ export default function Index({ sales = [], products = [] }) {
                         updatedRow.total = product.price * updatedRow.quantity;
                         updatedRow.productType = product.type;
 
-                        // Verificar stock (Combo o Individual)
+
                         const stockCheck = checkStock(value, updatedRow.quantity);
                         updatedRow.stockWarning = !stockCheck.hasStock;
                         updatedRow.missingComponents = stockCheck.missingComponents;
@@ -173,7 +165,7 @@ export default function Index({ sales = [], products = [] }) {
                 if (field === 'quantity') {
                     updatedRow.total = updatedRow.price * value;
 
-                    // Re-verificar stock si cambió la cantidad
+
                     if (updatedRow.product_id) {
                         const stockCheck = checkStock(updatedRow.product_id, value);
                         updatedRow.stockWarning = !stockCheck.hasStock;
@@ -198,35 +190,23 @@ export default function Index({ sales = [], products = [] }) {
     const submit = (e) => {
         e.preventDefault();
 
-        // Validar que haya productos
+
         const validRows = rows.filter(row => row.product_id !== '');
         if (validRows.length === 0) {
-            Swal.fire({
-                text: 'Debes agregar al menos un producto',
-                icon: 'warning',
-                confirmButtonColor: '#df0f13',
-                customClass: {
-                    popup: 'swal-minimal',
-                    confirmButton: 'btn btn-primary px-4'
-                }
-            });
+            window.toast.warning('Advertencia', 'Debes agregar al menos un producto.');
             return;
         }
 
-        // Validate split payments if using multiple
+
         if (data.payment_method === 'multiple') {
             const splitTotal = calculateSplitTotal();
             if (Math.abs(splitTotal - grandTotal) > 0.01) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error en distribución',
-                    text: `La suma de los pagos (${formatCurrency(splitTotal)}) debe ser igual al total (${formatCurrency(grandTotal)})`
-                });
+                window.toast.error('Error en distribución', `La suma de los pagos (${formatCurrency(splitTotal)}) debe ser igual al total (${formatCurrency(grandTotal)})`);
                 return;
             }
         }
 
-        // Transformar datos al formato del backend
+
         const formData = {
             product_id: validRows.map(row => row.product_id),
             quantity: validRows.map(row => row.quantity),
@@ -236,30 +216,23 @@ export default function Index({ sales = [], products = [] }) {
             payment_method: data.payment_method
         };
 
-        // Enviar al backend
+
         setShowDrawer(false);
         router.post(route('sales.store'), formData, {
             preserveScroll: true,
             onSuccess: () => {
-                Toast.fire({
-                    icon: 'success',
-                    title: 'Venta guardada'
-                });
-                // Drawer is already closed
+                window.toast.success('Venta guardada', 'La venta se ha registrado correctamente.');
                 setRows([]);
                 reset();
             },
             onError: (errors) => {
-                setShowDrawer(true); // Re-open on error
-                Swal.fire({
-                    text: 'Error al registrar la venta',
-                    icon: 'error',
-                    confirmButtonColor: '#df0f13',
-                    customClass: {
-                        popup: 'swal-minimal',
-                        confirmButton: 'btn btn-primary px-4'
-                    }
-                });
+                setShowDrawer(true);
+                console.error('❌ ERROR! Errores:', errors);
+
+
+                const errorMessage = errors.error || Object.values(errors)[0] || 'Error al registrar la venta';
+
+                window.toast.error('Error', errorMessage);
             }
         });
     };
@@ -503,7 +476,7 @@ export default function Index({ sales = [], products = [] }) {
                         <i className="bi bi-plus-lg me-1"></i> Agregar Producto
                     </button>
 
-                    {/* Payment Method Selector */}
+
                     <div className="mb-4">
                         <label className="form-label fw-semibold">Método de Pago</label>
                         <div className="d-flex gap-2 flex-wrap">
@@ -548,7 +521,6 @@ export default function Index({ sales = [], products = [] }) {
                                 onClick={() => {
                                     setData('payment_method', 'multiple');
                                     setShowSplitInputs(true);
-                                    // Initialize with 2 rows by default
                                     if (data.split_payments.length === 0) {
                                         setData('split_payments', [
                                             { method: 'cash', amount: '' },
@@ -561,7 +533,7 @@ export default function Index({ sales = [], products = [] }) {
                             </button>
                         </div>
 
-                        {/* Split Payment Inputs */}
+
                         {showSplitInputs && data.payment_method === 'multiple' && (
                             <div className="mt-3 p-3 border rounded" style={{ backgroundColor: 'var(--bg-card)' }}>
                                 <div className="d-flex justify-content-between align-items-center mb-3">
@@ -618,7 +590,7 @@ export default function Index({ sales = [], products = [] }) {
                                     Agregar Método
                                 </button>
 
-                                {/* Total and difference display */}
+
                                 {Math.abs(calculateSplitTotal() - grandTotal) > 0.01 && (
                                     <div
                                         className="mt-3 p-2 rounded small border"

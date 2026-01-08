@@ -3,7 +3,7 @@ import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
-import Toast from '@/Utils/Toast';
+
 import Pagination from '@/Components/Pagination';
 
 export default function Index({ combos = [], products = [] }) {
@@ -77,15 +77,7 @@ export default function Index({ combos = [], products = [] }) {
         // Validar que haya filas válidas
         const validRows = rows.filter(row => row.child_product_id !== '');
         if (validRows.length === 0) {
-            Swal.fire({
-                text: 'Debes agregar al menos un producto al combo',
-                icon: 'warning',
-                confirmButtonColor: '#df0f13',
-                customClass: {
-                    popup: 'swal-minimal',
-                    confirmButton: 'btn btn-primary px-4'
-                }
-            });
+            window.toast.warning('Advertencia', 'Debes agregar al menos un producto.');
             return;
         }
 
@@ -104,23 +96,12 @@ export default function Index({ combos = [], products = [] }) {
                 setEditingCombo(null);
                 reset();
                 setRows([{ id: Date.now(), child_product_id: '', quantity: 1 }]);
-                Toast.fire({
-                    icon: 'success',
-                    title: editingCombo ? 'Combo actualizado' : 'Combo guardado'
-                });
+                window.toast.success(editingCombo ? 'Combo actualizado' : 'Combo guardado', 'La operación se realizó con éxito.');
             },
             onError: (errors) => {
                 setShowDrawer(true); // Re-open on error
                 console.error('❌ ERROR! Errores:', errors);
-                Swal.fire({
-                    text: 'Error al guardar el combo',
-                    icon: 'error',
-                    confirmButtonColor: '#df0f13',
-                    customClass: {
-                        popup: 'swal-minimal',
-                        confirmButton: 'btn btn-primary px-4'
-                    }
-                });
+                window.toast.error('Error', 'Ocurrió un error al guardar el combo.');
             }
         };
 
@@ -157,10 +138,7 @@ export default function Index({ combos = [], products = [] }) {
                 destroy(route('product.destroy', id), {
                     preserveScroll: true,
                     onSuccess: () => {
-                        Toast.fire({
-                            icon: 'success',
-                            title: 'Eliminado'
-                        });
+                        window.toast.success('Eliminado', 'El combo ha sido eliminado correctamente.');
                     },
                 });
             }
@@ -253,7 +231,7 @@ export default function Index({ combos = [], products = [] }) {
                         total={combos.total}
                         perPage={combos.per_page}
                         onPerPageChange={(newPerPage) => {
-                            router.get(route('combos.index'), { per_page: newPerPage }, { preserveState: true, replace: true });
+                            router.get(route('product.indexCombo'), { per_page: newPerPage }, { preserveState: true, replace: true });
                         }}
                     />
                 </div>

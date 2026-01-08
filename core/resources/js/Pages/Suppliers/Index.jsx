@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
-import Toast from '@/Utils/Toast';
+
 import Pagination from '@/Components/Pagination';
 
 export default function Index({ suppliers }) {
@@ -33,10 +33,7 @@ export default function Index({ suppliers }) {
                 destroy(route('supplier.destroy', id), {
                     preserveScroll: true,
                     onSuccess: () => {
-                        Toast.fire({
-                            icon: 'success',
-                            title: 'Eliminado'
-                        });
+                        window.toast.success('Eliminado', 'El proveedor ha sido eliminado correctamente.');
                     }
                 });
             }
@@ -54,29 +51,18 @@ export default function Index({ suppliers }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        setShowDrawer(false); // Close immediately
+        setShowDrawer(false);
 
         const options = {
             preserveScroll: true,
             onSuccess: () => {
                 setEditingSupplier(null);
                 reset();
-                Toast.fire({
-                    icon: 'success',
-                    title: editingSupplier ? 'Proveedor actualizado' : 'Proveedor guardado'
-                });
+                window.toast.success(editingSupplier ? 'Proveedor actualizado' : 'Proveedor guardado', 'La operación se realizó con éxito.');
             },
             onError: () => {
-                setShowDrawer(true); // Re-open on error
-                Swal.fire({
-                    text: editingSupplier ? 'Error al actualizar el proveedor' : 'Error al registrar el proveedor',
-                    icon: 'error',
-                    confirmButtonColor: '#df0f13',
-                    customClass: {
-                        popup: 'swal-minimal',
-                        confirmButton: 'btn btn-primary px-4'
-                    }
-                });
+                setShowDrawer(true);
+                window.toast.error('Error', editingSupplier ? 'Error al actualizar el proveedor.' : 'Error al registrar el proveedor.');
             }
         };
 
