@@ -175,6 +175,13 @@ export default function Dashboard({ stats, recentSales, chartData, cashRegister 
                                         </td>
                                     </tr>
                                 ))}
+                                {recentSales.length === 0 && (
+                                    <tr>
+                                        <td colSpan="5" className="text-center py-4 text-muted">
+                                            No hay ventas recientes
+                                        </td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>

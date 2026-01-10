@@ -51,8 +51,8 @@ export default function Sidebar({ isOpen, toggleSidebar, darkMode }) {
                             <Link href="/products" className={`nav-item nav-link ${isActive('/products')}`}>
                                 <i className="fa fa-box me-2"></i>Inventario
                             </Link>
-                            <Link href="/combos" className={`nav-item nav-link ${isActive('/combos')}`}>
-                                <i className="fa fa-utensils me-2"></i>Combos
+                            <Link href="/menu" className={`nav-item nav-link ${isActive('/menu')}`}>
+                                <i className="fa fa-book-open me-2"></i>Menú
                             </Link>
                             <Link href="/sales" className={`nav-item nav-link ${isActive('/sales')}`}>
                                 <i className="fa fa-shopping-cart me-2"></i>Ventas

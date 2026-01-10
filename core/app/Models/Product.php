@@ -17,6 +17,10 @@ class Product extends Model // Changed class name from Produk to Product
         'stock', // Changed from 'Stok' to 'stock'
         'cost', // Changed from 'cost_price' to 'cost'
         'type',
+        'category',
+        'purchase_unit',
+        'usage_unit',
+        'conversion_factor',
         'user_id' // Changed from 'Users_id' to 'user_id'
     ];
 

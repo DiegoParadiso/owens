@@ -54,15 +54,15 @@ class PurchaseController extends Controller
             'product_name' => 'array',
             'product_name.*' => 'nullable|string|max:255|required_without:product_id.*',
             'sale_price' => 'array',
-            'sale_price.*' => 'nullable|numeric|min:0|required_without:product_id.*',
+            'sale_price.*' => 'nullable|numeric|min:0',
             'quantity' => 'required|array',
-            'quantity.*' => 'integer|min:1',
+            'quantity.*' => 'numeric|min:0.01',
             'unit_cost' => 'required|array',
             'unit_cost.*' => 'numeric|min:0',
             'payment_method' => 'required',
-            'split_payments' => 'nullable|array',
-            'split_payments.*.method' => 'required_with:split_payments|in:cash,debit_card,credit_card,transfer,qr',
-            'split_payments.*.amount' => 'required_with:split_payments|numeric|min:0.01',
+            'split_payments' => 'nullable|array|required_if:payment_method,multiple',
+            'split_payments.*.method' => 'required_if:payment_method,multiple|in:cash,debit_card,credit_card,transfer,qr',
+            'split_payments.*.amount' => 'required_if:payment_method,multiple|numeric|min:0.01',
         ]);
 
         try {
@@ -111,20 +111,35 @@ class PurchaseController extends Controller
             }
 
             foreach ($request->product_id as $key => $productId) {
-                $qty = $request->quantity[$key];
-                $cost = $request->unit_cost[$key];
+                $qty = $request->quantity[$key]; // Quantity in Purchase Units (e.g., Packs)
+                $cost = $request->unit_cost[$key]; // Cost per Purchase Unit
 
                 // If product_id is null, create new product
                 if (!$productId) {
                     $newProduct = Product::create([
                         'name' => $request->product_name[$key],
-                        'price' => $request->sale_price[$key],
+                        'price' => ($request->product_type[$key] ?? 'single') === 'supply' ? null : $request->sale_price[$key],
                         'stock' => 0, // Will be updated below
-                        'cost' => $cost,
-                        'type' => 'single',
+                        'cost' => 0, // Will be updated below
+                        'type' => $request->product_type[$key] ?? 'single',
                         'user_id' => Auth::id(),
+                        'purchase_unit' => !empty($request->purchase_unit[$key]) ? $request->purchase_unit[$key] : null,
+                        'usage_unit' => !empty($request->usage_unit[$key]) ? $request->usage_unit[$key] : null,
+                        'conversion_factor' => !empty($request->conversion_factor[$key]) ? $request->conversion_factor[$key] : 1,
                     ]);
                     $productId = $newProduct->id;
+                } else {
+                    // Update existing product details
+                    $product = Product::find($productId);
+                    if ($product) {
+                        $product->update([
+                            'type' => $request->product_type[$key] ?? $product->type,
+                            'price' => ($request->product_type[$key] ?? $product->type) === 'supply' ? null : ($request->sale_price[$key] ?? $product->price),
+                            'purchase_unit' => !empty($request->purchase_unit[$key]) ? $request->purchase_unit[$key] : $product->purchase_unit,
+                            'usage_unit' => !empty($request->usage_unit[$key]) ? $request->usage_unit[$key] : $product->usage_unit,
+                            'conversion_factor' => !empty($request->conversion_factor[$key]) ? $request->conversion_factor[$key] : ($product->conversion_factor ?? 1),
+                        ]);
+                    }
                 }
 
                 PurchaseDetail::create([
@@ -138,15 +153,21 @@ class PurchaseController extends Controller
                 // Update Product Stock and Cost Price (Weighted Average)
                 $product = Product::find($productId);
                 
+                $conversionFactor = $product->conversion_factor ?? 1;
+                $qtyInUsageUnits = $qty * $conversionFactor;
+                $costPerUsageUnit = ($qty * $cost) / $qtyInUsageUnits;
+                
                 $currentStock = $product->stock;
                 $currentCost = $product->cost ?? 0;
                 
-                $newStock = $currentStock + $qty;
+                $newStock = $currentStock + $qtyInUsageUnits;
                 
                 if ($newStock > 0) {
-                    $newCost = (($currentStock * $currentCost) + ($qty * $cost)) / $newStock;
+                    // Weighted Average Cost = ((Current Stock * Current Cost) + (New Stock * New Cost)) / Total Stock
+                    // Note: New Stock here refers to the added quantity in usage units
+                    $newCost = (($currentStock * $currentCost) + ($qtyInUsageUnits * $costPerUsageUnit)) / $newStock;
                 } else {
-                    $newCost = $cost;
+                    $newCost = $costPerUsageUnit;
                 }
 
                 $product->update([
@@ -176,7 +197,7 @@ class PurchaseController extends Controller
             'sale_price' => 'array',
             'sale_price.*' => 'nullable|numeric|min:0|required_without:product_id.*',
             'quantity' => 'required|array',
-            'quantity.*' => 'integer|min:1',
+            'quantity.*' => 'numeric|min:0.01',
             'unit_cost' => 'required|array',
             'unit_cost.*' => 'numeric|min:0',
             'payment_method' => 'required',
@@ -191,10 +212,11 @@ class PurchaseController extends Controller
             // 1. Reverse effects of old purchase
             foreach ($purchase->details as $detail) {
                 $product = Product::find($detail->product_id);
-                // We only decrease stock. Reversing weighted average cost is too complex/risky, 
-                // so we assume the cost remains the current cost (or we could try to revert it but it depends on order of operations).
-                // For simplicity and safety, we just reduce stock. The new weighted average will be calculated when we re-add.
-                $product->decrement('stock', $detail->quantity);
+                if ($product) {
+                    $conversionFactor = $product->conversion_factor ?? 1;
+                    $qtyInUsageUnits = $detail->quantity * $conversionFactor;
+                    $product->decrement('stock', $qtyInUsageUnits);
+                }
             }
             
             // Delete old details
@@ -266,11 +288,24 @@ class PurchaseController extends Controller
                         'name' => $request->product_name[$key],
                         'price' => $request->sale_price[$key],
                         'stock' => 0, // Will be updated below
-                        'cost' => $cost,
+                        'cost' => 0,
                         'type' => 'single',
                         'user_id' => Auth::id(),
+                        'conversion_factor' => 1,
                     ]);
                     $productId = $newProduct->id;
+                } else {
+                    // Update existing product details
+                    $product = Product::find($productId);
+                    if ($product) {
+                        $product->update([
+                            'type' => $request->product_type[$key] ?? $product->type,
+                            'price' => ($request->product_type[$key] ?? $product->type) === 'supply' ? null : ($request->sale_price[$key] ?? $product->price),
+                            'purchase_unit' => !empty($request->purchase_unit[$key]) ? $request->purchase_unit[$key] : $product->purchase_unit,
+                            'usage_unit' => !empty($request->usage_unit[$key]) ? $request->usage_unit[$key] : $product->usage_unit,
+                            'conversion_factor' => !empty($request->conversion_factor[$key]) ? $request->conversion_factor[$key] : ($product->conversion_factor ?? 1),
+                        ]);
+                    }
                 }
 
                 PurchaseDetail::create([
@@ -284,15 +319,19 @@ class PurchaseController extends Controller
                 // Update Product Stock and Cost Price
                 $product = Product::find($productId);
                 
+                $conversionFactor = $product->conversion_factor ?? 1;
+                $qtyInUsageUnits = $qty * $conversionFactor;
+                $costPerUsageUnit = ($qty * $cost) / $qtyInUsageUnits;
+                
                 $currentStock = $product->stock;
                 $currentCost = $product->cost ?? 0;
                 
-                $newStock = $currentStock + $qty;
+                $newStock = $currentStock + $qtyInUsageUnits;
                 
                 if ($newStock > 0) {
-                    $newCost = (($currentStock * $currentCost) + ($qty * $cost)) / $newStock;
+                    $newCost = (($currentStock * $currentCost) + ($qtyInUsageUnits * $costPerUsageUnit)) / $newStock;
                 } else {
-                    $newCost = $cost;
+                    $newCost = $costPerUsageUnit;
                 }
 
                 $product->update([
@@ -319,7 +358,9 @@ class PurchaseController extends Controller
             foreach ($purchase->details as $detail) {
                 $product = Product::find($detail->product_id);
                 if ($product) {
-                    $product->decrement('stock', $detail->quantity);
+                    $conversionFactor = $product->conversion_factor ?? 1;
+                    $qtyInUsageUnits = $detail->quantity * $conversionFactor;
+                    $product->decrement('stock', $qtyInUsageUnits);
                 }
             }
 

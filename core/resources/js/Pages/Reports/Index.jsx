@@ -5,8 +5,13 @@ import { Head, Link, useForm } from '@inertiajs/react';
 export default function Index({ date: initialDate, sales = 0, expenses = 0, purchases = 0, cogs = 0, grossProfit = 0, netProfit = 0 }) {
     const [date, setDate] = useState(initialDate || new Date().toISOString().split('T')[0]);
 
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
+    const formatCurrency = (amount, decimals = 2) => {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        }).format(amount);
     };
 
     const formatDate = (dateString) => {

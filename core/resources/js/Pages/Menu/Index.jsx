@@ -1,22 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
-
 import Pagination from '@/Components/Pagination';
 
-export default function Index({ combos = [], products = [] }) {
+export default function Index({ products = [], supplies = [], category = 'burger' }) {
 
     const [showDrawer, setShowDrawer] = useState(false);
-    const [editingCombo, setEditingCombo] = useState(null);
+    const [editingItem, setEditingItem] = useState(null);
     const [rows, setRows] = useState([{ id: Date.now(), child_product_id: '', quantity: 1 }]);
+
+    // Map category to display name
+    const categoryNames = {
+        'burger': 'Hamburguesas',
+        'extra': 'Extras',
+        'combo': 'Combos'
+    };
 
     const { data, setData, post, put, processing, errors, delete: destroy, reset } = useForm({
         name: '',
         price: '',
+        category: category,
         items: [],
     });
+
+    // Update form category when prop changes or drawer opens
+    useEffect(() => {
+        setData('category', category);
+    }, [category]);
 
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
@@ -43,22 +55,23 @@ export default function Index({ combos = [], products = [] }) {
         setData('items', newRows);
     };
 
-    const handleEdit = (combo) => {
-        setEditingCombo(combo);
+    const handleEdit = (item) => {
+        setEditingItem(item);
         setData({
-            name: combo.name,
-            price: combo.price,
-            items: combo.components || [],
+            name: item.name,
+            price: item.price,
+            category: item.category,
+            items: item.components || [],
         });
 
-        // Load combo components into rows
-        if (combo.components && combo.components.length > 0) {
-            const comboRows = combo.components.map((comp, idx) => ({
+        // Load components into rows
+        if (item.components && item.components.length > 0) {
+            const itemRows = item.components.map((comp, idx) => ({
                 id: Date.now() + idx,
                 child_product_id: comp.child_product_id,
-                quantity: parseInt(comp.quantity)
+                quantity: parseFloat(comp.quantity)
             }));
-            setRows(comboRows);
+            setRows(itemRows);
         } else {
             setRows([{ id: Date.now(), child_product_id: '', quantity: 1 }]);
         }
@@ -69,59 +82,55 @@ export default function Index({ combos = [], products = [] }) {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        console.log('=== INICIO HANDLESUBMIT ===');
-        console.log('data:', data);
-        console.log('rows:', rows);
-        console.log('editingCombo:', editingCombo);
-
-        // Validar que haya filas válidas
         const validRows = rows.filter(row => row.child_product_id !== '');
-        if (validRows.length === 0) {
-            window.toast.warning('Advertencia', 'Debes agregar al menos un producto.');
+
+        if (data.category === 'combo' && validRows.length === 0) {
+            window.toast.warning('Advertencia', 'Un combo debe tener al menos un componente.');
             return;
         }
 
-        setShowDrawer(false); // Close immediately
+        setShowDrawer(false);
 
         const formData = {
             name: data.name,
             price: data.price,
+            category: data.category,
             child_product_id: validRows.map(row => row.child_product_id),
-            quantity: validRows.map(row => parseInt(row.quantity)),
+            quantity: validRows.map(row => parseFloat(row.quantity)),
         };
 
         const options = {
             preserveScroll: true,
             onSuccess: () => {
-                setEditingCombo(null);
+                setEditingItem(null);
                 reset();
                 setRows([{ id: Date.now(), child_product_id: '', quantity: 1 }]);
-                window.toast.success(editingCombo ? 'Combo actualizado' : 'Combo guardado', 'La operación se realizó con éxito.');
+                window.toast.success(editingItem ? 'Ítem actualizado' : 'Ítem guardado', 'La operación se realizó con éxito.');
             },
             onError: (errors) => {
-                setShowDrawer(true); // Re-open on error
+                setShowDrawer(true);
                 console.error('❌ ERROR! Errores:', errors);
-                window.toast.error('Error', 'Ocurrió un error al guardar el combo.');
+                window.toast.error('Error', 'Ocurrió un error al guardar el ítem.');
             }
         };
 
-        if (editingCombo) {
-            router.put(route('product.updateCombo', editingCombo.id), formData, options);
+        if (editingItem) {
+            router.put(route('product.updateMenu', editingItem.id), formData, options);
         } else {
-            router.post(route('product.storeCombo'), formData, options);
+            router.post(route('product.storeMenu'), formData, options);
         }
     };
 
     const handleCloseDrawer = () => {
         setShowDrawer(false);
-        setEditingCombo(null);
+        setEditingItem(null);
         reset();
         setRows([{ id: Date.now(), child_product_id: '', quantity: 1 }]);
     };
 
     const handleDelete = (id) => {
         Swal.fire({
-            text: "¿Eliminar este combo?",
+            text: "¿Eliminar este ítem?",
             showCancelButton: true,
             confirmButtonColor: '#dc3545',
             cancelButtonColor: '#6c757d',
@@ -138,27 +147,63 @@ export default function Index({ combos = [], products = [] }) {
                 destroy(route('product.destroy', id), {
                     preserveScroll: true,
                     onSuccess: () => {
-                        window.toast.success('Eliminado', 'El combo ha sido eliminado correctamente.');
+                        window.toast.success('Eliminado', 'El ítem ha sido eliminado correctamente.');
                     },
                 });
             }
         });
     };
 
+    const handleTabChange = (newCategory) => {
+        router.get(route('product.indexMenu'), { category: newCategory }, { preserveState: true, preserveScroll: true });
+    };
+
     return (
         <MainLayout>
-            <Head title="Combos" />
+            <Head title="Menú" />
             <div className="container-fluid pt-4 px-4">
 
                 <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h4 className="mb-0 fw-bold">Combos</h4>
+                    <h4 className="mb-0 fw-bold">Gestión del Menú</h4>
                     <button
                         className="btn btn-primary rounded-pill px-3"
-                        onClick={() => setShowDrawer(true)}
+                        onClick={() => {
+                            setData('category', category); // Ensure current category is set
+                            setShowDrawer(true);
+                        }}
                     >
-                        <i className="bi bi-plus-lg me-2"></i>Crear Combo
+                        <i className="bi bi-plus-lg me-2"></i>Crear {categoryNames[category].slice(0, -1)}
                     </button>
                 </div>
+
+                {/* Tabs */}
+                {/* Tabs */}
+                <ul className="nav nav-tabs mb-4 border-bottom-0 gap-3">
+                    <li className="nav-item">
+                        <button
+                            className={`nav-link border-0 bg-transparent px-0 ${category === 'burger' ? 'text-primary fw-bold' : 'text-muted'}`}
+                            onClick={() => handleTabChange('burger')}
+                        >
+                            Hamburguesas
+                        </button>
+                    </li>
+                    <li className="nav-item">
+                        <button
+                            className={`nav-link border-0 bg-transparent px-0 ${category === 'extra' ? 'text-primary fw-bold' : 'text-muted'}`}
+                            onClick={() => handleTabChange('extra')}
+                        >
+                            Extras
+                        </button>
+                    </li>
+                    <li className="nav-item">
+                        <button
+                            className={`nav-link border-0 bg-transparent px-0 ${category === 'combo' ? 'text-primary fw-bold' : 'text-muted'}`}
+                            onClick={() => handleTabChange('combo')}
+                        >
+                            Combos
+                        </button>
+                    </li>
+                </ul>
 
                 <div className="card-minimal">
                     <div className="table-responsive">
@@ -168,23 +213,23 @@ export default function Index({ combos = [], products = [] }) {
                                     <th scope="col">#</th>
                                     <th scope="col">Nombre</th>
                                     <th scope="col">Precio</th>
-                                    <th scope="col">Componentes</th>
+                                    <th scope="col">Receta / Componentes</th>
                                     <th scope="col" className="text-end">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {combos.data.map((combo, index) => (
-                                    <tr key={combo.id}>
-                                        <td className="text-muted">{(combos.current_page - 1) * combos.per_page + index + 1}</td>
-                                        <td className="fw-medium">{combo.name}</td>
-                                        <td className="font-tabular fw-semibold">{formatCurrency(combo.price)}</td>
+                                {products.data.map((item, index) => (
+                                    <tr key={item.id}>
+                                        <td className="text-muted">{(products.current_page - 1) * products.per_page + index + 1}</td>
+                                        <td className="fw-medium">{item.name}</td>
+                                        <td className="font-tabular fw-semibold">{formatCurrency(item.price)}</td>
                                         <td>
                                             <ul className="list-unstyled mb-0 small">
-                                                {combo.components && combo.components.length > 0 ? (
-                                                    combo.components.map((component, idx) => (
+                                                {item.components && item.components.length > 0 ? (
+                                                    item.components.map((component, idx) => (
                                                         component.child_product ? (
                                                             <li key={idx}>
-                                                                <span className="text-muted">{parseInt(component.quantity)}x</span> {component.child_product.name}
+                                                                <span className="text-muted">{parseFloat(component.quantity)}x</span> {component.child_product.name}
                                                             </li>
                                                         ) : null
                                                     ))
@@ -197,14 +242,14 @@ export default function Index({ combos = [], products = [] }) {
                                             <div className="d-flex justify-content-end gap-2">
                                                 <button
                                                     className="btn btn-icon-only bg-transparent border-0"
-                                                    onClick={() => handleEdit(combo)}
+                                                    onClick={() => handleEdit(item)}
                                                     title="Editar"
                                                 >
                                                     <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--text-muted)' }}>edit_square</span>
                                                 </button>
                                                 <button
                                                     className="btn btn-icon-only bg-transparent border-0"
-                                                    onClick={() => handleDelete(combo.id)}
+                                                    onClick={() => handleDelete(item.id)}
                                                     title="Eliminar"
                                                 >
                                                     <span className="material-symbols-outlined" style={{ fontSize: '22px', color: 'var(--text-muted)', transform: 'translateY(-1px)' }}>delete</span>
@@ -213,10 +258,10 @@ export default function Index({ combos = [], products = [] }) {
                                         </td>
                                     </tr>
                                 ))}
-                                {combos.data.length === 0 && (
+                                {products.data.length === 0 && (
                                     <tr>
                                         <td colSpan="5" className="text-center py-4 text-muted">
-                                            No hay combos registrados
+                                            No hay {categoryNames[category].toLowerCase()} registrados
                                         </td>
                                     </tr>
                                 )}
@@ -225,13 +270,13 @@ export default function Index({ combos = [], products = [] }) {
                     </div>
 
                     <Pagination
-                        links={combos.links}
-                        from={combos.from}
-                        to={combos.to}
-                        total={combos.total}
-                        perPage={combos.per_page}
+                        links={products.links}
+                        from={products.from}
+                        to={products.to}
+                        total={products.total}
+                        perPage={products.per_page}
                         onPerPageChange={(newPerPage) => {
-                            router.get(route('product.indexCombo'), { per_page: newPerPage }, { preserveState: true, replace: true });
+                            router.get(route('product.indexMenu'), { per_page: newPerPage, category: category }, { preserveState: true, replace: true });
                         }}
                     />
                 </div>
@@ -240,19 +285,19 @@ export default function Index({ combos = [], products = [] }) {
             <Drawer
                 isOpen={showDrawer}
                 onClose={handleCloseDrawer}
-                title={editingCombo ? 'Editar Combo' : 'Crear Nuevo Combo'}
+                title={editingItem ? 'Editar Ítem' : `Crear ${categoryNames[category].slice(0, -1)}`}
                 footer={
                     <>
                         <button type="button" className="btn btn-light" onClick={handleCloseDrawer}>Cancelar</button>
                         <button type="button" className="btn btn-primary" onClick={handleSubmit}>
-                            {editingCombo ? 'Actualizar Combo' : 'Guardar Combo'}
+                            {editingItem ? 'Actualizar' : 'Guardar'}
                         </button>
                     </>
                 }
             >
-                <form id="createComboForm" onSubmit={handleSubmit}>
+                <form id="createMenuForm" onSubmit={handleSubmit}>
                     <div className="mb-3">
-                        <label htmlFor="name" className="form-label">Nombre del Combo</label>
+                        <label htmlFor="name" className="form-label">Nombre</label>
                         <input
                             type="text"
                             className="form-control"
@@ -260,7 +305,7 @@ export default function Index({ combos = [], products = [] }) {
                             required
                             value={data.name}
                             onChange={(e) => setData('name', e.target.value)}
-                            placeholder="Ej. Combo Familiar"
+                            placeholder={`Ej. ${category === 'burger' ? 'American Burger' : (category === 'combo' ? 'Combo 1' : 'Papas Fritas')}`}
                         />
                     </div>
                     <div className="mb-4">
@@ -270,6 +315,7 @@ export default function Index({ combos = [], products = [] }) {
                             className="form-control"
                             id="price"
                             min="0"
+                            step="0.01"
                             required
                             value={data.price}
                             onChange={(e) => setData('price', e.target.value)}
@@ -277,7 +323,16 @@ export default function Index({ combos = [], products = [] }) {
                         />
                     </div>
 
-                    <h6 className="text-uppercase small fw-bold text-muted mb-3">Componentes</h6>
+
+
+                    <h6 className="text-uppercase small fw-bold text-muted mb-3">
+                        {category === 'combo' ? 'Contenido del Combo' : 'Receta / Ingredientes'}
+                    </h6>
+                    <p className="small text-muted mb-3">
+                        {category === 'combo'
+                            ? 'Selecciona los productos que incluye este combo.'
+                            : 'Selecciona los insumos o productos base necesarios para preparar este ítem.'}
+                    </p>
 
                     {rows.map((row, index) => (
                         <div key={row.id} className="d-flex gap-2 mb-2 align-items-start">
@@ -286,11 +341,11 @@ export default function Index({ combos = [], products = [] }) {
                                     className="form-select form-select-sm"
                                     value={row.child_product_id}
                                     onChange={(e) => updateRow(row.id, 'child_product_id', e.target.value)}
-                                    required
+                                    required={category === 'combo'} // Required for combos, optional for others?
                                 >
-                                    <option value="">Producto...</option>
-                                    {products.map(product => (
-                                        <option key={product.id} value={product.id}>{product.name}</option>
+                                    <option value="">Seleccionar...</option>
+                                    {supplies.map(supply => (
+                                        <option key={supply.id} value={supply.id}>{supply.name} ({supply.category || supply.type})</option>
                                     ))}
                                 </select>
                             </div>
@@ -299,15 +354,10 @@ export default function Index({ combos = [], products = [] }) {
                                     type="number"
                                     className="form-control form-control-sm text-center"
                                     value={row.quantity}
-                                    min="1"
-                                    step="1"
-                                    onKeyDown={(e) => {
-                                        if (e.key === '.' || e.key === ',' || e.key === 'e') {
-                                            e.preventDefault();
-                                        }
-                                    }}
-                                    onChange={(e) => updateRow(row.id, 'quantity', parseInt(e.target.value) || 0)}
-                                    required
+                                    min="0.01"
+                                    step="0.01"
+                                    onChange={(e) => updateRow(row.id, 'quantity', parseFloat(e.target.value) || 0)}
+                                    required={category === 'combo'}
                                     placeholder="Cant."
                                 />
                             </div>
@@ -315,7 +365,7 @@ export default function Index({ combos = [], products = [] }) {
                                 type="button"
                                 className="btn btn-icon-only text-danger"
                                 onClick={() => removeRow(row.id)}
-                                disabled={rows.length === 1}
+                                disabled={rows.length === 1 && category === 'combo'}
                                 style={{ width: '31px', height: '31px' }}
                             >
                                 <span className="material-symbols-outlined">delete</span>

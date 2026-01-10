@@ -55,8 +55,13 @@ export default function Index({ expenses = [], categories = [] }) {
         return data.split_payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
     };
 
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
+    const formatCurrency = (amount, decimals = 2) => {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        }).format(amount);
     };
 
     const formatDate = (dateString) => {

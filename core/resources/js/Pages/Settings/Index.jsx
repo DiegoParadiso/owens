@@ -205,18 +205,13 @@ export default function Index({ users }) {
                 )}
 
                 {activeTab === 'system' && (
-                    <div className="card-minimal border-danger">
-                        <h5 className="text-danger mb-3">Zona Crítica</h5>
-                        <p className="text-muted">
-                            Estas acciones no se pueden deshacer.
-                        </p>
-                        <hr />
-                        <div className="d-flex justify-content-between align-items-center">
+                    <div className="py-2">
+                        <div className="d-flex align-items-center justify-content-between p-4 rounded-3" style={{ backgroundColor: 'rgba(220, 53, 69, 0.04)' }}>
                             <div>
-                                <h6 className="fw-bold">Reiniciar Base de Datos</h6>
-                                <p className="small text-muted mb-0">Borra todos los datos y restaura los valores por defecto.</p>
+                                <h6 className="fw-bold text-danger mb-1">Zona de Peligro</h6>
+                                <p className="small text-muted mb-0">Reiniciar la base de datos borrará toda la información permanentemente.</p>
                             </div>
-                            <button className="btn btn-danger" onClick={handleResetDatabase}>
+                            <button className="btn btn-outline-danger btn-sm px-4 rounded-pill" onClick={handleResetDatabase}>
                                 Borrar Todo
                             </button>
                         </div>

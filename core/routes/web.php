@@ -25,10 +25,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/logout', [UserController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Combos
-    Route::get('/combos', [ProductController::class, 'indexCombo'])->name('product.indexCombo');
-    Route::post('/combos', [ProductController::class, 'storeCombo'])->name('product.storeCombo');
-    Route::put('/combos/{id}', [ProductController::class, 'updateCombo'])->name('product.updateCombo');
+    // Menu (formerly Combos)
+    Route::get('/menu', [ProductController::class, 'indexMenu'])->name('product.indexMenu');
+    Route::post('/menu', [ProductController::class, 'storeMenu'])->name('product.storeMenu');
+    Route::put('/menu/{id}', [ProductController::class, 'updateMenu'])->name('product.updateMenu');
 
     // Products
     Route::get('/products', [ProductController::class, 'index'])->name('product.index');

@@ -311,9 +311,9 @@ export default function Index({ sales = [], products = [] }) {
                                         </td>
                                     </tr>
                                 ))}
-                                {sales.length === 0 && (
+                                {sales.data.length === 0 && (
                                     <tr>
-                                        <td colSpan="7" className="text-center py-4 text-muted">No hay datos de ventas</td>
+                                        <td colSpan="6" className="text-center py-4 text-muted">No hay datos de ventas</td>
                                     </tr>
                                 )}
                             </tbody>
@@ -394,18 +394,18 @@ export default function Index({ sales = [], products = [] }) {
                                                     <button
                                                         type="button"
                                                         className="btn btn-sm text-muted p-0"
-                                                        onClick={() => updateRow(row.id, 'quantity', Math.max(1, row.quantity - 1))}
+                                                        onClick={() => updateRow(row.id, 'quantity', Math.max(1, parseInt(row.quantity || 0) - 1))}
                                                         style={{ width: '24px', height: '24px', fontSize: '1rem' }}
                                                     >
                                                         <i className="bi bi-dash"></i>
                                                     </button>
                                                     <span className="fw-semibold" style={{ minWidth: '30px', textAlign: 'center' }}>
-                                                        {row.quantity}
+                                                        {parseInt(row.quantity)}
                                                     </span>
                                                     <button
                                                         type="button"
                                                         className="btn btn-sm text-muted p-0"
-                                                        onClick={() => updateRow(row.id, 'quantity', row.quantity + 1)}
+                                                        onClick={() => updateRow(row.id, 'quantity', parseInt(row.quantity || 0) + 1)}
                                                         style={{ width: '24px', height: '24px', fontSize: '1rem' }}
                                                     >
                                                         <i className="bi bi-plus"></i>

@@ -12,12 +12,21 @@ export default function Index({ products }) {
     const [selectedProducts, setSelectedProducts] = useState([]);
     const { data, setData, post, put, processing, errors, reset, delete: destroy } = useForm({
         name: '',
+        type: 'single',
         price: '',
         stock: '',
+        purchase_unit: '',
+        usage_unit: '',
+        conversion_factor: '',
     });
 
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
+    const formatCurrency = (amount, decimals = 0) => {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        }).format(amount);
     };
 
     const handleSelectAll = (e) => {
@@ -66,8 +75,12 @@ export default function Index({ products }) {
         setEditingProduct(product);
         setData({
             name: product.name,
-            price: product.price,
-            stock: product.stock,
+            type: product.type || 'single',
+            price: product.price ? parseFloat(product.price) : '',
+            stock: product.stock ? parseFloat(product.stock) : '',
+            purchase_unit: product.purchase_unit,
+            usage_unit: product.usage_unit,
+            conversion_factor: product.conversion_factor ? parseFloat(product.conversion_factor) : '',
         });
         setShowDrawer(true);
     };
@@ -76,8 +89,12 @@ export default function Index({ products }) {
         setEditingProduct(product);
         setData({
             name: product.name,
-            price: product.price,
-            stock: product.stock,
+            type: product.type || 'single',
+            price: product.price ? parseFloat(product.price) : '',
+            stock: product.stock ? parseFloat(product.stock) : '',
+            purchase_unit: product.purchase_unit,
+            usage_unit: product.usage_unit,
+            conversion_factor: product.conversion_factor ? parseFloat(product.conversion_factor) : '',
         });
         setShowDrawer(true);
     };
@@ -149,13 +166,37 @@ export default function Index({ products }) {
                                 {products.data.map((product, index) => (
                                     <tr key={product.id}>
                                         <td className="text-muted">{(products.current_page - 1) * products.per_page + index + 1}</td>
-                                        <td className="fw-medium">{product.name}</td>
-                                        <td className="font-tabular fw-semibold">{formatCurrency(product.price)}</td>
-                                        <td className="font-tabular text-muted">{formatCurrency(product.cost)}</td>
+                                        <td className="fw-medium">
+                                            <div className="d-flex align-items-center gap-2">
+                                                {product.name}
+                                                {product.type === 'supply' && (
+                                                    <span className="badge bg-secondary-subtle text-secondary" style={{ fontSize: '0.65rem' }}>INSUMO</span>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="font-tabular fw-semibold">
+                                            {product.price ? formatCurrency(product.price) : <span className="text-muted">-</span>}
+                                        </td>
+                                        <td className="font-tabular text-muted">{formatCurrency(product.cost, 2)}</td>
                                         <td>
-                                            <span className={`badge ${product.stock > 10 ? 'bg-success-subtle text-success' : product.stock > 0 ? 'bg-warning-subtle text-warning' : 'bg-danger-subtle text-danger'}`}>
-                                                {product.stock} unidades
-                                            </span>
+                                            <div className="d-flex flex-column">
+                                                <div className="d-flex align-items-center gap-2">
+                                                    <span
+                                                        className={`rounded-circle ${product.stock > 10 ? 'bg-success' : product.stock > 0 ? 'bg-warning' : 'bg-danger'}`}
+                                                        style={{ width: '8px', height: '8px', display: 'inline-block' }}
+                                                    ></span>
+                                                    <span className="fw-medium">
+                                                        {Number(product.stock).toLocaleString()} {product.usage_unit || 'Unidades'}
+                                                    </span>
+                                                </div>
+                                                {product.type === 'supply' && (
+                                                    <div className="d-flex flex-column">
+                                                        <small className="text-muted mt-1" style={{ fontSize: '0.7rem' }}>
+                                                            ~{parseFloat((product.stock / (product.conversion_factor || 1)).toFixed(1))} {product.purchase_unit || 'Packs'}
+                                                        </small>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="text-end">
                                             <div className="d-flex justify-content-end gap-2">
@@ -218,6 +259,26 @@ export default function Index({ products }) {
                 }
             >
                 <form id="createProductForm" onSubmit={handleSubmit}>
+                    <div className="mb-4">
+                        <label className="form-label fw-semibold d-block mb-2">Tipo de Producto</label>
+                        <div className="d-flex gap-2">
+                            <button
+                                type="button"
+                                className={`btn flex-fill py-2 ${data.type === 'single' ? 'btn-dark' : 'btn-outline-secondary'}`}
+                                onClick={() => setData('type', 'single')}
+                            >
+                                VENTA DIRECTA
+                            </button>
+                            <button
+                                type="button"
+                                className={`btn flex-fill py-2 ${data.type === 'supply' ? 'btn-dark' : 'btn-outline-secondary'}`}
+                                onClick={() => setData('type', 'supply')}
+                            >
+                                INSUMO
+                            </button>
+                        </div>
+                    </div>
+
                     <div className="mb-3">
                         <label htmlFor="name" className="form-label">Nombre del Producto</label>
                         <input
@@ -230,21 +291,29 @@ export default function Index({ products }) {
                             placeholder="Ej. Hamburguesa Doble"
                         />
                     </div>
+
+                    {data.type === 'single' && (
+                        <div className="mb-3">
+                            <label htmlFor="price" className="form-label">Precio de Venta ($)</label>
+                            <input
+                                type="number"
+                                className="form-control"
+                                id="price"
+                                min="0"
+                                required
+                                value={data.price}
+                                onChange={(e) => setData('price', e.target.value)}
+                                placeholder="0.00"
+                            />
+                        </div>
+                    )}
+
                     <div className="mb-3">
-                        <label htmlFor="price" className="form-label">Precio de Venta ($)</label>
-                        <input
-                            type="number"
-                            className="form-control"
-                            id="price"
-                            min="0"
-                            required
-                            value={data.price}
-                            onChange={(e) => setData('price', e.target.value)}
-                            placeholder="0.00"
-                        />
-                    </div>
-                    <div className="mb-3">
-                        <label htmlFor="stock" className="form-label">Stock Inicial</label>
+                        <label htmlFor="stock" className="form-label">
+                            {data.type === 'supply' && data.purchase_unit
+                                ? `Stock Inicial (en ${data.purchase_unit}s)`
+                                : 'Stock Inicial'}
+                        </label>
                         <input
                             type="number"
                             className="form-control"
@@ -252,13 +321,98 @@ export default function Index({ products }) {
                             min="0"
                             step="1"
                             required
-                            value={data.stock}
-                            onChange={(e) => setData('stock', e.target.value)}
+                            value={data.type === 'supply' && data.conversion_factor && data.conversion_factor > 0
+                                ? Math.floor(data.stock / data.conversion_factor) // Display in Purchase Units, integer only
+                                : data.stock}
+                            onKeyDown={(e) => {
+                                if (e.key === '.' || e.key === ',' || e.key === 'e') {
+                                    e.preventDefault();
+                                }
+                            }}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                if (data.type === 'supply' && data.conversion_factor && data.conversion_factor > 0) {
+                                    // Save as Usage Units
+                                    setData('stock', val ? parseInt(val) * data.conversion_factor : '');
+                                } else {
+                                    setData('stock', val ? parseInt(val) : '');
+                                }
+                            }}
                             placeholder="0"
                         />
+                        {data.type === 'supply' && data.conversion_factor && (
+                            <div className="form-text mt-1" style={{ fontSize: '0.8rem' }}>
+                                Equivale a {data.stock ? parseFloat(Number(data.stock).toFixed(2)) : 0} {data.usage_unit || 'Unidades'}
+                            </div>
+                        )}
                     </div>
+
+                    {data.type === 'supply' && (
+                        <div className="p-3 border rounded bg-light mb-3">
+                            <h6 className="text-uppercase small fw-bold text-muted mb-3">Configuración de Inventario</h6>
+
+                            <div className="mb-3">
+                                <label htmlFor="purchase_unit" className="form-label small">Unidad de Compra</label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    id="purchase_unit"
+                                    value={data.purchase_unit || ''}
+                                    onChange={(e) => setData('purchase_unit', e.target.value)}
+                                    placeholder="Ej. Pack, Caja, Bolsa"
+                                />
+                            </div>
+
+                            <div className="mb-3">
+                                <label htmlFor="usage_unit" className="form-label small">Unidad de Uso</label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    id="usage_unit"
+                                    value={data.usage_unit || ''}
+                                    onChange={(e) => setData('usage_unit', e.target.value)}
+                                    placeholder="Ej. Feta, Unidad, Gramo"
+                                />
+                            </div>
+
+                            <div className="mb-3">
+                                <label htmlFor="conversion_factor" className="form-label small">Factor de Conversión</label>
+                                <input
+                                    type="number"
+                                    className="form-control"
+                                    id="conversion_factor"
+                                    min="1"
+                                    step="1"
+                                    value={data.conversion_factor || ''}
+                                    onKeyDown={(e) => {
+                                        if (e.key === '.' || e.key === ',' || e.key === 'e') {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                    onChange={(e) => {
+                                        const newFactor = parseInt(e.target.value) || 0;
+                                        // Calculate current Packs based on OLD factor (or current stock if factor was missing)
+                                        const currentPacks = (data.stock && data.conversion_factor)
+                                            ? data.stock / data.conversion_factor
+                                            : 0;
+
+                                        setData(prev => ({
+                                            ...prev,
+                                            conversion_factor: newFactor,
+                                            // Update stock (Units) to maintain the same number of Packs with the NEW factor
+                                            stock: currentPacks ? currentPacks * newFactor : prev.stock
+                                        }));
+                                    }}
+                                    placeholder="Ej. 8"
+                                />
+                                <div className="form-text mt-2" style={{ fontSize: '0.8rem' }}>
+                                    1 {data.purchase_unit || 'Pack'} contiene {data.conversion_factor || 'X'} {data.usage_unit || 'Unidades'}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </form>
             </Drawer>
-        </MainLayout>
+        </MainLayout >
     );
 }

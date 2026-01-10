@@ -21,7 +21,7 @@ class ProductController extends Controller
         $search = $request->input('search');
         $perPage = $request->input('per_page', 10);
 
-        $products = Product::where('type', 'single');
+        $products = Product::whereIn('type', ['single', 'supply']);
         
         if ($search) {
             $products->where(function($q) use ($search) {
@@ -36,22 +36,33 @@ class ProductController extends Controller
 
         return \Inertia\Inertia::render('Products/Index', compact('title', 'subtitle', 'products'));
     }
-    public function indexCombo(Request $request)
+    public function indexMenu(Request $request)
     {
-        $title = 'Combos';
-        $subtitle = 'Gestión de Combos';
+        $title = 'Menú';
+        $subtitle = 'Gestión del Menú';
         
         $perPage = $request->input('per_page', 10);
         
-        $combos = Product::where('type', 'combo')
+        // Fetch products by category
+        // We might want to paginate each category separately or just fetch all for now if list is small?
+        // Or maybe just pass all and filter in frontend? Pagination makes it tricky.
+        // Let's stick to simple pagination for now, but maybe we need to filter by category in request?
+        // The user wants tabs. Usually tabs imply separate lists.
+        // Let's fetch all for now as menu shouldn't be huge, or implement filtering.
+        // Let's implement filtering by category in the request, default to 'burger'.
+        
+        $category = $request->input('category', 'burger');
+        
+        $products = Product::where('category', $category)
             ->with('components.childProduct')
             ->latest()
             ->paginate($perPage)
             ->withQueryString();
 
-        $products = Product::where('type', 'single')->get();
+        // Also need list of supplies/products for creating recipes/combos
+        $supplies = Product::where('type', '!=', 'combo')->get();
 
-        return \Inertia\Inertia::render('Combos/Index', compact('title', 'subtitle', 'combos', 'products'));
+        return \Inertia\Inertia::render('Menu/Index', compact('title', 'subtitle', 'products', 'supplies', 'category'));
     }
     public function create()
     {
@@ -63,13 +74,21 @@ class ProductController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'stock' => 'required|integer|min:0',
+            'price' => 'nullable|numeric|min:0',
+            'stock' => 'required|numeric|min:0', // Changed to numeric to allow decimals for usage units
             'cost' => 'nullable|numeric|min:0',
+            'type' => 'nullable|in:single,supply',
+            'purchase_unit' => 'nullable|string|max:50',
+            'usage_unit' => 'nullable|string|max:50',
+            'conversion_factor' => 'nullable|numeric|min:0.0001',
         ]);
         
-        $validated['type'] = 'single';
+        $validated['type'] = $request->input('type', 'single');
+        if ($validated['type'] === 'supply') {
+            $validated['price'] = null;
+        }
         $validated['user_id'] = auth()->id();
+        $validated['conversion_factor'] = $request->input('conversion_factor', 1);
         
         Product::create($validated);
         
@@ -88,11 +107,22 @@ class ProductController extends Controller
     {
         $validate = $request->validate([
             'name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'stock' => 'required|integer|min:0',
+            'price' => 'nullable|numeric|min:0',
+            'stock' => 'required|numeric|min:0',
+            'purchase_unit' => 'nullable|string|max:50',
+            'usage_unit' => 'nullable|string|max:50',
+            'conversion_factor' => 'nullable|numeric|min:0.0001',
         ]);
         
         $validate['user_id'] = Auth::user()->id;
+        $validate['conversion_factor'] = $request->input('conversion_factor', 1);
+        
+        // If type is supply (we might need to check current type if not in request, but usually it is)
+        // Actually, type is not in validation for update, so we assume it's not changing or we should check.
+        // If we want to support changing type, we should add it.
+        // For now, let's just check if price is null, it's fine.
+        // But if the user explicitly sends empty price, we should save it as null.
+        
         $product->update($validate);
         
         return redirect()->route('product.index');
@@ -186,86 +216,103 @@ class ProductController extends Controller
         return view('admin.product.create_combo', compact('title', 'subtitle', 'products'));
     }
 
-    public function storeCombo(Request $request)
+    public function storeMenu(Request $request)
     {
         $request->validate([
             'name' => 'required|string',
             'price' => 'required|numeric|min:0',
-            'child_product_id' => 'required|array',
+            'category' => 'required|in:burger,extra,combo',
+            'child_product_id' => 'nullable|array',
             'child_product_id.*' => 'exists:products,id',
-            'quantity' => 'required|array',
-            'quantity.*' => 'integer|min:1',
+            'quantity' => 'nullable|array',
+            'quantity.*' => 'numeric|min:0.01',
         ]);
 
         try {
             DB::beginTransaction();
 
-            $combo = Product::create([
+            $type = $request->category === 'combo' ? 'combo' : 'single';
+
+            $product = Product::create([
                 'name' => $request->name,
                 'price' => $request->price,
-                'stock' => 0,
-                'type' => 'combo',
+                'stock' => 0, // Menu items usually don't have direct stock if they are recipes/combos
+                'type' => $type,
+                'category' => $request->category,
                 'user_id' => Auth::id(),
             ]);
 
-            foreach ($request->child_product_id as $key => $childId) {
-                \App\Models\ProductComponent::create([
-                    'parent_product_id' => $combo->id,
-                    'child_product_id' => $childId,
-                    'quantity' => $request->quantity[$key],
-                ]);
+            if ($request->has('child_product_id')) {
+                foreach ($request->child_product_id as $key => $childId) {
+                    if (!isset($request->quantity[$key]) || $request->quantity[$key] <= 0) continue;
+                    
+                    \App\Models\ProductComponent::create([
+                        'parent_product_id' => $product->id,
+                        'child_product_id' => $childId,
+                        'quantity' => $request->quantity[$key],
+                    ]);
+                }
             }
 
             DB::commit();
-            return redirect()->route('product.indexCombo')->with('highlight_id', $combo->id);
+            return redirect()->route('product.indexMenu', ['category' => $request->category])->with('highlight_id', $product->id);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Error creating combo: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error al crear combo: ' . $e->getMessage());
+            \Log::error('Error creating menu item: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al crear ítem del menú: ' . $e->getMessage());
         }
     }
 
-    public function updateCombo(Request $request, $id)
+    public function updateMenu(Request $request, $id)
     {
         $request->validate([
             'name' => 'required|string',
             'price' => 'required|numeric|min:0',
-            'child_product_id' => 'required|array',
+            'category' => 'required|in:burger,extra,combo',
+            'child_product_id' => 'nullable|array',
             'child_product_id.*' => 'exists:products,id',
-            'quantity' => 'required|array',
-            'quantity.*' => 'integer|min:1',
+            'quantity' => 'nullable|array',
+            'quantity.*' => 'numeric|min:0.01',
         ]);
 
         try {
             DB::beginTransaction();
 
-            $combo = Product::findOrFail($id);
-            $combo->update([
+            $product = Product::findOrFail($id);
+            $type = $request->category === 'combo' ? 'combo' : 'single';
+            
+            $product->update([
                 'name' => $request->name,
                 'price' => $request->price,
+                'type' => $type,
+                'category' => $request->category,
                 'user_id' => Auth::id(),
             ]);
 
             // Delete existing components
-            \App\Models\ProductComponent::where('parent_product_id', $combo->id)->delete();
+            \App\Models\ProductComponent::where('parent_product_id', $product->id)->delete();
 
             // Create new components
-            foreach ($request->child_product_id as $key => $childId) {
-                \App\Models\ProductComponent::create([
-                    'parent_product_id' => $combo->id,
-                    'child_product_id' => $childId,
-                    'quantity' => $request->quantity[$key],
-                ]);
+            if ($request->has('child_product_id')) {
+                foreach ($request->child_product_id as $key => $childId) {
+                    if (!isset($request->quantity[$key]) || $request->quantity[$key] <= 0) continue;
+
+                    \App\Models\ProductComponent::create([
+                        'parent_product_id' => $product->id,
+                        'child_product_id' => $childId,
+                        'quantity' => $request->quantity[$key],
+                    ]);
+                }
             }
 
             DB::commit();
-            return redirect()->route('product.indexCombo')->with('success', 'Combo actualizado exitosamente');
+            return redirect()->route('product.indexMenu', ['category' => $request->category])->with('success', 'Ítem actualizado exitosamente');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Error updating combo: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error al actualizar combo: ' . $e->getMessage());
+            \Log::error('Error updating menu item: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al actualizar ítem: ' . $e->getMessage());
         }
     }
 }

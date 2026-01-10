@@ -57,8 +57,13 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
         return data.split_payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
     };
 
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
+    const formatCurrency = (amount, decimals = 0) => {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        }).format(amount);
     };
 
     const formatDate = (dateString) => {
@@ -74,7 +79,11 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
             subtotal: 0,
             isNew: false,
             productName: '',
-            salePrice: ''
+            salePrice: '',
+            purchase_unit: '',
+            usage_unit: '',
+            conversion_factor: '',
+            productType: 'supply'
         }]);
     };
 
@@ -100,6 +109,32 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
         setRows(newRows);
     };
 
+    const handleProductSelect = (id, productId) => {
+        const product = products.find(p => p.id == productId);
+        if (product) {
+            const newRows = rows.map(row => {
+                if (row.id === id) {
+                    return {
+                        ...row,
+                        product_id: productId,
+                        productName: product.name,
+                        salePrice: product.price || '',
+                        unit_cost: product.cost || 0,
+                        subtotal: row.quantity * (product.cost || 0),
+                        productType: product.type || 'single', // Default to single if not set
+                        purchase_unit: product.purchase_unit || '',
+                        usage_unit: product.usage_unit || '',
+                        conversion_factor: product.conversion_factor ? parseFloat(product.conversion_factor) : '',
+                    };
+                }
+                return row;
+            });
+            setRows(newRows);
+        } else {
+            updateRow(id, 'product_id', productId);
+        }
+    };
+
     const toggleNewProduct = (id) => {
         const newRows = rows.map(row => {
             if (row.id === id) {
@@ -108,7 +143,11 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                     isNew: !row.isNew,
                     product_id: '', // Reset selection
                     productName: '', // Reset name
-                    salePrice: '' // Reset price
+                    salePrice: '', // Reset price
+                    purchase_unit: '',
+                    usage_unit: '',
+                    conversion_factor: '',
+                    productType: 'supply'
                 };
             }
             return row;
@@ -127,7 +166,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
 
         // Validar que haya filas válidas
         // Validar que haya filas válidas
-        const validRows = rows.filter(row => (row.product_id !== '' && !row.isNew) || (row.isNew && row.productName !== '' && row.salePrice !== ''));
+        const validRows = rows.filter(row => (row.product_id !== '' && !row.isNew) || (row.isNew && row.productName !== '' && (row.productType === 'supply' || row.salePrice !== '')));
         if (validRows.length === 0) {
             window.toast.warning('Advertencia', 'Debes agregar al menos un producto.');
             return;
@@ -166,7 +205,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
         if (data.payment_method === 'multiple') {
             const splitTotal = calculateSplitTotal();
             if (Math.abs(splitTotal - grandTotal) > 0.01) {
-                window.toast.error('Error en distribución', `La suma de los pagos (${formatCurrency(splitTotal)}) debe ser igual al total (${formatCurrency(grandTotal)})`);
+                window.toast.error('Error en distribución', `La suma de los pagos (${formatCurrency(splitTotal, 2)}) debe ser igual al total (${formatCurrency(grandTotal, 2)})`);
                 return;
             }
         }
@@ -181,9 +220,14 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
             ...data,
             product_id: validRows.map(r => r.isNew ? null : r.product_id),
             product_name: validRows.map(r => r.isNew ? r.productName : null),
-            sale_price: validRows.map(r => r.isNew ? r.salePrice : null),
+            sale_price: validRows.map(r => r.salePrice), // Send for both new and existing to update
+            purchase_unit: validRows.map(r => r.purchase_unit), // Send for both
+            usage_unit: validRows.map(r => r.usage_unit), // Send for both
+            conversion_factor: validRows.map(r => r.conversion_factor), // Send for both
+            product_type: validRows.map(r => r.productType), // Send for both
             quantity: validRows.map(r => r.quantity),
             unit_cost: validRows.map(r => r.unit_cost),
+            split_payments: data.payment_method === 'multiple' ? data.split_payments : [],
         }));
 
         const options = {
@@ -202,7 +246,11 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                         subtotal: 0,
                         isNew: false,
                         productName: '',
-                        salePrice: ''
+                        salePrice: '',
+                        purchase_unit: '',
+                        usage_unit: '',
+                        conversion_factor: '',
+                        productType: 'supply'
                     }]);
                     reset();
                     window.toast.success(editingPurchase ? 'Compra actualizada' : 'Compra guardada', 'La operación se realizó con éxito.');
@@ -255,7 +303,14 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                 product_id: detail.product_id,
                 quantity: detail.quantity,
                 unit_cost: detail.unit_cost,
-                subtotal: detail.quantity * detail.unit_cost
+                subtotal: detail.quantity * detail.unit_cost,
+                isNew: false,
+                productName: detail.product ? detail.product.name : '',
+                salePrice: detail.product ? (detail.product.price || '') : '',
+                productType: detail.product ? (detail.product.type || 'single') : 'single',
+                purchase_unit: detail.product ? (detail.product.purchase_unit || '') : '',
+                usage_unit: detail.product ? (detail.product.usage_unit || '') : '',
+                conversion_factor: detail.product && detail.product.conversion_factor ? parseFloat(detail.product.conversion_factor) : ''
             }));
             setRows(purchaseRows);
         } else {
@@ -269,7 +324,11 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                 subtotal: 0,
                 isNew: false,
                 productName: '',
-                salePrice: ''
+                salePrice: '',
+                purchase_unit: '',
+                usage_unit: '',
+                conversion_factor: '',
+                productType: 'supply'
             }]);
         }
 
@@ -313,7 +372,11 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
             subtotal: 0,
             isNew: false,
             productName: '',
-            salePrice: ''
+            salePrice: '',
+            purchase_unit: '',
+            usage_unit: '',
+            conversion_factor: '',
+            productType: 'supply'
         }]);
         setData({
             supplier_id: '',
@@ -338,7 +401,10 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
             subtotal: 0,
             isNew: false,
             productName: '',
-            salePrice: ''
+            salePrice: '',
+            purchase_unit: '',
+            usage_unit: '',
+            conversion_factor: ''
         }]);
         reset();
     };
@@ -383,7 +449,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                                                 {purchase.details && purchase.details.length > 0 ? (
                                                     purchase.details.map((detail, idx) => (
                                                         <li key={idx}>
-                                                            <span className="text-muted">{parseInt(detail.quantity)}x</span> {detail.product ? detail.product.name : detail.product_name || 'Producto eliminado'}
+                                                            <span className="text-muted">{parseFloat(detail.quantity)}x</span> {detail.product ? detail.product.name : detail.product_name || 'Producto eliminado'}
                                                         </li>
                                                     ))
                                                 ) : (
@@ -391,7 +457,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                                                 )}
                                             </ul>
                                         </td>
-                                        <td className="font-tabular fw-semibold">{formatCurrency(purchase.total_cost)}</td>
+                                        <td className="font-tabular fw-semibold">{formatCurrency(purchase.total_cost, 2)}</td>
                                         <td>
                                             <span className="badge bg-transparent border text-dark">
                                                 {formatPaymentMethod(purchase.payment_method)}
@@ -484,6 +550,211 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                             />
                         </div>
                     </div>
+
+
+
+                    <h6 className="mb-3">Detalles de compra</h6>
+                    <div className="table-responsive mb-4">
+                        <table className="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th style={{ width: '40%' }}>Producto</th>
+                                    <th style={{ width: '18%' }} className="text-center">Cantidad</th>
+                                    <th style={{ width: '18%' }}>Costo Unit.</th>
+                                    <th style={{ width: '19%' }}>Subtotal</th>
+                                    <th style={{ width: '5%' }}></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {rows.map((row) => (
+                                    <tr key={row.id}>
+                                        <td>
+                                            <div className="d-flex flex-column gap-2">
+                                                <div className="d-flex gap-2 align-items-center">
+                                                    {row.isNew ? (
+                                                        <input
+                                                            type="text"
+                                                            className="form-control form-control-sm"
+                                                            placeholder="Nombre del Nuevo Producto"
+                                                            value={row.productName}
+                                                            onChange={(e) => updateRow(row.id, 'productName', e.target.value)}
+                                                            required
+                                                            autoFocus
+                                                        />
+                                                    ) : (
+                                                        <select
+                                                            className="form-select form-select-sm flex-grow-1"
+                                                            value={row.product_id}
+                                                            onChange={(e) => handleProductSelect(row.id, e.target.value)}
+                                                            required
+                                                        >
+                                                            <option value="">Seleccionar</option>
+                                                            {products.map(product => (
+                                                                <option key={product.id} value={product.id}>{product.name} ({product.unit || 'Unidad'})</option>
+                                                            ))}
+                                                        </select>
+                                                    )}
+
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-sm border-0 text-dark"
+                                                        onClick={() => toggleNewProduct(row.id)}
+                                                        title={row.isNew ? "Cancelar nuevo producto" : "Crear nuevo producto"}
+                                                        style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                    >
+                                                        <span className="material-symbols-outlined" style={row.isNew ? { transform: 'translateY(-8px)' } : {}}>
+                                                            {row.isNew ? 'minimize' : 'add'}
+                                                        </span>
+                                                    </button>
+                                                </div>
+
+                                                {(row.isNew || row.product_id) && (
+                                                    <div className="mt-2 p-2 border rounded bg-light">
+                                                        <div className="d-flex gap-1 mb-2">
+                                                            <button
+                                                                type="button"
+                                                                className={`btn btn-sm flex-fill ${row.productType === 'supply' ? 'btn-dark' : 'btn-outline-secondary'}`}
+                                                                style={{ fontSize: '0.7rem' }}
+                                                                onClick={() => updateRow(row.id, 'productType', 'supply')}
+                                                            >
+                                                                INSUMO
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                className={`btn btn-sm flex-fill ${row.productType === 'single' ? 'btn-dark' : 'btn-outline-secondary'}`}
+                                                                style={{ fontSize: '0.7rem' }}
+                                                                onClick={() => updateRow(row.id, 'productType', 'single')}
+                                                            >
+                                                                VENTA DIRECTA
+                                                            </button>
+                                                        </div>
+
+                                                        {row.productType === 'single' && (
+                                                            <div className="d-flex align-items-center gap-2 mb-2">
+                                                                <small className="text-muted text-nowrap" style={{ fontSize: '0.75rem' }}>Precio Venta:</small>
+                                                                <input
+                                                                    type="number"
+                                                                    className="form-control form-control-sm"
+                                                                    placeholder="0.00"
+                                                                    style={{ width: '100px' }}
+                                                                    value={row.salePrice}
+                                                                    onChange={(e) => updateRow(row.id, 'salePrice', e.target.value)}
+                                                                    required
+                                                                />
+                                                            </div>
+                                                        )}
+
+                                                        {row.productType === 'supply' && (
+                                                            <div className="d-flex flex-column gap-2">
+                                                                <input
+                                                                    type="text"
+                                                                    className="form-control form-control-sm"
+                                                                    placeholder="Unidad de Compra (Pack, caja, etc.)"
+                                                                    value={row.purchase_unit}
+                                                                    onChange={(e) => updateRow(row.id, 'purchase_unit', e.target.value)}
+                                                                    style={{ fontSize: '0.75rem' }}
+                                                                />
+                                                                <input
+                                                                    type="text"
+                                                                    className="form-control form-control-sm"
+                                                                    placeholder="Unidad de Uso (Medallón, feta, etc.)"
+                                                                    value={row.usage_unit}
+                                                                    onChange={(e) => updateRow(row.id, 'usage_unit', e.target.value)}
+                                                                    style={{ fontSize: '0.75rem' }}
+                                                                />
+                                                                <input
+                                                                    type="number"
+                                                                    className="form-control form-control-sm"
+                                                                    placeholder="Factor (6, 12, etc.)"
+                                                                    value={row.conversion_factor}
+                                                                    onChange={(e) => updateRow(row.id, 'conversion_factor', parseInt(e.target.value) || '')}
+                                                                    style={{ fontSize: '0.75rem' }}
+                                                                    min="1"
+                                                                    step="1"
+                                                                    onKeyDown={(e) => {
+                                                                        if (e.key === '.' || e.key === ',' || e.key === 'e') {
+                                                                            e.preventDefault();
+                                                                        }
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="d-flex align-items-center justify-content-center gap-2">
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-sm text-muted p-0"
+                                                    onClick={() => updateRow(row.id, 'quantity', Math.max(1, parseInt(row.quantity || 0) - 1))}
+                                                    style={{ width: '24px', height: '24px', fontSize: '1rem' }}
+                                                >
+                                                    <i className="bi bi-dash"></i>
+                                                </button>
+                                                <span className="fw-semibold" style={{ minWidth: '30px', textAlign: 'center' }}>
+                                                    {parseInt(row.quantity)}
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-sm text-muted p-0"
+                                                    onClick={() => updateRow(row.id, 'quantity', parseInt(row.quantity || 0) + 1)}
+                                                    style={{ width: '24px', height: '24px', fontSize: '1rem' }}
+                                                >
+                                                    <i className="bi bi-plus"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input
+                                                type="text"
+                                                className="form-control form-control-sm"
+                                                value={row.unit_cost || ''}
+                                                onChange={(e) => updateRow(row.id, 'unit_cost', parseFloat(e.target.value) || 0)}
+                                                placeholder="Costo"
+                                            />
+                                        </td>
+                                        <td>
+                                            <input
+                                                type="text"
+                                                className="form-control form-control-sm font-tabular fw-semibold"
+                                                value={formatCurrency(row.subtotal, 2)}
+                                                readOnly
+                                            />
+                                        </td>
+                                        <td className="text-end">
+                                            <button
+                                                type="button"
+                                                className="btn btn-icon-only text-danger"
+                                                onClick={() => removeRow(row.id)}
+                                                disabled={rows.length === 1}
+                                                style={{ width: '31px', height: '31px' }}
+                                            >
+                                                <span className="material-symbols-outlined">delete</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colSpan="3" className="text-end fw-bold small">TOTAL</td>
+                                    <td colSpan="2">
+                                        <input
+                                            type="text"
+                                            className="form-control form-control-sm font-tabular fw-bold"
+                                            value={formatCurrency(grandTotal, 2)}
+                                            readOnly
+                                        />
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <button type="button" className="btn btn-outline-secondary btn-sm mb-4" onClick={addRow}>
+                        <i className="bi bi-plus-lg me-1"></i> Agregar Producto
+                    </button>
 
                     <div className="mb-4">
                         <label className="form-label fw-semibold">Método de Pago</label>
@@ -636,150 +907,6 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                             </div>
                         )}
                     </div>
-
-                    <h6 className="mb-3">Detalles de compra</h6>
-                    <div className="table-responsive mb-4">
-                        <table className="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th style={{ width: '40%' }}>Producto</th>
-                                    <th style={{ width: '18%' }} className="text-center">Cantidad</th>
-                                    <th style={{ width: '18%' }}>Costo Unit.</th>
-                                    <th style={{ width: '19%' }}>Subtotal</th>
-                                    <th style={{ width: '5%' }}></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {rows.map((row) => (
-                                    <tr key={row.id}>
-                                        <td>
-                                            <div className="d-flex flex-column gap-2">
-                                                <div className="d-flex gap-2 align-items-center">
-                                                    {row.isNew ? (
-                                                        <input
-                                                            type="text"
-                                                            className="form-control form-control-sm"
-                                                            placeholder="Nombre del Nuevo Producto"
-                                                            value={row.productName}
-                                                            onChange={(e) => updateRow(row.id, 'productName', e.target.value)}
-                                                            required
-                                                            autoFocus
-                                                        />
-                                                    ) : (
-                                                        <select
-                                                            className="form-select form-select-sm flex-grow-1"
-                                                            value={row.product_id}
-                                                            onChange={(e) => updateRow(row.id, 'product_id', e.target.value)}
-                                                            required
-                                                        >
-                                                            <option value="">Seleccionar</option>
-                                                            {products.map(product => (
-                                                                <option key={product.id} value={product.id}>{product.name} ({product.unit || 'Unidad'})</option>
-                                                            ))}
-                                                        </select>
-                                                    )}
-
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-sm border-0 text-dark"
-                                                        onClick={() => toggleNewProduct(row.id)}
-                                                        title={row.isNew ? "Cancelar nuevo producto" : "Crear nuevo producto"}
-                                                        style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                                    >
-                                                        <span className="material-symbols-outlined" style={row.isNew ? { transform: 'translateY(-8px)' } : {}}>
-                                                            {row.isNew ? 'minimize' : 'add'}
-                                                        </span>
-                                                    </button>
-                                                </div>
-
-                                                {row.isNew && (
-                                                    <div className="d-flex align-items-center gap-2 ps-1">
-                                                        <small className="text-muted text-nowrap" style={{ fontSize: '0.75rem' }}>Precio Venta (Público):</small>
-                                                        <input
-                                                            type="number"
-                                                            className="form-control form-control-sm"
-                                                            placeholder="0.00"
-                                                            style={{ width: '100px' }}
-                                                            value={row.salePrice}
-                                                            onChange={(e) => updateRow(row.id, 'salePrice', e.target.value)}
-                                                            required
-                                                        />
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div className="d-flex align-items-center justify-content-center gap-2">
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-sm text-muted p-0"
-                                                    onClick={() => updateRow(row.id, 'quantity', Math.max(1, row.quantity - 1))}
-                                                    style={{ width: '24px', height: '24px', fontSize: '1rem' }}
-                                                >
-                                                    <i className="bi bi-dash"></i>
-                                                </button>
-                                                <span className="fw-semibold" style={{ minWidth: '30px', textAlign: 'center' }}>
-                                                    {row.quantity}
-                                                </span>
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-sm text-muted p-0"
-                                                    onClick={() => updateRow(row.id, 'quantity', row.quantity + 1)}
-                                                    style={{ width: '24px', height: '24px', fontSize: '1rem' }}
-                                                >
-                                                    <i className="bi bi-plus"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <input
-                                                type="text"
-                                                className="form-control form-control-sm"
-                                                value={row.unit_cost || ''}
-                                                onChange={(e) => updateRow(row.id, 'unit_cost', parseFloat(e.target.value) || 0)}
-                                                placeholder="Costo"
-                                            />
-                                        </td>
-                                        <td>
-                                            <input
-                                                type="text"
-                                                className="form-control form-control-sm font-tabular fw-semibold"
-                                                value={formatCurrency(row.subtotal)}
-                                                readOnly
-                                            />
-                                        </td>
-                                        <td className="text-end">
-                                            <button
-                                                type="button"
-                                                className="btn btn-icon-only text-danger"
-                                                onClick={() => removeRow(row.id)}
-                                                disabled={rows.length === 1}
-                                                style={{ width: '31px', height: '31px' }}
-                                            >
-                                                <span className="material-symbols-outlined">delete</span>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colSpan="3" className="text-end fw-bold small">TOTAL</td>
-                                    <td colSpan="2">
-                                        <input
-                                            type="text"
-                                            className="form-control form-control-sm font-tabular fw-bold"
-                                            value={formatCurrency(grandTotal)}
-                                            readOnly
-                                        />
-                                    </td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                    <button type="button" className="btn btn-outline-secondary btn-sm" onClick={addRow}>
-                        <i className="bi bi-plus-lg me-1"></i> Agregar Producto
-                    </button>
                 </form>
             </Drawer>
         </MainLayout>

@@ -76,31 +76,14 @@ class SalesController extends Controller
             $savedSale = Sale::create($sale_data);
 
             foreach ($request->product_id as $key => $productId) {
-                $product = Product::find($productId);
+                $product = Product::with('components.childProduct')->find($productId);
                 $quantitySold = $request->quantity[$key];
 
-                if ($product->type == 'combo') {
-                    // Para combos, descontar solo los componentes que tengan stock
-                    foreach ($product->components as $component) {
-                        $requiredQty = $component->quantity * $quantitySold;
-                        $availableStock = $component->childProduct->stock;
-                        
-                        // Solo descontar si hay stock disponible
-                        if ($availableStock > 0) {
-                            $qtyToDeduct = min($availableStock, $requiredQty);
-                            $component->childProduct->stock -= $qtyToDeduct;
-                            $component->childProduct->save();
-                        }
-                        // Si no hay stock, simplemente no se descuenta (venta parcial)
-                    }
-                } else {
-                    if ($product->stock < $quantitySold) {
-                        DB::rollBack();
-                        return redirect()->back()->with('error', 'Stock insuficiente para el producto: ' . $product->name);
-                    }
-
-                    $product->stock -= $quantitySold;
-                    $product->save();
+                try {
+                    $this->processStock($product, $quantitySold, 'deduct');
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    return redirect()->back()->with('error', $e->getMessage());
                 }
 
                 SaleDetail::create([
@@ -257,22 +240,12 @@ class SalesController extends Controller
             }
 
             // Restaurar stock y eliminar detalles
+            // Restaurar stock y eliminar detalles
             $saleDetails = SaleDetail::where('sale_id', $id)->get();
             foreach ($saleDetails as $detail) {
-                $product = Product::find($detail->product_id);
+                $product = Product::with('components.childProduct')->find($detail->product_id);
                 if ($product) {
-                    if ($product->type == 'combo') {
-                        // Restaurar stock de componentes
-                        foreach ($product->components as $component) {
-                             $childProduct = $component->childProduct;
-                             if ($childProduct) {
-                                 $qtyToRestore = $component->quantity * $detail->quantity;
-                                 $childProduct->increment('stock', $qtyToRestore);
-                             }
-                        }
-                    } else {
-                        $product->increment('stock', $detail->quantity);
-                    }
+                    $this->processStock($product, $detail->quantity, 'restore');
                 }
                 $detail->delete();
             }
@@ -289,6 +262,47 @@ class SalesController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->route('sales.index')->with('error', 'Error al eliminar la venta: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Recursively process stock (deduct or restore)
+     * 
+     * @param Product $product
+     * @param float $quantity
+     * @param string $action 'deduct' or 'restore'
+     */
+    private function processStock($product, $quantity, $action = 'deduct')
+    {
+        // Load components if not already loaded
+        if (!$product->relationLoaded('components')) {
+            $product->load('components.childProduct');
+        }
+
+        // If product is a combo or has components (recipe), process components recursively
+        if ($product->type === 'combo' || $product->components->count() > 0) {
+            foreach ($product->components as $component) {
+                if (!$component->childProduct) {
+                    continue;
+                }
+                
+                $componentQty = $component->quantity * $quantity;
+                
+                // Recursively process the child product
+                $childProduct = $component->childProduct;
+                
+                $this->processStock($childProduct, $componentQty, $action);
+            }
+        } else {
+            // Base case: Leaf node (Supply or Simple Product without components)
+            if ($action === 'deduct') {
+                if ($product->stock < $quantity) {
+                     throw new \Exception("Stock insuficiente para: " . $product->name . " (Req: $quantity, Disp: " . $product->stock . ")");
+                }
+                $product->decrement('stock', $quantity);
+            } else {
+                $product->increment('stock', $quantity);
+            }
         }
     }
 }
