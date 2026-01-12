@@ -180,7 +180,7 @@ export default function Index({ categories }) {
                         <label htmlFor="name" className="form-label">Nombre de la Categoría</label>
                         <input
                             type="text"
-                            className="form-control"
+                            className="form-control input-clean"
                             id="name"
                             required
                             value={data.name}
@@ -194,7 +194,7 @@ export default function Index({ categories }) {
                     <div className="mb-3">
                         <label htmlFor="type" className="form-label">Tipo Interno</label>
                         <select
-                            className="form-select"
+                            className="form-select input-clean"
                             id="type"
                             value={data.type}
                             onChange={(e) => setData('type', e.target.value)}

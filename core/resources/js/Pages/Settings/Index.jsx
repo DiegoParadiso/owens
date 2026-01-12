@@ -237,7 +237,7 @@ export default function Index({ users }) {
                         <label className="form-label">Nombre</label>
                         <input
                             type="text"
-                            className="form-control"
+                            className="form-control input-clean"
                             value={data.name}
                             onChange={e => setData('name', e.target.value)}
                             required
@@ -248,7 +248,7 @@ export default function Index({ users }) {
                         <label className="form-label">Email</label>
                         <input
                             type="email"
-                            className="form-control"
+                            className="form-control input-clean"
                             value={data.email}
                             onChange={e => setData('email', e.target.value)}
                             required
@@ -259,7 +259,7 @@ export default function Index({ users }) {
                         <label className="form-label">Contraseña {editingUser && <span className="text-muted small">(Dejar en blanco para mantener)</span>}</label>
                         <input
                             type="password"
-                            className="form-control"
+                            className="form-control input-clean"
                             value={data.password}
                             onChange={e => setData('password', e.target.value)}
                             required={!editingUser}
@@ -269,7 +269,7 @@ export default function Index({ users }) {
                     <div className="mb-3">
                         <label className="form-label">Rol</label>
                         <select
-                            className="form-select"
+                            className="form-select input-clean"
                             value={data.role}
                             onChange={e => setData('role', e.target.value)}
                             required

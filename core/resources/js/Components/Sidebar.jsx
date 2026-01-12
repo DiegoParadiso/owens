@@ -29,7 +29,9 @@ export default function Sidebar({ isOpen, toggleSidebar, darkMode }) {
                         <div className="d-flex align-items-center ms-4 mb-4">
                             <div className="position-relative">
                                 <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold" style={{ width: '35px', height: '35px', backgroundColor: 'var(--border-color)', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                                    AU
+                                    <span className="material-symbols-outlined" style={{ fontSize: '24px', color: 'var(--text-muted)' }}>
+                                        {user.role === 'admin' ? 'person_4' : (user.role === 'owner' ? 'person' : 'person_apron')}
+                                    </span>
                                 </div>
                                 <div className="bg-success rounded-circle border-2 border-white position-absolute end-0 bottom-0 p-1">
                                 </div>

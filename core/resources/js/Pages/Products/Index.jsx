@@ -137,9 +137,7 @@ export default function Index({ products }) {
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <h4 className="mb-0 fw-bold">Inventario</h4>
                     <div className="d-flex gap-2">
-                        <button className="btn btn-outline-secondary btn-sm rounded-pill px-3">
-                            <i className="bi bi-printer me-2"></i>Imprimir Etiquetas
-                        </button>
+
                         <button
                             className="btn btn-primary rounded-pill px-3"
                             onClick={() => setShowDrawer(true)}
@@ -283,7 +281,7 @@ export default function Index({ products }) {
                         <label htmlFor="name" className="form-label">Nombre del Producto</label>
                         <input
                             type="text"
-                            className="form-control"
+                            className="form-control input-clean"
                             id="name"
                             required
                             value={data.name}
@@ -297,7 +295,7 @@ export default function Index({ products }) {
                             <label htmlFor="price" className="form-label">Precio de Venta ($)</label>
                             <input
                                 type="number"
-                                className="form-control"
+                                className="form-control input-clean"
                                 id="price"
                                 min="0"
                                 required
@@ -316,29 +314,25 @@ export default function Index({ products }) {
                         </label>
                         <input
                             type="number"
-                            className="form-control"
+                            className="form-control input-clean input-natural"
                             id="stock"
                             min="0"
                             step="1"
                             required
                             value={data.type === 'supply' && data.conversion_factor && data.conversion_factor > 0
-                                ? Math.floor(data.stock / data.conversion_factor) // Display in Purchase Units, integer only
+                                ? (data.stock === '' ? '' : Math.floor(data.stock / data.conversion_factor)) // Display in Purchase Units, integer only
                                 : data.stock}
-                            onKeyDown={(e) => {
-                                if (e.key === '.' || e.key === ',' || e.key === 'e') {
-                                    e.preventDefault();
-                                }
-                            }}
                             onChange={(e) => {
                                 const val = e.target.value;
-                                if (data.type === 'supply' && data.conversion_factor && data.conversion_factor > 0) {
+                                if (val === '') {
+                                    setData('stock', '');
+                                } else if (data.type === 'supply' && data.conversion_factor && data.conversion_factor > 0) {
                                     // Save as Usage Units
-                                    setData('stock', val ? parseInt(val) * data.conversion_factor : '');
+                                    setData('stock', parseInt(val) * data.conversion_factor);
                                 } else {
-                                    setData('stock', val ? parseInt(val) : '');
+                                    setData('stock', parseInt(val));
                                 }
                             }}
-                            placeholder="0"
                         />
                         {data.type === 'supply' && data.conversion_factor && (
                             <div className="form-text mt-1" style={{ fontSize: '0.8rem' }}>
@@ -348,14 +342,14 @@ export default function Index({ products }) {
                     </div>
 
                     {data.type === 'supply' && (
-                        <div className="p-3 border rounded bg-light mb-3">
+                        <div className="p-3 rounded mb-3">
                             <h6 className="text-uppercase small fw-bold text-muted mb-3">Configuración de Inventario</h6>
 
                             <div className="mb-3">
                                 <label htmlFor="purchase_unit" className="form-label small">Unidad de Compra</label>
                                 <input
                                     type="text"
-                                    className="form-control"
+                                    className="form-control input-clean"
                                     id="purchase_unit"
                                     value={data.purchase_unit || ''}
                                     onChange={(e) => setData('purchase_unit', e.target.value)}
@@ -367,7 +361,7 @@ export default function Index({ products }) {
                                 <label htmlFor="usage_unit" className="form-label small">Unidad de Uso</label>
                                 <input
                                     type="text"
-                                    className="form-control"
+                                    className="form-control input-clean"
                                     id="usage_unit"
                                     value={data.usage_unit || ''}
                                     onChange={(e) => setData('usage_unit', e.target.value)}
@@ -379,16 +373,11 @@ export default function Index({ products }) {
                                 <label htmlFor="conversion_factor" className="form-label small">Factor de Conversión</label>
                                 <input
                                     type="number"
-                                    className="form-control"
+                                    className="form-control input-clean input-natural"
                                     id="conversion_factor"
                                     min="1"
                                     step="1"
                                     value={data.conversion_factor || ''}
-                                    onKeyDown={(e) => {
-                                        if (e.key === '.' || e.key === ',' || e.key === 'e') {
-                                            e.preventDefault();
-                                        }
-                                    }}
                                     onChange={(e) => {
                                         const newFactor = parseInt(e.target.value) || 0;
                                         // Calculate current Packs based on OLD factor (or current stock if factor was missing)

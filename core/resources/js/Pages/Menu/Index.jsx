@@ -285,7 +285,7 @@ export default function Index({ products = [], supplies = [], category = 'burger
             <Drawer
                 isOpen={showDrawer}
                 onClose={handleCloseDrawer}
-                title={editingItem ? 'Editar Ítem' : `Crear ${categoryNames[category].slice(0, -1)}`}
+                title={editingItem ? `Editar ${categoryNames[category].slice(0, -1)}` : `Crear ${categoryNames[category].slice(0, -1)}`}
                 footer={
                     <>
                         <button type="button" className="btn btn-light" onClick={handleCloseDrawer}>Cancelar</button>
@@ -300,7 +300,7 @@ export default function Index({ products = [], supplies = [], category = 'burger
                         <label htmlFor="name" className="form-label">Nombre</label>
                         <input
                             type="text"
-                            className="form-control"
+                            className="form-control input-clean"
                             id="name"
                             required
                             value={data.name}
@@ -312,7 +312,7 @@ export default function Index({ products = [], supplies = [], category = 'burger
                         <label htmlFor="price" className="form-label">Precio ($)</label>
                         <input
                             type="number"
-                            className="form-control"
+                            className="form-control input-clean"
                             id="price"
                             min="0"
                             step="0.01"
@@ -334,44 +334,65 @@ export default function Index({ products = [], supplies = [], category = 'burger
                             : 'Selecciona los insumos o productos base necesarios para preparar este ítem.'}
                     </p>
 
-                    {rows.map((row, index) => (
-                        <div key={row.id} className="d-flex gap-2 mb-2 align-items-start">
-                            <div className="flex-grow-1">
-                                <select
-                                    className="form-select form-select-sm"
-                                    value={row.child_product_id}
-                                    onChange={(e) => updateRow(row.id, 'child_product_id', e.target.value)}
-                                    required={category === 'combo'} // Required for combos, optional for others?
-                                >
-                                    <option value="">Seleccionar...</option>
-                                    {supplies.map(supply => (
-                                        <option key={supply.id} value={supply.id}>{supply.name} ({supply.category || supply.type})</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div style={{ width: '80px' }}>
-                                <input
-                                    type="number"
-                                    className="form-control form-control-sm text-center"
-                                    value={row.quantity}
-                                    min="0.01"
-                                    step="0.01"
-                                    onChange={(e) => updateRow(row.id, 'quantity', parseFloat(e.target.value) || 0)}
-                                    required={category === 'combo'}
-                                    placeholder="Cant."
-                                />
-                            </div>
-                            <button
-                                type="button"
-                                className="btn btn-icon-only text-danger"
-                                onClick={() => removeRow(row.id)}
-                                disabled={rows.length === 1 && category === 'combo'}
-                                style={{ width: '31px', height: '31px' }}
-                            >
-                                <span className="material-symbols-outlined">delete</span>
-                            </button>
-                        </div>
-                    ))}
+                    <div className="table-responsive mb-2">
+                        <table className="table table-sm table-borderless align-middle mb-0">
+                            <thead className="text-muted small text-uppercase">
+                                <tr>
+                                    <th style={{ width: '55%' }}>Producto</th>
+                                    <th style={{ width: '20%' }} className="text-center">Cant.</th>
+                                    <th style={{ width: '15%' }}>Unidad</th>
+                                    <th style={{ width: '10%' }}></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {rows.map((row, index) => (
+                                    <tr key={row.id}>
+                                        <td>
+                                            <select
+                                                className="form-select form-select-sm input-clean"
+                                                value={row.child_product_id}
+                                                onChange={(e) => updateRow(row.id, 'child_product_id', e.target.value)}
+                                                required={category === 'combo'}
+                                            >
+                                                <option value="">Seleccionar...</option>
+                                                {supplies.map(supply => (
+                                                    <option key={supply.id} value={supply.id}>{supply.name}</option>
+                                                ))}
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input
+                                                type="number"
+                                                className="form-control form-control-sm text-center input-clean"
+                                                value={row.quantity}
+                                                min="0.01"
+                                                step="0.01"
+                                                onChange={(e) => updateRow(row.id, 'quantity', e.target.value === '' ? '' : parseFloat(e.target.value))}
+                                                required={category === 'combo'}
+                                            />
+                                        </td>
+                                        <td className="small text-muted">
+                                            {(() => {
+                                                const selectedSupply = supplies.find(s => s.id == row.child_product_id);
+                                                return selectedSupply && selectedSupply.usage_unit ? selectedSupply.usage_unit : '-';
+                                            })()}
+                                        </td>
+                                        <td className="text-end">
+                                            <button
+                                                type="button"
+                                                className="btn btn-icon-only text-danger"
+                                                onClick={() => removeRow(row.id)}
+                                                disabled={rows.length === 1 && category === 'combo'}
+                                                style={{ width: '31px', height: '31px' }}
+                                            >
+                                                <span className="material-symbols-outlined">delete</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
 
                     <button type="button" className="btn btn-sm btn-outline-secondary mt-2 w-100" onClick={addRow}>
                         <i className="bi bi-plus-lg me-1"></i> Agregar Componente

@@ -33,7 +33,7 @@ export default function Edit({ supplier }) {
                                     <label htmlFor="name" className="form-label">Nombre del Proveedor</label>
                                     <input
                                         type="text"
-                                        className="form-control border-0 border-bottom rounded-0"
+                                        className="form-control border-0 border-bottom rounded-0 input-clean"
                                         id="name"
                                         required
                                         value={data.name}
@@ -44,7 +44,7 @@ export default function Edit({ supplier }) {
                                 <div className="mb-4">
                                     <label htmlFor="contact_info" className="form-label">Información de Contacto</label>
                                     <textarea
-                                        className="form-control border-0 border-bottom rounded-0"
+                                        className="form-control border-0 border-bottom rounded-0 input-clean"
                                         id="contact_info"
                                         rows="3"
                                         value={data.contact_info}

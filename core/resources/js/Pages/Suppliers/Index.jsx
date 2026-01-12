@@ -173,7 +173,7 @@ export default function Index({ suppliers }) {
                         <label htmlFor="name" className="form-label">Nombre del Proveedor</label>
                         <input
                             type="text"
-                            className="form-control"
+                            className="form-control input-clean"
                             id="name"
                             required
                             value={data.name}
@@ -184,7 +184,7 @@ export default function Index({ suppliers }) {
                     <div className="mb-3">
                         <label htmlFor="contact_info" className="form-label">Información de Contacto</label>
                         <textarea
-                            className="form-control"
+                            className="form-control input-clean"
                             id="contact_info"
                             rows="3"
                             required

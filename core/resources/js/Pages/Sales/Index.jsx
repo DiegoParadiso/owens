@@ -96,7 +96,7 @@ export default function Index({ sales = [], products = [] }) {
 
         const missingComponents = [];
 
-        if (product.type === 'combo') {
+        if (product.type === 'combo' || (product.components && product.components.length > 0)) {
             if (product.components && product.components.length > 0) {
                 product.components.forEach(component => {
                     const requiredQty = component.quantity * quantity;
@@ -368,7 +368,7 @@ export default function Index({ sales = [], products = [] }) {
                                         <tr>
                                             <td>
                                                 <select
-                                                    className="form-select form-select-sm"
+                                                    className="form-select form-select-sm input-clean"
                                                     value={row.product_id}
                                                     onChange={(e) => updateRow(row.id, 'product_id', e.target.value)}
                                                     required
@@ -376,7 +376,7 @@ export default function Index({ sales = [], products = [] }) {
                                                     <option value="">Seleccionar</option>
                                                     {products.map(product => (
                                                         <option key={product.id} value={product.id}>
-                                                            {product.name} {product.type === 'combo' ? '(Combo)' : `(Stock: ${product.stock})`}
+                                                            {product.name} {product.type === 'combo' || (product.components && product.components.length > 0) ? '' : `(Stock: ${product.stock})`}
                                                         </option>
                                                     ))}
                                                 </select>
@@ -384,7 +384,7 @@ export default function Index({ sales = [], products = [] }) {
                                             <td>
                                                 <input
                                                     type="text"
-                                                    className="form-control form-control-sm font-tabular"
+                                                    className="form-control form-control-sm font-tabular input-clean"
                                                     value={formatCurrency(row.price)}
                                                     readOnly
                                                 />
@@ -394,18 +394,27 @@ export default function Index({ sales = [], products = [] }) {
                                                     <button
                                                         type="button"
                                                         className="btn btn-sm text-muted p-0"
-                                                        onClick={() => updateRow(row.id, 'quantity', Math.max(1, parseInt(row.quantity || 0) - 1))}
+                                                        onClick={() => updateRow(row.id, 'quantity', Math.max(1, (parseInt(row.quantity) || 0) - 1))}
                                                         style={{ width: '24px', height: '24px', fontSize: '1rem' }}
                                                     >
                                                         <i className="bi bi-dash"></i>
                                                     </button>
-                                                    <span className="fw-semibold" style={{ minWidth: '30px', textAlign: 'center' }}>
-                                                        {parseInt(row.quantity)}
-                                                    </span>
+                                                    <input
+                                                        type="number"
+                                                        className="form-control form-control-sm text-center p-0 input-clean"
+                                                        style={{ width: '50px', height: '28px' }}
+                                                        value={row.quantity}
+                                                        onChange={(e) => updateRow(row.id, 'quantity', e.target.value === '' ? '' : parseInt(e.target.value))}
+                                                        onBlur={(e) => {
+                                                            if (e.target.value === '' || parseInt(e.target.value) < 1) {
+                                                                updateRow(row.id, 'quantity', 1);
+                                                            }
+                                                        }}
+                                                    />
                                                     <button
                                                         type="button"
                                                         className="btn btn-sm text-muted p-0"
-                                                        onClick={() => updateRow(row.id, 'quantity', parseInt(row.quantity || 0) + 1)}
+                                                        onClick={() => updateRow(row.id, 'quantity', (parseInt(row.quantity) || 0) + 1)}
                                                         style={{ width: '24px', height: '24px', fontSize: '1rem' }}
                                                     >
                                                         <i className="bi bi-plus"></i>
@@ -415,7 +424,7 @@ export default function Index({ sales = [], products = [] }) {
                                             <td>
                                                 <input
                                                     type="text"
-                                                    className="form-control form-control-sm font-tabular fw-semibold"
+                                                    className="form-control form-control-sm font-tabular fw-semibold input-clean"
                                                     value={formatCurrency(row.total)}
                                                     readOnly
                                                 />
@@ -462,7 +471,7 @@ export default function Index({ sales = [], products = [] }) {
                                     <td colSpan="2">
                                         <input
                                             type="text"
-                                            className="form-control form-control-sm font-tabular fw-bold"
+                                            className="form-control form-control-sm font-tabular fw-bold input-clean"
                                             value={formatCurrency(grandTotal)}
                                             readOnly
                                         />
@@ -545,7 +554,7 @@ export default function Index({ sales = [], products = [] }) {
                                     <div key={index} className="row mb-2 align-items-center">
                                         <div className="col-5">
                                             <select
-                                                className="form-select form-select-sm"
+                                                className="form-select form-select-sm input-clean"
                                                 value={payment.method}
                                                 onChange={(e) => updateSplitPayment(index, 'method', e.target.value)}
                                             >
@@ -560,7 +569,7 @@ export default function Index({ sales = [], products = [] }) {
                                             <input
                                                 type="number"
                                                 step="0.01"
-                                                className="form-control form-control-sm"
+                                                className="form-control form-control-sm input-clean"
                                                 placeholder="Monto"
                                                 value={payment.amount}
                                                 onChange={(e) => updateSplitPayment(index, 'amount', e.target.value)}

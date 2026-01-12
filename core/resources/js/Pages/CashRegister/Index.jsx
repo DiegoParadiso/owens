@@ -101,7 +101,7 @@ export default function Index({ openRegister, currentBalance, income, expense, m
                             <label htmlFor="opening_amount" className="form-label">Monto Inicial</label>
                             <input
                                 type="number"
-                                className="form-control"
+                                className="form-control input-clean"
                                 id="opening_amount"
                                 min="0"
                                 step="0.01"
@@ -261,7 +261,7 @@ export default function Index({ openRegister, currentBalance, income, expense, m
                         <label htmlFor="closing_amount" className="form-label">Efectivo Contado Físicamente</label>
                         <input
                             type="number"
-                            className="form-control"
+                            className="form-control input-clean"
                             id="closing_amount"
                             min="0"
                             step="0.01"

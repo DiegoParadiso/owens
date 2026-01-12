@@ -28,8 +28,13 @@ class SalesController extends Controller
         // Include products with stock > 0 OR all combos (virtual stock)
         // For combos, load components to check stock availability
         $products = Product::where(function($query) {
-            $query->where('type', 'single')->where('stock', '>', 0)
-                  ->orWhere('type', 'combo');
+            // Include all Menu items (Burgers, Extras, Combos) regardless of stock
+            $query->whereIn('category', ['burger', 'extra', 'combo'])
+            // OR include regular products (Single) if they have stock
+                  ->orWhere(function($q) {
+                      $q->where('type', 'single')
+                        ->where('stock', '>', 0);
+                  });
         })
         ->with('components.childProduct')
         ->get();

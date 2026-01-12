@@ -526,7 +526,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                         <div className="col-md-6">
                             <label htmlFor="supplier_id" className="form-label">Proveedor</label>
                             <select
-                                className="form-select"
+                                className="form-select input-clean"
                                 id="supplier_id"
                                 value={data.supplier_id}
                                 onChange={(e) => setData('supplier_id', e.target.value)}
@@ -542,7 +542,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                             <label htmlFor="date" className="form-label">Fecha</label>
                             <input
                                 type="date"
-                                className="form-control"
+                                className="form-control input-clean"
                                 id="date"
                                 value={data.date}
                                 onChange={(e) => setData('date', e.target.value)}
@@ -574,7 +574,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                                                     {row.isNew ? (
                                                         <input
                                                             type="text"
-                                                            className="form-control form-control-sm"
+                                                            className="form-control form-control-sm input-clean"
                                                             placeholder="Nombre del Nuevo Producto"
                                                             value={row.productName}
                                                             onChange={(e) => updateRow(row.id, 'productName', e.target.value)}
@@ -583,7 +583,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                                                         />
                                                     ) : (
                                                         <select
-                                                            className="form-select form-select-sm flex-grow-1"
+                                                            className="form-select form-select-sm flex-grow-1 input-clean"
                                                             value={row.product_id}
                                                             onChange={(e) => handleProductSelect(row.id, e.target.value)}
                                                             required
@@ -609,7 +609,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                                                 </div>
 
                                                 {(row.isNew || row.product_id) && (
-                                                    <div className="mt-2 p-2 border rounded bg-light">
+                                                    <div className="mt-2 p-2 rounded" >
                                                         <div className="d-flex gap-1 mb-2">
                                                             <button
                                                                 type="button"
@@ -634,7 +634,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                                                                 <small className="text-muted text-nowrap" style={{ fontSize: '0.75rem' }}>Precio Venta:</small>
                                                                 <input
                                                                     type="number"
-                                                                    className="form-control form-control-sm"
+                                                                    className="form-control form-control-sm input-clean"
                                                                     placeholder="0.00"
                                                                     style={{ width: '100px' }}
                                                                     value={row.salePrice}
@@ -648,7 +648,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                                                             <div className="d-flex flex-column gap-2">
                                                                 <input
                                                                     type="text"
-                                                                    className="form-control form-control-sm"
+                                                                    className="form-control form-control-sm input-clean"
                                                                     placeholder="Unidad de Compra (Pack, caja, etc.)"
                                                                     value={row.purchase_unit}
                                                                     onChange={(e) => updateRow(row.id, 'purchase_unit', e.target.value)}
@@ -656,7 +656,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                                                                 />
                                                                 <input
                                                                     type="text"
-                                                                    className="form-control form-control-sm"
+                                                                    className="form-control form-control-sm input-clean"
                                                                     placeholder="Unidad de Uso (Medallón, feta, etc.)"
                                                                     value={row.usage_unit}
                                                                     onChange={(e) => updateRow(row.id, 'usage_unit', e.target.value)}
@@ -664,18 +664,13 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                                                                 />
                                                                 <input
                                                                     type="number"
-                                                                    className="form-control form-control-sm"
+                                                                    className="form-control form-control-sm input-clean input-natural"
                                                                     placeholder="Factor (6, 12, etc.)"
                                                                     value={row.conversion_factor}
                                                                     onChange={(e) => updateRow(row.id, 'conversion_factor', parseInt(e.target.value) || '')}
                                                                     style={{ fontSize: '0.75rem' }}
                                                                     min="1"
                                                                     step="1"
-                                                                    onKeyDown={(e) => {
-                                                                        if (e.key === '.' || e.key === ',' || e.key === 'e') {
-                                                                            e.preventDefault();
-                                                                        }
-                                                                    }}
                                                                 />
                                                             </div>
                                                         )}
@@ -688,18 +683,27 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                                                 <button
                                                     type="button"
                                                     className="btn btn-sm text-muted p-0"
-                                                    onClick={() => updateRow(row.id, 'quantity', Math.max(1, parseInt(row.quantity || 0) - 1))}
+                                                    onClick={() => updateRow(row.id, 'quantity', Math.max(1, (parseInt(row.quantity) || 0) - 1))}
                                                     style={{ width: '24px', height: '24px', fontSize: '1rem' }}
                                                 >
                                                     <i className="bi bi-dash"></i>
                                                 </button>
-                                                <span className="fw-semibold" style={{ minWidth: '30px', textAlign: 'center' }}>
-                                                    {parseInt(row.quantity)}
-                                                </span>
+                                                <input
+                                                    type="number"
+                                                    className="form-control form-control-sm text-center p-0 input-clean"
+                                                    style={{ width: '50px', height: '28px' }}
+                                                    value={row.quantity}
+                                                    onChange={(e) => updateRow(row.id, 'quantity', e.target.value === '' ? '' : parseInt(e.target.value))}
+                                                    onBlur={(e) => {
+                                                        if (e.target.value === '' || parseInt(e.target.value) < 1) {
+                                                            updateRow(row.id, 'quantity', 1);
+                                                        }
+                                                    }}
+                                                />
                                                 <button
                                                     type="button"
                                                     className="btn btn-sm text-muted p-0"
-                                                    onClick={() => updateRow(row.id, 'quantity', parseInt(row.quantity || 0) + 1)}
+                                                    onClick={() => updateRow(row.id, 'quantity', (parseInt(row.quantity) || 0) + 1)}
                                                     style={{ width: '24px', height: '24px', fontSize: '1rem' }}
                                                 >
                                                     <i className="bi bi-plus"></i>
@@ -709,7 +713,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                                         <td>
                                             <input
                                                 type="text"
-                                                className="form-control form-control-sm"
+                                                className="form-control form-control-sm input-clean"
                                                 value={row.unit_cost || ''}
                                                 onChange={(e) => updateRow(row.id, 'unit_cost', parseFloat(e.target.value) || 0)}
                                                 placeholder="Costo"
@@ -718,7 +722,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                                         <td>
                                             <input
                                                 type="text"
-                                                className="form-control form-control-sm font-tabular fw-semibold"
+                                                className="form-control form-control-sm font-tabular fw-semibold input-clean"
                                                 value={formatCurrency(row.subtotal, 2)}
                                                 readOnly
                                             />
@@ -743,7 +747,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                                     <td colSpan="2">
                                         <input
                                             type="text"
-                                            className="form-control form-control-sm font-tabular fw-bold"
+                                            className="form-control form-control-sm font-tabular fw-bold input-clean"
                                             value={formatCurrency(grandTotal, 2)}
                                             readOnly
                                         />

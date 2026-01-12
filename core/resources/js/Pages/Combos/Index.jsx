@@ -255,7 +255,7 @@ export default function Index({ combos = [], products = [] }) {
                         <label htmlFor="name" className="form-label">Nombre del Combo</label>
                         <input
                             type="text"
-                            className="form-control"
+                            className="form-control input-clean"
                             id="name"
                             required
                             value={data.name}
@@ -267,7 +267,7 @@ export default function Index({ combos = [], products = [] }) {
                         <label htmlFor="price" className="form-label">Precio ($)</label>
                         <input
                             type="number"
-                            className="form-control"
+                            className="form-control input-clean"
                             id="price"
                             min="0"
                             required
@@ -279,49 +279,64 @@ export default function Index({ combos = [], products = [] }) {
 
                     <h6 className="text-uppercase small fw-bold text-muted mb-3">Componentes</h6>
 
-                    {rows.map((row, index) => (
-                        <div key={row.id} className="d-flex gap-2 mb-2 align-items-start">
-                            <div className="flex-grow-1">
-                                <select
-                                    className="form-select form-select-sm"
-                                    value={row.child_product_id}
-                                    onChange={(e) => updateRow(row.id, 'child_product_id', e.target.value)}
-                                    required
-                                >
-                                    <option value="">Producto...</option>
-                                    {products.map(product => (
-                                        <option key={product.id} value={product.id}>{product.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div style={{ width: '80px' }}>
-                                <input
-                                    type="number"
-                                    className="form-control form-control-sm text-center"
-                                    value={row.quantity}
-                                    min="1"
-                                    step="1"
-                                    onKeyDown={(e) => {
-                                        if (e.key === '.' || e.key === ',' || e.key === 'e') {
-                                            e.preventDefault();
-                                        }
-                                    }}
-                                    onChange={(e) => updateRow(row.id, 'quantity', parseInt(e.target.value) || 0)}
-                                    required
-                                    placeholder="Cant."
-                                />
-                            </div>
-                            <button
-                                type="button"
-                                className="btn btn-icon-only text-danger"
-                                onClick={() => removeRow(row.id)}
-                                disabled={rows.length === 1}
-                                style={{ width: '31px', height: '31px' }}
-                            >
-                                <span className="material-symbols-outlined">delete</span>
-                            </button>
-                        </div>
-                    ))}
+                    <div className="table-responsive mb-2">
+                        <table className="table table-sm table-borderless align-middle mb-0">
+                            <thead className="text-muted small text-uppercase">
+                                <tr>
+                                    <th style={{ width: '70%' }}>Producto</th>
+                                    <th style={{ width: '20%' }} className="text-center">Cant.</th>
+                                    <th style={{ width: '10%' }}></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {rows.map((row, index) => (
+                                    <tr key={row.id}>
+                                        <td>
+                                            <select
+                                                className="form-select form-select-sm input-clean"
+                                                value={row.child_product_id}
+                                                onChange={(e) => updateRow(row.id, 'child_product_id', e.target.value)}
+                                                required
+                                            >
+                                                <option value="">Producto...</option>
+                                                {products.map(product => (
+                                                    <option key={product.id} value={product.id}>{product.name}</option>
+                                                ))}
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input
+                                                type="number"
+                                                className="form-control form-control-sm text-center input-clean input-natural"
+                                                value={row.quantity}
+                                                min="1"
+                                                step="1"
+                                                onKeyDown={(e) => {
+                                                    if (e.key === '.' || e.key === ',' || e.key === 'e') {
+                                                        e.preventDefault();
+                                                    }
+                                                }}
+                                                onChange={(e) => updateRow(row.id, 'quantity', parseInt(e.target.value) || 0)}
+                                                required
+                                                placeholder="0"
+                                            />
+                                        </td>
+                                        <td className="text-end">
+                                            <button
+                                                type="button"
+                                                className="btn btn-icon-only text-danger"
+                                                onClick={() => removeRow(row.id)}
+                                                disabled={rows.length === 1}
+                                                style={{ width: '31px', height: '31px' }}
+                                            >
+                                                <span className="material-symbols-outlined">delete</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
 
                     <button type="button" className="btn btn-sm btn-outline-secondary mt-2 w-100" onClick={addRow}>
                         <i className="bi bi-plus-lg me-1"></i> Agregar Componente

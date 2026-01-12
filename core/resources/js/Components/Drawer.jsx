@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-export default function Drawer({ isOpen, onClose, title, children, footer, width = '500px' }) {
+export default function Drawer({ isOpen, onClose, title, children, footer, width = '800px' }) {
     useEffect(() => {
         const handleEsc = (e) => {
             if (e.key === 'Escape') onClose();

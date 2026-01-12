@@ -74,28 +74,26 @@ h6,
     border-color: var(--primary) !important;
 }
 
-/* Secondary/Success/Warning/Info -> Grayscale/Dark for Minimalism */
+/* Secondary/Success/Warning/Info -> Standard Colors */
 .btn-success,
 .bg-success {
-    background-color: var(--text-main) !important;
-    /* Adaptive dark/light */
-    border-color: var(--text-main) !important;
-    color: var(--bg-card) !important;
-    /* Inverse text */
+    background-color: #198754 !important;
+    border-color: #198754 !important;
+    color: #fff !important;
 }
 
 .btn-warning,
 .bg-warning {
-    background-color: var(--text-muted) !important;
-    border-color: var(--text-muted) !important;
-    color: #fff !important;
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+    color: #000 !important;
 }
 
 .btn-info,
 .bg-info {
-    background-color: #adb5bd !important;
-    border-color: #adb5bd !important;
-    color: #fff !important;
+    background-color: #0dcaf0 !important;
+    border-color: #0dcaf0 !important;
+    color: #000 !important;
 }
 
 .text-success {
@@ -606,6 +604,98 @@ body.dark-mode .bg-danger {
 body.dark-mode {
     --primary: #FF5A5F;
     /* Vibrant Red */
+}
+
+/* Hide Input Steppers (Spin Buttons) */
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* Global Standardized Input Classes */
+.input-clean,
+select.input-clean,
+input.input-clean,
+.table .input-clean,
+.table select.input-clean,
+.table input.input-clean {
+    border: 0 !important;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.2) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    padding: 0.5rem 0 !important;
+    outline: none !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+}
+
+.input-clean:focus,
+select.input-clean:focus,
+input.input-clean:focus,
+.table .input-clean:focus,
+.table select.input-clean:focus,
+.table input.input-clean:focus {
+    border-bottom: 1px solid rgba(128, 128, 128, 0.5) !important;
+    box-shadow: none !important;
+    outline: none !important;
+    background: transparent !important;
+}
+
+/* Table Minimal Styles (Restored from style.css but cleaner) */
+.table-minimal {
+    width: 100%;
+    margin-bottom: 1rem;
+    color: var(--text-main);
+    border-collapse: collapse;
+}
+
+.table-minimal thead th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    background-color: var(--table-header-bg);
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    border-left: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+}
+
+.table-minimal tbody td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    border-left: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+    color: var(--text-main);
+    vertical-align: middle;
+}
+
+.table-minimal tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+body.dark-mode .table-minimal tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* Marker class for natural numbers (integers only) - Logic in app.jsx */
+.input-natural {
+    /* No specific styling, just behavior */
+    box-sizing: border-box;
 }
 
 /* --- Dashboard Redesign Semantic Classes --- */

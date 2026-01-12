@@ -302,7 +302,7 @@ export default function Index({ expenses = [], categories = [] }) {
                         <label htmlFor="description" className="form-label">Descripción</label>
                         <input
                             type="text"
-                            className="form-control"
+                            className="form-control input-clean"
                             id="description"
                             required
                             value={data.description}
@@ -314,7 +314,7 @@ export default function Index({ expenses = [], categories = [] }) {
                         <label htmlFor="amount" className="form-label">Monto ($)</label>
                         <input
                             type="number"
-                            className="form-control"
+                            className="form-control input-clean"
                             id="amount"
                             min="0"
                             step="0.01"
@@ -327,7 +327,7 @@ export default function Index({ expenses = [], categories = [] }) {
                     <div className="mb-3">
                         <label htmlFor="category_id" className="form-label">Categoría</label>
                         <select
-                            className="form-select"
+                            className="form-select input-clean"
                             id="category_id"
                             value={data.category_id}
                             onChange={(e) => setData('category_id', e.target.value)}
@@ -346,7 +346,7 @@ export default function Index({ expenses = [], categories = [] }) {
                             <label htmlFor="date" className="form-label">Fecha</label>
                             <input
                                 type="date"
-                                className="form-control"
+                                className="form-control input-clean"
                                 id="date"
                                 value={data.date}
                                 onChange={(e) => setData('date', e.target.value)}
@@ -357,7 +357,7 @@ export default function Index({ expenses = [], categories = [] }) {
                             <label htmlFor="time" className="form-label">Hora</label>
                             <input
                                 type="time"
-                                className="form-control"
+                                className="form-control input-clean"
                                 id="time"
                                 value={data.time}
                                 onChange={(e) => setData('time', e.target.value)}
@@ -432,7 +432,7 @@ export default function Index({ expenses = [], categories = [] }) {
                                     <div key={index} className="row mb-2 align-items-center">
                                         <div className="col-5">
                                             <select
-                                                className="form-select form-select-sm"
+                                                className="form-select form-select-sm input-clean"
                                                 value={payment.method}
                                                 onChange={(e) => updateSplitPayment(index, 'method', e.target.value)}
                                             >
@@ -447,7 +447,7 @@ export default function Index({ expenses = [], categories = [] }) {
                                             <input
                                                 type="number"
                                                 step="0.01"
-                                                className="form-control form-control-sm"
+                                                className="form-control form-control-sm input-clean"
                                                 placeholder="Monto"
                                                 value={payment.amount}
                                                 onChange={(e) => updateSplitPayment(index, 'amount', e.target.value)}

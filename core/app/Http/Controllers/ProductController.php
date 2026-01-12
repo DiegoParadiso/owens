@@ -6,10 +6,7 @@ use App\Models\LogStock;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\DB;
-use Milon\Barcode\Facades\DNS1DFacade;
+
 
 class ProductController extends Controller
 {
@@ -21,7 +18,11 @@ class ProductController extends Controller
         $search = $request->input('search');
         $perPage = $request->input('per_page', 10);
 
-        $products = Product::whereIn('type', ['single', 'supply']);
+        $products = Product::whereIn('type', ['single', 'supply'])
+            ->where(function ($query) {
+                $query->whereNotIn('category', ['burger', 'extra', 'combo'])
+                      ->orWhereNull('category');
+            });
         
         if ($search) {
             $products->where(function($q) use ($search) {
@@ -178,35 +179,7 @@ class ProductController extends Controller
         return view('admin.product.logproduct', compact('title', 'subtitle', 'products'));
     }
     */
-    public function printLabel(Request $request)
-    {
-        $id_produk = $request->id_produk;
-        $barcodes = [];
 
-        if (is_array($id_produk)) {
-            foreach ($id_produk as $id) {
-                $id = (string) $id;
-                $product = Product::find($id);
-                $harga = $product->price;
-                $nama_produk = $product->name;
-                $barcode = DNS1DFacade::getBarcodeHTML($id, 'C128');
-                $barcodes[] = ['barcode' => $barcode, 'harga' => $harga, 'nama_produk' => $nama_produk];
-            }
-        } else {
-            $id_produk = (string) $id_produk;
-            $product = Product::find($id_produk);
-            $harga = $product->price;
-            $nama_produk = $product->name;
-            $barcode = DNS1DFacade::getBarcodeHTML($id_produk, 'C128');
-            $barcodes[] = ['barcode' => $barcode, 'harga' => $harga, 'nama_produk' => $nama_produk];
-        }
-        $pdf = Pdf::loadView('admin.product.printlabel', compact('barcodes'));
-
-        $file_path = storage_path('app/public/barcodes.pdf');
-        $pdf->save($file_path);
-
-        return response()->json(['url' => asset('storage/barcodes.pdf')]);
-    }
 
     public function createCombo()
     {

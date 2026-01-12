@@ -37,7 +37,7 @@ export default function Index({ date: initialDate, sales = 0, expenses = 0, purc
                     <form onSubmit={handleFilter} className="d-flex align-items-center gap-2">
                         <input
                             type="date"
-                            className="form-control form-control-sm border-0 bg-transparent text-end px-2"
+                            className="form-control form-control-sm border-0 bg-transparent text-end px-2 input-clean"
                             style={{ maxWidth: '140px' }}
                             value={date}
                             onChange={(e) => setDate(e.target.value)}
