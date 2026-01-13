@@ -279,35 +279,58 @@ class SalesController extends Controller
      */
     private function processStock($product, $quantity, $action = 'deduct')
     {
-        // Load components if not already loaded
-        if (!$product->relationLoaded('components')) {
-            $product->load('components.childProduct');
-        }
+        // SMART DEDUCTION LOGIC
+        // 1. Try to deduct from the product's own stock first (if it's a "manufactured" item like Salsa or a simple supply)
+        // 2. If stock is insufficient (or 0), check if it has components (recipe) and deduct from them.
+        
+        $stockToDeduct = 0;
+        $remainingQty = $quantity;
 
-        // If product is a combo or has components (recipe), process components recursively
-        if ($product->type === 'combo' || $product->components->count() > 0) {
-            foreach ($product->components as $component) {
-                if (!$component->childProduct) {
-                    continue;
+        if ($action === 'deduct') {
+            // Check available stock
+            if ($product->stock > 0) {
+                if ($product->stock >= $quantity) {
+                    $stockToDeduct = $quantity;
+                    $remainingQty = 0;
+                } else {
+                    $stockToDeduct = $product->stock;
+                    $remainingQty = $quantity - $product->stock;
                 }
-                
-                $componentQty = $component->quantity * $quantity;
-                
-                // Recursively process the child product
-                $childProduct = $component->childProduct;
-                
-                $this->processStock($childProduct, $componentQty, $action);
             }
+
+            // Deduct available stock
+            if ($stockToDeduct > 0) {
+                $product->decrement('stock', $stockToDeduct);
+            }
+
+            // If there's still quantity needed to be covered and product has components
+            if ($remainingQty > 0) {
+                if ($product->components->count() > 0) {
+                    // Recurse for remaining quantity
+                    foreach ($product->components as $component) {
+                        if (!$component->childProduct) continue;
+
+                        $componentQty = $component->quantity * $remainingQty;
+                        $this->processStock($component->childProduct, $componentQty, 'deduct');
+                    }
+                } else {
+                    // No components and insufficient stock -> Error
+                    // Except if it's a 'service' or non-stock item? Assuming all items in sales need stock/recipe.
+                    // For now, strict check.
+                    if ($remainingQty > 0.001) { // Floating point tolerance
+                        // Allow negative stock for base items if forced? No, let's strict check.
+                        // Actually, if it's a base item (no components) and stock is 0, we can't deduct.
+                        // But wait, if $product->components->count() == 0, it falls here.
+                         throw new \Exception("Stock insuficiente para: " . $product->name . " (Faltan: $remainingQty)");
+                    }
+                }
+            }
+
         } else {
-            // Base case: Leaf node (Supply or Simple Product without components)
-            if ($action === 'deduct') {
-                if ($product->stock < $quantity) {
-                     throw new \Exception("Stock insuficiente para: " . $product->name . " (Req: $quantity, Disp: " . $product->stock . ")");
-                }
-                $product->decrement('stock', $quantity);
-            } else {
-                $product->increment('stock', $quantity);
-            }
+            // Restore logic
+            // Ideally we track how it was deducted, but for simplicity we restore to STOCK.
+            // This treats the cancellation as if we "produced" the item back or returned it to shelf.
+            $product->increment('stock', $quantity);
         }
     }
 }

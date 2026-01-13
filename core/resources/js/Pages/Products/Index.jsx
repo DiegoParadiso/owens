@@ -10,6 +10,8 @@ export default function Index({ products }) {
     const [showDrawer, setShowDrawer] = useState(false);
     const [editingProduct, setEditingProduct] = useState(null);
     const [selectedProducts, setSelectedProducts] = useState([]);
+    const [showUsageConfig, setShowUsageConfig] = useState(false); // New state for toggle
+    const [usageCalcMode, setUsageCalcMode] = useState('direct'); // 'direct' or 'purchase'
     const { data, setData, post, put, processing, errors, reset, delete: destroy } = useForm({
         name: '',
         type: 'single',
@@ -18,6 +20,8 @@ export default function Index({ products }) {
         purchase_unit: '',
         usage_unit: '',
         conversion_factor: '',
+        usage_factor: '', // Added missing field
+        base_unit: '', // Added missing field
     });
 
     const formatCurrency = (amount, decimals = 0) => {
@@ -73,6 +77,7 @@ export default function Index({ products }) {
 
     const handleEdit = (product) => {
         setEditingProduct(product);
+        setShowUsageConfig(!!product.usage_unit); // Initialize toggle state
         setData({
             name: product.name,
             type: product.type || 'single',
@@ -81,12 +86,15 @@ export default function Index({ products }) {
             purchase_unit: product.purchase_unit,
             usage_unit: product.usage_unit,
             conversion_factor: product.conversion_factor ? parseFloat(product.conversion_factor) : '',
+            usage_factor: product.usage_factor ? parseFloat(product.usage_factor) : '',
+            base_unit: product.base_unit,
         });
         setShowDrawer(true);
     };
 
     const openEditDrawer = (product) => {
         setEditingProduct(product);
+        setShowUsageConfig(!!product.usage_unit); // Initialize toggle state
         setData({
             name: product.name,
             type: product.type || 'single',
@@ -95,6 +103,8 @@ export default function Index({ products }) {
             purchase_unit: product.purchase_unit,
             usage_unit: product.usage_unit,
             conversion_factor: product.conversion_factor ? parseFloat(product.conversion_factor) : '',
+            usage_factor: product.usage_factor ? parseFloat(product.usage_factor) : '',
+            base_unit: product.base_unit,
         });
         setShowDrawer(true);
     };
@@ -175,7 +185,18 @@ export default function Index({ products }) {
                                         <td className="font-tabular fw-semibold">
                                             {product.price ? formatCurrency(product.price) : <span className="text-muted">-</span>}
                                         </td>
-                                        <td className="font-tabular text-muted">{formatCurrency(product.cost, 2)}</td>
+                                        <td className="font-tabular text-muted">
+                                            {product.cost > 0 ? (
+                                                <>
+                                                    {formatCurrency(product.cost, product.cost % 1 === 0 ? 0 : 2)}
+                                                    {product.purchase_unit && (
+                                                        <span style={{ fontSize: '0.7em', marginLeft: '4px' }}>/ {product.purchase_unit}</span>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <span className="text-muted">-</span>
+                                            )}
+                                        </td>
                                         <td>
                                             <div className="d-flex flex-column">
                                                 <div className="d-flex align-items-center gap-2">
@@ -184,14 +205,22 @@ export default function Index({ products }) {
                                                         style={{ width: '8px', height: '8px', display: 'inline-block' }}
                                                     ></span>
                                                     <span className="fw-medium">
-                                                        {Number(product.stock).toLocaleString()} {product.usage_unit || 'Unidades'}
+                                                        {Number(product.stock).toLocaleString()} {product.base_unit || product.usage_unit || 'Unidades'}
                                                     </span>
                                                 </div>
                                                 {product.type === 'supply' && (
                                                     <div className="d-flex flex-column">
-                                                        <small className="text-muted mt-1" style={{ fontSize: '0.7rem' }}>
-                                                            ~{parseFloat((product.stock / (product.conversion_factor || 1)).toFixed(1))} {product.purchase_unit || 'Packs'}
-                                                        </small>
+                                                        {product.usage_unit && product.usage_factor > 0 ? (
+                                                            <small className="text-muted mt-1" style={{ fontSize: '0.75rem' }}>
+                                                                ≈ {Math.floor(product.stock / product.usage_factor)} {product.usage_unit}
+                                                            </small>
+                                                        ) : (
+                                                            product.purchase_unit && product.conversion_factor > 0 && (
+                                                                <small className="text-muted mt-1" style={{ fontSize: '0.75rem' }}>
+                                                                    ≈ {Math.floor(product.stock / product.conversion_factor)} {product.purchase_unit}
+                                                                </small>
+                                                            )
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
@@ -306,6 +335,195 @@ export default function Index({ products }) {
                         </div>
                     )}
 
+                    {data.type === 'supply' && (
+                        <div className="p-3 bg-light rounded mb-3 border">
+                            <h6 className="text-uppercase small fw-bold text-muted mb-3 d-flex align-items-center gap-2">
+                                <i className="bi bi-sliders"></i> Configuración de Unidades
+                            </h6>
+
+                            {/* 1. Base Unit (Technical) */}
+                            <div className="mb-3">
+                                <label className="form-label small fw-bold text-primary">1. Unidad Base (Técnica)</label>
+                                <select
+                                    className="form-select form-select-sm input-clean"
+                                    value={data.base_unit || ''}
+                                    onChange={(e) => setData('base_unit', e.target.value)}
+                                    disabled={editingProduct && data.stock > 0 && !!editingProduct.base_unit}
+                                >
+                                    <option value="">Seleccionar Unidad...</option>
+                                    <optgroup label="Peso">
+                                        <option value="g">Gramos (g)</option>
+                                        <option value="kg">Kilogramos (kg)</option>
+                                    </optgroup>
+                                    <optgroup label="Volumen">
+                                        <option value="ml">Mililitros (ml)</option>
+                                        <option value="l">Litros (l)</option>
+                                    </optgroup>
+                                    <optgroup label="Conteo">
+                                        <option value="un">Unidades (un)</option>
+                                    </optgroup>
+                                </select>
+                                <div className="form-text" style={{ fontSize: '0.75rem' }}>
+                                    {editingProduct && data.stock > 0 && !!editingProduct.base_unit
+                                        ? <span className="text-danger"><i className="bi bi-lock-fill me-1"></i>Bloqueado porque el producto tiene stock.</span>
+                                        : "Es la unidad mínima con la que el sistema contará el stock."
+                                    }
+                                </div>
+                            </div>
+
+                            <hr className="my-3 border-secondary-subtle" />
+
+                            {/* 2. Purchase Unit -> Base Conversion */}
+                            <div className="mb-3">
+                                <label className="form-label small fw-bold text-success">2. Unidad de Compra</label>
+                                <div className="d-flex align-items-center gap-2">
+                                    <div style={{ flex: 1 }}>
+                                        <input
+                                            type="text"
+                                            className="form-control form-control-sm input-clean"
+                                            placeholder="Ej. Caja, Pack"
+                                            value={data.purchase_unit || ''}
+                                            onChange={(e) => setData('purchase_unit', e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="text-muted fw-bold">=</div>
+                                    <div style={{ flex: 1 }}>
+                                        <div className="input-group input-group-sm">
+                                            <input
+                                                type="number"
+                                                className="form-control form-control-sm"
+                                                placeholder="Cant."
+                                                value={data.conversion_factor || ''}
+                                                onChange={(e) => setData('conversion_factor', e.target.value)}
+                                            />
+                                            <span className="input-group-text bg-light text-muted">
+                                                {data.base_unit || 'Base'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="form-text mt-1" style={{ fontSize: '0.75rem' }}>
+                                    Ej: 1 <b>{data.purchase_unit || 'Caja'}</b> contiene <b>{data.conversion_factor || '1000'}</b> {data.base_unit || 'gramos'}.
+                                </div>
+                            </div>
+
+                            <hr className="my-3 border-secondary-subtle" />
+
+                            {/* 3. Usage Unit -> Base Conversion */}
+                            <div className="mb-2">
+                                <div className="form-check form-switch mb-2">
+                                    <input
+                                        className="form-check-input"
+                                        type="checkbox"
+                                        id="toggleUsageUnit"
+                                        checked={showUsageConfig}
+                                        onChange={(e) => {
+                                            const isChecked = e.target.checked;
+                                            setShowUsageConfig(isChecked);
+                                            if (!isChecked) {
+                                                setData(d => ({ ...d, usage_unit: '', usage_factor: '' }));
+                                            }
+                                        }}
+                                    />
+                                    <label className="form-check-label small fw-bold text-info" htmlFor="toggleUsageUnit">
+                                        3. Uso (Vista) <span className="text-muted fw-normal fst-italic ms-1"></span>
+                                    </label>
+                                </div>
+
+                                {showUsageConfig && (
+                                    <>
+                                        {/* Calculation Mode Toggle */}
+                                        <div className="d-flex gap-3 mb-2 ps-1">
+                                            <div className="form-check">
+                                                <input
+                                                    className="form-check-input"
+                                                    type="radio"
+                                                    name="usageCalcMode"
+                                                    id="modeDirect"
+                                                    checked={usageCalcMode === 'direct'}
+                                                    onChange={() => setUsageCalcMode('direct')}
+                                                />
+                                                <label className="form-check-label small text-muted" htmlFor="modeDirect">
+                                                    Peso Individual
+                                                </label>
+                                            </div>
+                                            <div className="form-check">
+                                                <input
+                                                    className="form-check-input"
+                                                    type="radio"
+                                                    name="usageCalcMode"
+                                                    id="modePurchase"
+                                                    checked={usageCalcMode === 'purchase'}
+                                                    disabled={!data.conversion_factor || !data.purchase_unit}
+                                                    onChange={() => setUsageCalcMode('purchase')}
+                                                />
+                                                <label className={`form-check-label small ${!data.conversion_factor ? 'text-muted opacity-50' : 'text-muted'}`} htmlFor="modePurchase">
+                                                    Contenido de {data.purchase_unit || 'Compra'}
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div className="d-flex align-items-center gap-2">
+                                            <div style={{ flex: 1 }}>
+                                                <input
+                                                    type="text"
+                                                    className="form-control form-control-sm input-clean"
+                                                    placeholder="Ej. Unidad, Porción"
+                                                    value={data.usage_unit || ''}
+                                                    onChange={(e) => setData('usage_unit', e.target.value)}
+                                                />
+                                            </div>
+                                            <div className="text-muted fw-bold">=</div>
+                                            <div style={{ flex: 1 }}>
+                                                <div className="input-group input-group-sm">
+                                                    {usageCalcMode === 'purchase' ? (
+                                                        // Purchase Mode: Input quantity per purchase unit
+                                                        <input
+                                                            type="number"
+                                                            className="form-control form-control-sm"
+                                                            placeholder="Cant."
+                                                            value={data.usage_factor && data.conversion_factor ? Math.round(data.conversion_factor / data.usage_factor) : ''}
+                                                            onChange={(e) => {
+                                                                const qty = parseFloat(e.target.value);
+                                                                if (qty > 0 && data.conversion_factor) {
+                                                                    // Calculate weight per unit: Total Weight / Total Qty
+                                                                    const weightPerUnit = data.conversion_factor / qty;
+                                                                    setData('usage_factor', weightPerUnit);
+                                                                } else {
+                                                                    setData('usage_factor', '');
+                                                                }
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        // Direct Mode: Input weight per unit
+                                                        <input
+                                                            type="number"
+                                                            className="form-control form-control-sm"
+                                                            placeholder="20"
+                                                            value={data.usage_factor ? parseFloat(Number(data.usage_factor).toFixed(4)) : ''}
+                                                            onChange={(e) => setData('usage_factor', e.target.value)}
+                                                        />
+                                                    )}
+
+                                                    <span className="input-group-text bg-light text-muted">
+                                                        {usageCalcMode === 'purchase' ? (data.usage_unit || 'Unidades') : (data.base_unit || 'Base')}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="form-text mt-1" style={{ fontSize: '0.75rem' }}>
+                                            {usageCalcMode === 'purchase' ? (
+                                                <>Ej: 1 <b>{data.purchase_unit || 'Caja'}</b> trae <b>{data.usage_factor && data.conversion_factor ? Math.round(data.conversion_factor / data.usage_factor) : '56'}</b> {data.usage_unit || 'Unidades'}.</>
+                                            ) : (
+                                                <>Ej: 1 <b>{data.usage_unit || 'Unidad'}</b> pesa <b>{data.usage_factor ? parseFloat(Number(data.usage_factor).toFixed(2)) : '20'}</b> {data.base_unit || 'gramos'}.</>
+                                            )}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     <div className="mb-3">
                         <label htmlFor="stock" className="form-label">
                             {data.type === 'supply' && data.purchase_unit
@@ -335,71 +553,29 @@ export default function Index({ products }) {
                             }}
                         />
                         {data.type === 'supply' && data.conversion_factor && (
-                            <div className="form-text mt-1" style={{ fontSize: '0.8rem' }}>
-                                Equivale a {data.stock ? parseFloat(Number(data.stock).toFixed(2)) : 0} {data.usage_unit || 'Unidades'}
+                            <div className="mt-2 p-2 bg-light border rounded small">
+                                <div className="d-flex justify-content-between align-items-center mb-1">
+                                    <span className="text-muted">Stock Técnico (Interno):</span>
+                                    <span className="fw-bold font-monospace">
+                                        {data.stock ? parseFloat(Number(data.stock).toFixed(2)) : 0} {data.base_unit || 'g/ml'}
+                                    </span>
+                                </div>
+                                {data.usage_factor > 0 && data.usage_unit && (
+                                    <div className="d-flex justify-content-between align-items-center text-primary border-top pt-1 mt-1 border-secondary-subtle">
+                                        <span>
+                                            <i className="bi bi-calculator me-1"></i>
+                                            Equivalencia ({data.usage_unit}):
+                                        </span>
+                                        <span className="fw-bold">
+                                            ≈ {data.stock ? Math.floor(Number(data.stock) / Number(data.usage_factor)) : 0}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
 
-                    {data.type === 'supply' && (
-                        <div className="p-3 rounded mb-3">
-                            <h6 className="text-uppercase small fw-bold text-muted mb-3">Configuración de Inventario</h6>
 
-                            <div className="mb-3">
-                                <label htmlFor="purchase_unit" className="form-label small">Unidad de Compra</label>
-                                <input
-                                    type="text"
-                                    className="form-control input-clean"
-                                    id="purchase_unit"
-                                    value={data.purchase_unit || ''}
-                                    onChange={(e) => setData('purchase_unit', e.target.value)}
-                                    placeholder="Ej. Pack, Caja, Bolsa"
-                                />
-                            </div>
-
-                            <div className="mb-3">
-                                <label htmlFor="usage_unit" className="form-label small">Unidad de Uso</label>
-                                <input
-                                    type="text"
-                                    className="form-control input-clean"
-                                    id="usage_unit"
-                                    value={data.usage_unit || ''}
-                                    onChange={(e) => setData('usage_unit', e.target.value)}
-                                    placeholder="Ej. Feta, Unidad, Gramo"
-                                />
-                            </div>
-
-                            <div className="mb-3">
-                                <label htmlFor="conversion_factor" className="form-label small">Factor de Conversión</label>
-                                <input
-                                    type="number"
-                                    className="form-control input-clean input-natural"
-                                    id="conversion_factor"
-                                    min="1"
-                                    step="1"
-                                    value={data.conversion_factor || ''}
-                                    onChange={(e) => {
-                                        const newFactor = parseInt(e.target.value) || 0;
-                                        // Calculate current Packs based on OLD factor (or current stock if factor was missing)
-                                        const currentPacks = (data.stock && data.conversion_factor)
-                                            ? data.stock / data.conversion_factor
-                                            : 0;
-
-                                        setData(prev => ({
-                                            ...prev,
-                                            conversion_factor: newFactor,
-                                            // Update stock (Units) to maintain the same number of Packs with the NEW factor
-                                            stock: currentPacks ? currentPacks * newFactor : prev.stock
-                                        }));
-                                    }}
-                                    placeholder="Ej. 8"
-                                />
-                                <div className="form-text mt-2" style={{ fontSize: '0.8rem' }}>
-                                    1 {data.purchase_unit || 'Pack'} contiene {data.conversion_factor || 'X'} {data.usage_unit || 'Unidades'}
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </form>
             </Drawer>
         </MainLayout >

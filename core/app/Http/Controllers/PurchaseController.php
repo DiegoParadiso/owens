@@ -29,7 +29,7 @@ class PurchaseController extends Controller
             ->withQueryString();
 
         $suppliers = Supplier::all();
-        $products = Product::all();
+        $products = Product::where('category', 'other')->get();
 
         return Inertia::render('Purchases/Index', compact('title', 'subtitle', 'purchases', 'suppliers', 'products'));
     }
@@ -37,7 +37,7 @@ class PurchaseController extends Controller
     public function create()
     {
         $suppliers = Supplier::all();
-        $products = Product::where('type', 'single')->get();
+        $products = Product::where('category', 'other')->get();
         return \Inertia\Inertia::render('Purchases/Create', [
             'suppliers' => $suppliers,
             'products' => $products
@@ -121,7 +121,7 @@ class PurchaseController extends Controller
                         'price' => ($request->product_type[$key] ?? 'single') === 'supply' ? null : $request->sale_price[$key],
                         'stock' => 0, // Will be updated below
                         'cost' => 0, // Will be updated below
-                        'type' => $request->product_type[$key] ?? 'single',
+                        'type' => $request->product_type[$key] ?? 'supply',
                         'user_id' => Auth::id(),
                         'purchase_unit' => !empty($request->purchase_unit[$key]) ? $request->purchase_unit[$key] : null,
                         'usage_unit' => !empty($request->usage_unit[$key]) ? $request->usage_unit[$key] : null,
@@ -289,7 +289,7 @@ class PurchaseController extends Controller
                         'price' => $request->sale_price[$key],
                         'stock' => 0, // Will be updated below
                         'cost' => 0,
-                        'type' => 'single',
+                        'type' => 'supply',
                         'user_id' => Auth::id(),
                         'conversion_factor' => 1,
                     ]);

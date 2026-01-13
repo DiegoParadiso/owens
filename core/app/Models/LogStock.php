@@ -12,5 +12,7 @@ class LogStock extends Model
         'product_id',
         'quantity',
         'user_id',
+        'type',
+        'description',
     ];
 }

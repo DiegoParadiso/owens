@@ -21,6 +21,8 @@ class Product extends Model // Changed class name from Produk to Product
         'purchase_unit',
         'usage_unit',
         'conversion_factor',
+        'base_unit',
+        'usage_factor',
         'user_id' // Changed from 'Users_id' to 'user_id'
     ];
 

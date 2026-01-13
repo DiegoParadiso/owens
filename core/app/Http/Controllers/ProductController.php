@@ -82,6 +82,8 @@ class ProductController extends Controller
             'purchase_unit' => 'nullable|string|max:50',
             'usage_unit' => 'nullable|string|max:50',
             'conversion_factor' => 'nullable|numeric|min:0.0001',
+            'base_unit' => 'nullable|string|max:50',
+            'usage_factor' => 'nullable|numeric|min:0.0001',
         ]);
         
         $validated['type'] = $request->input('type', 'single');
@@ -90,6 +92,7 @@ class ProductController extends Controller
         }
         $validated['user_id'] = auth()->id();
         $validated['conversion_factor'] = $request->input('conversion_factor', 1);
+        $validated['usage_factor'] = $request->input('usage_factor', 1);
         
         Product::create($validated);
         
@@ -113,10 +116,13 @@ class ProductController extends Controller
             'purchase_unit' => 'nullable|string|max:50',
             'usage_unit' => 'nullable|string|max:50',
             'conversion_factor' => 'nullable|numeric|min:0.0001',
+            'base_unit' => 'nullable|string|max:50',
+            'usage_factor' => 'nullable|numeric|min:0.0001',
         ]);
         
         $validate['user_id'] = Auth::user()->id;
         $validate['conversion_factor'] = $request->input('conversion_factor', 1);
+        $validate['usage_factor'] = $request->input('usage_factor', 1);
         
         // If type is supply (we might need to check current type if not in request, but usually it is)
         // Actually, type is not in validation for update, so we assume it's not changing or we should check.

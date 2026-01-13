@@ -13,6 +13,7 @@ use App\Http\Controllers\ExpenseCategoryController;
 use App\Http\Controllers\CashRegisterController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\ProductionController;
 
 Route::get('/', function () {
     return Inertia::render('Auth/Login');
@@ -82,4 +83,9 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/settings/users/{user}', [SettingsController::class, 'updateUser'])->name('settings.updateUser');
     Route::delete('/settings/users/{user}', [SettingsController::class, 'destroyUser'])->name('settings.destroyUser');
     Route::post('/settings/reset-database', [SettingsController::class, 'resetDatabase'])->name('settings.resetDatabase');
+    // Production
+    Route::get('/production/formulas', [ProductionController::class, 'formulas'])->name('production.formulas');
+    Route::post('/production/formulas', [ProductionController::class, 'storeFormula'])->name('production.storeFormula');
+    Route::get('/production', [ProductionController::class, 'index'])->name('production.index');
+    Route::post('/production', [ProductionController::class, 'store'])->name('production.store');
 });

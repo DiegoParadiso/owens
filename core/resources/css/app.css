@@ -852,3 +852,11 @@ body.dark-mode .table-minimal tbody tr:hover {
     padding: 0 !important;
     margin: 0 !important;
 }
+/* Adaptive Contrast Text (Black in Light Mode, White in Dark Mode) */
+.text-adaptive-contrast {
+    color: #000000 !important;
+}
+
+body.dark-mode .text-adaptive-contrast {
+    color: #ffffff !important;
+}
