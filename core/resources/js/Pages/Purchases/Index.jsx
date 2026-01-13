@@ -57,12 +57,12 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
         return data.split_payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
     };
 
-    const formatCurrency = (amount, decimals = 0) => {
+    const formatCurrency = (amount) => {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: 'USD',
-            minimumFractionDigits: decimals,
-            maximumFractionDigits: decimals
+            minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
+            maximumFractionDigits: 2
         }).format(amount);
     };
 
@@ -426,22 +426,20 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
 
                 <div className="card-minimal">
                     <div className="table-responsive">
-                        <table className="table-minimal">
+                        <table className="table-minimal align-top">
                             <thead>
                                 <tr>
-                                    <th scope="col">#</th>
-                                    <th scope="col">Fecha</th>
+                                    <th scope="col" style={{ width: '140px' }}>Fecha</th>
                                     <th scope="col">Proveedor</th>
                                     <th scope="col">Detalles</th>
-                                    <th scope="col">Total</th>
-                                    <th scope="col">Método Pago</th>
-                                    <th scope="col" className="text-end">Acciones</th>
+                                    <th scope="col" className="text-end" style={{ width: '130px' }}>Total</th>
+                                    <th scope="col" style={{ width: '130px' }}>Método Pago</th>
+                                    <th scope="col" className="text-center" style={{ width: '100px' }}>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {purchases.data.map((purchase, index) => (
                                     <tr key={purchase.id}>
-                                        <td className="text-muted">{(purchases.current_page - 1) * purchases.per_page + index + 1}</td>
                                         <td>{formatDate(purchase.date)}</td>
                                         <td>{purchase.supplier ? purchase.supplier.name : 'N/A'}</td>
                                         <td>
@@ -457,27 +455,27 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                                                 )}
                                             </ul>
                                         </td>
-                                        <td className="font-tabular fw-semibold">{formatCurrency(purchase.total_cost, 2)}</td>
+                                        <td className="font-tabular fw-semibold text-end">{formatCurrency(purchase.total_cost, 2)}</td>
                                         <td>
                                             <span className="badge bg-transparent border text-dark">
                                                 {formatPaymentMethod(purchase.payment_method)}
                                             </span>
                                         </td>
-                                        <td className="text-end">
-                                            <div className="d-flex justify-content-end gap-2">
+                                        <td className="text-center">
+                                            <div className="d-flex justify-content-center gap-1">
                                                 <button
-                                                    className="btn btn-icon-only bg-transparent border-0"
+                                                    className="btn btn-icon-only btn-action-icon bg-transparent border-0"
                                                     onClick={() => handleEdit(purchase)}
                                                     title="Editar"
                                                 >
-                                                    <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--text-muted)' }}>edit_square</span>
+                                                    <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>edit_square</span>
                                                 </button>
                                                 <button
-                                                    className="btn btn-icon-only bg-transparent border-0"
+                                                    className="btn btn-icon-only btn-action-icon bg-transparent border-0"
                                                     onClick={() => handleDelete(purchase.id)}
                                                     title="Eliminar"
                                                 >
-                                                    <span className="material-symbols-outlined" style={{ fontSize: '22px', color: 'var(--text-muted)', transform: 'translateY(-1px)' }}>delete</span>
+                                                    <span className="material-symbols-outlined" style={{ fontSize: '22px', transform: 'translateY(-1px)' }}>delete</span>
                                                 </button>
                                             </div>
                                         </td>
@@ -485,7 +483,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                                 ))}
                                 {purchases.data.length === 0 && (
                                     <tr>
-                                        <td colSpan="7" className="text-center py-4 text-muted">
+                                        <td colSpan="6" className="text-center py-4 text-muted">
                                             No hay compras registradas
                                         </td>
                                     </tr>

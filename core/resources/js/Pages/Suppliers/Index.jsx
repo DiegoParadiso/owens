@@ -96,36 +96,38 @@ export default function Index({ suppliers }) {
 
                 <div className="card-minimal">
                     <div className="table-responsive">
-                        <table className="table-minimal">
+                        <table className="table-minimal align-top">
                             <thead>
                                 <tr>
-                                    <th scope="col">#</th>
                                     <th scope="col">Nombre</th>
                                     <th scope="col">Información de Contacto</th>
-                                    <th scope="col" className="text-end">Acciones</th>
+                                    <th scope="col" className="text-center" style={{ width: '100px' }}>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {suppliers.data.map((supplier, index) => (
                                     <tr key={supplier.id}>
-                                        <td className="text-muted">{(suppliers.current_page - 1) * suppliers.per_page + index + 1}</td>
                                         <td className="fw-medium">{supplier.name}</td>
-                                        <td>{supplier.contact_info || '-'}</td>
-                                        <td className="text-end">
-                                            <div className="d-flex justify-content-end gap-2">
+                                        <td>
+                                            <div style={{ whiteSpace: 'pre-wrap', fontSize: '0.9rem', lineHeight: '1.4' }} className="text-muted">
+                                                {supplier.contact_info || '-'}
+                                            </div>
+                                        </td>
+                                        <td className="text-center">
+                                            <div className="d-flex justify-content-center gap-1">
                                                 <button
-                                                    className="btn btn-icon-only bg-transparent border-0"
+                                                    className="btn btn-icon-only btn-action-icon bg-transparent border-0"
                                                     onClick={() => handleEdit(supplier)}
                                                     title="Editar"
                                                 >
-                                                    <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--text-muted)' }}>edit_square</span>
+                                                    <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>edit_square</span>
                                                 </button>
                                                 <button
-                                                    className="btn btn-icon-only bg-transparent border-0"
+                                                    className="btn btn-icon-only btn-action-icon bg-transparent border-0"
                                                     onClick={() => handleDelete(supplier.id)}
                                                     title="Eliminar"
                                                 >
-                                                    <span className="material-symbols-outlined" style={{ fontSize: '22px', color: 'var(--text-muted)', transform: 'translateY(-1px)' }}>delete</span>
+                                                    <span className="material-symbols-outlined" style={{ fontSize: '22px', transform: 'translateY(-1px)' }}>delete</span>
                                                 </button>
                                             </div>
                                         </td>
@@ -133,7 +135,7 @@ export default function Index({ suppliers }) {
                                 ))}
                                 {suppliers.data.length === 0 && (
                                     <tr>
-                                        <td colSpan="4" className="text-center py-4 text-muted">
+                                        <td colSpan="3" className="text-center py-4 text-muted">
                                             No hay proveedores registrados
                                         </td>
                                     </tr>

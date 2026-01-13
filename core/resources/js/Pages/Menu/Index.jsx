@@ -31,7 +31,12 @@ export default function Index({ products = [], supplies = [], category = 'burger
     }, [category]);
 
     const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
+            maximumFractionDigits: 2
+        }).format(amount);
     };
 
     const addRow = () => {
@@ -207,28 +212,26 @@ export default function Index({ products = [], supplies = [], category = 'burger
 
                 <div className="card-minimal">
                     <div className="table-responsive">
-                        <table className="table-minimal">
+                        <table className="table-minimal align-top">
                             <thead>
                                 <tr>
-                                    <th scope="col">#</th>
                                     <th scope="col">Nombre</th>
-                                    <th scope="col">Precio</th>
+                                    <th scope="col" className="text-end">Precio</th>
                                     <th scope="col">Receta / Componentes</th>
-                                    <th scope="col" className="text-end">Acciones</th>
+                                    <th scope="col" className="text-center" style={{ width: '100px' }}>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {products.data.map((item, index) => (
                                     <tr key={item.id}>
-                                        <td className="text-muted">{(products.current_page - 1) * products.per_page + index + 1}</td>
                                         <td className="fw-medium">{item.name}</td>
-                                        <td className="font-tabular fw-semibold">{formatCurrency(item.price)}</td>
+                                        <td className="font-tabular fw-bold text-end" style={{ fontSize: '1.05rem' }}>{formatCurrency(item.price)}</td>
                                         <td>
                                             <ul className="list-unstyled mb-0 small">
                                                 {item.components && item.components.length > 0 ? (
                                                     item.components.map((component, idx) => (
                                                         component.child_product ? (
-                                                            <li key={idx}>
+                                                            <li key={idx} className="mb-1">
                                                                 <span className="text-muted">{parseFloat(component.quantity)}x</span> {component.child_product.name}
                                                             </li>
                                                         ) : null
@@ -238,21 +241,21 @@ export default function Index({ products = [], supplies = [], category = 'burger
                                                 )}
                                             </ul>
                                         </td>
-                                        <td className="text-end">
-                                            <div className="d-flex justify-content-end gap-2">
+                                        <td className="text-center">
+                                            <div className="d-flex justify-content-center gap-1">
                                                 <button
-                                                    className="btn btn-icon-only bg-transparent border-0"
+                                                    className="btn btn-icon-only bg-transparent border-0 btn-action-icon"
                                                     onClick={() => handleEdit(item)}
                                                     title="Editar"
                                                 >
-                                                    <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--text-muted)' }}>edit_square</span>
+                                                    <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>edit_square</span>
                                                 </button>
                                                 <button
-                                                    className="btn btn-icon-only bg-transparent border-0"
+                                                    className="btn btn-icon-only bg-transparent border-0 btn-action-icon"
                                                     onClick={() => handleDelete(item.id)}
                                                     title="Eliminar"
                                                 >
-                                                    <span className="material-symbols-outlined" style={{ fontSize: '22px', color: 'var(--text-muted)', transform: 'translateY(-1px)' }}>delete</span>
+                                                    <span className="material-symbols-outlined" style={{ fontSize: '22px', transform: 'translateY(-1px)' }}>delete</span>
                                                 </button>
                                             </div>
                                         </td>
@@ -260,7 +263,7 @@ export default function Index({ products = [], supplies = [], category = 'burger
                                 ))}
                                 {products.data.length === 0 && (
                                     <tr>
-                                        <td colSpan="5" className="text-center py-4 text-muted">
+                                        <td colSpan="4" className="text-center py-4 text-muted">
                                             No hay {categoryNames[category].toLowerCase()} registrados
                                         </td>
                                     </tr>

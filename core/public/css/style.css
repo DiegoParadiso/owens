@@ -459,7 +459,10 @@ body.dark-mode .text-secondary {
     color: var(--text-muted) !important;
 }
 
-body.dark-mode .text-danger,
+body.dark-mode .text-danger {
+    color: #FF5A5F !important;
+}
+
 body.dark-mode .btn-danger {
     color: #FF5A5F !important;
     border-color: #FF5A5F !important;
@@ -831,4 +834,26 @@ body.dark-mode .swal-minimal .swal2-icon.swal2-success [class^='swal2-success-li
 
 body.dark-mode .swal-minimal .swal2-icon.swal2-success .swal2-success-ring {
     border-color: transparent !important;
+}
+
+/* Custom Alert Styles for Stock Warning */
+.alert-stock-warning {
+    background-color: #f8d7da !important;
+    color: #842029 !important;
+    border: 1px solid #f5c2c7 !important;
+}
+
+.alert-stock-warning .material-symbols-outlined {
+    color: #842029 !important;
+}
+
+/* Dark Mode Alert Overrides */
+body.dark-mode .alert-stock-warning {
+    background-color: rgba(220, 53, 69, 0.15) !important;
+    border: 1px solid rgba(220, 53, 69, 0.2) !important;
+    color: #ff8a8f !important;
+}
+
+body.dark-mode .alert-stock-warning .material-symbols-outlined {
+    color: #ff8a8f !important;
 }

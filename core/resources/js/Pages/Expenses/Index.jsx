@@ -55,12 +55,12 @@ export default function Index({ expenses = [], categories = [] }) {
         return data.split_payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
     };
 
-    const formatCurrency = (amount, decimals = 2) => {
+    const formatCurrency = (amount) => {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: 'USD',
-            minimumFractionDigits: decimals,
-            maximumFractionDigits: decimals
+            minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
+            maximumFractionDigits: 2
         }).format(amount);
     };
 
@@ -211,22 +211,20 @@ export default function Index({ expenses = [], categories = [] }) {
 
                 <div className="card-minimal">
                     <div className="table-responsive">
-                        <table className="table-minimal">
+                        <table className="table-minimal align-top">
                             <thead>
                                 <tr>
-                                    <th scope="col">#</th>
-                                    <th scope="col">Fecha</th>
+                                    <th scope="col" style={{ width: '140px' }}>Fecha</th>
                                     <th scope="col">Descripción</th>
                                     <th scope="col">Categoría</th>
-                                    <th scope="col">Monto</th>
-                                    <th scope="col">Método Pago</th>
-                                    <th scope="col" className="text-end">Acciones</th>
+                                    <th scope="col" className="text-end" style={{ width: '130px' }}>Monto</th>
+                                    <th scope="col" style={{ width: '130px' }}>Método Pago</th>
+                                    <th scope="col" className="text-center" style={{ width: '100px' }}>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {expenses.data.map((expense, index) => (
                                     <tr key={expense.id}>
-                                        <td className="text-muted">{(expenses.current_page - 1) * expenses.per_page + index + 1}</td>
                                         <td>{formatDate(expense.date)}</td>
                                         <td className="fw-medium">{expense.description}</td>
                                         <td>
@@ -234,27 +232,27 @@ export default function Index({ expenses = [], categories = [] }) {
                                                 {expense.category ? expense.category.name : 'Sin categoría'}
                                             </span>
                                         </td>
-                                        <td className="font-tabular fw-semibold">{formatCurrency(expense.amount)}</td>
+                                        <td className="font-tabular fw-semibold text-end">{formatCurrency(expense.amount)}</td>
                                         <td>
                                             <span className="badge bg-transparent border text-dark">
                                                 {formatPaymentMethod(expense.payment_method)}
                                             </span>
                                         </td>
-                                        <td className="text-end">
-                                            <div className="d-flex justify-content-end gap-2">
+                                        <td className="text-center">
+                                            <div className="d-flex justify-content-center gap-1">
                                                 <button
-                                                    className="btn btn-icon-only bg-transparent border-0"
+                                                    className="btn btn-icon-only btn-action-icon bg-transparent border-0"
                                                     onClick={() => handleEdit(expense)}
                                                     title="Editar"
                                                 >
-                                                    <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--text-muted)' }}>edit_square</span>
+                                                    <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>edit_square</span>
                                                 </button>
                                                 <button
-                                                    className="btn btn-icon-only bg-transparent border-0"
+                                                    className="btn btn-icon-only btn-action-icon bg-transparent border-0"
                                                     onClick={() => handleDelete(expense.id)}
                                                     title="Eliminar"
                                                 >
-                                                    <span className="material-symbols-outlined" style={{ fontSize: '22px', color: 'var(--text-muted)', transform: 'translateY(-1px)' }}>delete</span>
+                                                    <span className="material-symbols-outlined" style={{ fontSize: '22px', transform: 'translateY(-1px)' }}>delete</span>
                                                 </button>
                                             </div>
                                         </td>
@@ -262,7 +260,7 @@ export default function Index({ expenses = [], categories = [] }) {
                                 ))}
                                 {expenses.data.length === 0 && (
                                     <tr>
-                                        <td colSpan="7" className="text-center py-4 text-muted">
+                                        <td colSpan="6" className="text-center py-4 text-muted">
                                             No hay gastos registrados
                                         </td>
                                     </tr>

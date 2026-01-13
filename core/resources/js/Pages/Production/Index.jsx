@@ -232,12 +232,14 @@ export default function Index({ products, history }) {
                                     </thead>
                                     <tbody>
                                         {ingredientStatus.map((ing, index) => (
-                                            <tr key={ing.id} style={{ borderBottom: index === ingredientStatus.length - 1 ? 'none' : '1px solid var(--bs-border-color)' }}>
+                                            <tr key={ing.id} style={{ borderBottom: index === ingredientStatus.length - 1 ? 'none' : '1px solid var(--border-color)' }}>
                                                 <td className="ps-3 py-2">
                                                     <div className="fw-medium text-body-emphasis small">{ing.name}</div>
                                                 </td>
-                                                <td className={`text-end py-2 small ${!ing.isEnough ? 'text-danger fw-bold' : 'text-muted'}`}>
-                                                    {Math.floor(ing.available)} {ing.unit}
+                                                <td className="text-end py-2 small text-muted">
+                                                    <span className={!ing.isEnough ? 'text-danger fw-bold' : ''}>
+                                                        {Math.floor(ing.available)} {ing.unit}
+                                                    </span>
                                                 </td>
                                                 <td className="text-end pe-3 py-2 fw-bold text-body-emphasis small">
                                                     -{Math.ceil(ing.required)} {ing.unit}
@@ -248,7 +250,7 @@ export default function Index({ products, history }) {
                                 </table>
                             </div>
                             {!canProduce && (
-                                <div className="alert alert-danger d-flex align-items-center mt-3 py-2 px-3 small border-0 bg-danger-subtle text-danger-emphasis">
+                                <div className="alert alert-danger d-flex align-items-center mt-3 py-2 px-3 small border-0 alert-stock-warning">
                                     <span className="material-symbols-outlined me-2 fill-icon" style={{ fontSize: '18px' }}>error</span>
                                     <div>
                                         <strong>Stock insuficiente.</strong> Revisa los ingredientes marcados.

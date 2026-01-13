@@ -24,12 +24,12 @@ export default function Index({ products }) {
         base_unit: '', // Added missing field
     });
 
-    const formatCurrency = (amount, decimals = 0) => {
+    const formatCurrency = (amount) => {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: 'USD',
-            minimumFractionDigits: decimals,
-            maximumFractionDigits: decimals
+            minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
+            maximumFractionDigits: 2
         }).format(amount);
     };
 
@@ -159,21 +159,19 @@ export default function Index({ products }) {
 
                 <div className="card-minimal">
                     <div className="table-responsive">
-                        <table className="table-minimal">
+                        <table className="table-minimal align-top">
                             <thead>
                                 <tr>
-                                    <th scope="col">#</th>
                                     <th scope="col">Nombre</th>
-                                    <th scope="col">Precio</th>
-                                    <th scope="col">Costo</th>
-                                    <th scope="col">Stock</th>
-                                    <th scope="col" className="text-end">Acciones</th>
+                                    <th scope="col" className="text-end">Precio</th>
+                                    <th scope="col" className="text-end">Costo</th>
+                                    <th scope="col" className="text-end">Stock</th>
+                                    <th scope="col" className="text-center" style={{ width: '100px' }}>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {products.data.map((product, index) => (
                                     <tr key={product.id}>
-                                        <td className="text-muted">{(products.current_page - 1) * products.per_page + index + 1}</td>
                                         <td className="fw-medium">
                                             <div className="d-flex align-items-center gap-2">
                                                 {product.name}
@@ -182,10 +180,10 @@ export default function Index({ products }) {
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="font-tabular fw-semibold">
+                                        <td className="font-tabular fw-semibold text-end">
                                             {product.price ? formatCurrency(product.price) : <span className="text-muted">-</span>}
                                         </td>
-                                        <td className="font-tabular text-muted">
+                                        <td className="font-tabular text-muted text-end">
                                             {product.cost > 0 ? (
                                                 <>
                                                     {formatCurrency(product.cost, product.cost % 1 === 0 ? 0 : 2)}
@@ -197,9 +195,9 @@ export default function Index({ products }) {
                                                 <span className="text-muted">-</span>
                                             )}
                                         </td>
-                                        <td>
-                                            <div className="d-flex flex-column">
-                                                <div className="d-flex align-items-center gap-2">
+                                        <td className="text-end">
+                                            <div className="d-flex flex-column align-items-end">
+                                                <div className="d-flex align-items-center gap-2 justify-content-end">
                                                     <span
                                                         className={`rounded-circle ${product.stock > 10 ? 'bg-success' : product.stock > 0 ? 'bg-warning' : 'bg-danger'}`}
                                                         style={{ width: '8px', height: '8px', display: 'inline-block' }}
@@ -209,7 +207,7 @@ export default function Index({ products }) {
                                                     </span>
                                                 </div>
                                                 {product.type === 'supply' && (
-                                                    <div className="d-flex flex-column">
+                                                    <div className="d-flex flex-column align-items-end">
                                                         {product.usage_unit && product.usage_factor > 0 ? (
                                                             <small className="text-muted mt-1" style={{ fontSize: '0.75rem' }}>
                                                                 ≈ {Math.floor(product.stock / product.usage_factor)} {product.usage_unit}
@@ -225,21 +223,21 @@ export default function Index({ products }) {
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="text-end">
-                                            <div className="d-flex justify-content-end gap-2">
+                                        <td className="text-center">
+                                            <div className="d-flex justify-content-center gap-1">
                                                 <button
-                                                    className="btn btn-icon-only bg-transparent border-0"
+                                                    className="btn btn-icon-only bg-transparent border-0 btn-action-icon"
                                                     onClick={() => openEditDrawer(product)}
                                                     title="Editar"
                                                 >
-                                                    <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--text-muted)' }}>edit_square</span>
+                                                    <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>edit_square</span>
                                                 </button>
                                                 <button
-                                                    className="btn btn-icon-only bg-transparent border-0"
+                                                    className="btn btn-icon-only bg-transparent border-0 btn-action-icon"
                                                     onClick={() => handleDelete(product.id)}
                                                     title="Eliminar"
                                                 >
-                                                    <span className="material-symbols-outlined" style={{ fontSize: '22px', color: 'var(--text-muted)', transform: 'translateY(-1px)' }}>delete</span>
+                                                    <span className="material-symbols-outlined" style={{ fontSize: '22px', transform: 'translateY(-1px)' }}>delete</span>
                                                 </button>
                                             </div>
                                         </td>
@@ -247,7 +245,7 @@ export default function Index({ products }) {
                                 ))}
                                 {products.data.length === 0 && (
                                     <tr>
-                                        <td colSpan="6" className="text-center py-4 text-muted">
+                                        <td colSpan="5" className="text-center py-4 text-muted">
                                             No hay productos registrados
                                         </td>
                                     </tr>
@@ -343,7 +341,7 @@ export default function Index({ products }) {
 
                             {/* 1. Base Unit (Technical) */}
                             <div className="mb-3">
-                                <label className="form-label small fw-bold text-primary">1. Unidad Base (Técnica)</label>
+                                <label className="form-label small fw-bold text-muted">1. Unidad Base (Técnica)</label>
                                 <select
                                     className="form-select form-select-sm input-clean"
                                     value={data.base_unit || ''}
@@ -425,7 +423,7 @@ export default function Index({ products }) {
                                             }
                                         }}
                                     />
-                                    <label className="form-check-label small fw-bold text-info" htmlFor="toggleUsageUnit">
+                                    <label className="form-check-label small fw-bold text-muted" htmlFor="toggleUsageUnit">
                                         3. Uso (Vista) <span className="text-muted fw-normal fst-italic ms-1"></span>
                                     </label>
                                 </div>

@@ -18,7 +18,12 @@ export default function Index({ openRegister, currentBalance, income, expense, m
     });
 
     const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
+            maximumFractionDigits: 2
+        }).format(amount);
     };
 
     const formatTime = (dateString) => {
@@ -175,57 +180,81 @@ export default function Index({ openRegister, currentBalance, income, expense, m
                         <table className="table-minimal">
                             <thead>
                                 <tr>
-                                    <th scope="col">Hora</th>
-                                    <th scope="col">Tipo</th>
+                                    <th scope="col" style={{ width: '120px' }}>Hora</th>
                                     <th scope="col">Descripción</th>
-                                    <th scope="col" className="text-end">Monto</th>
+                                    <th scope="col" className="text-end text-nowrap" style={{ width: '1%' }}>Monto</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {movements && movements.length > 0 ? movements.map((movement) => (
                                     <tr key={movement.id}>
                                         <td>{formatTime(movement.created_at)}</td>
-                                        <td>
-                                            {movement.type === 'income' || movement.type === 'sale' ? (
-                                                <span className="text-success fw-medium">Ingreso</span>
-                                            ) : (
-                                                <span className="text-danger fw-medium">Egreso</span>
-                                            )}
-                                        </td>
                                         <td className="fw-medium">
-                                            {(() => {
-                                                if (movement.related) {
-                                                    // Handle Sale
-                                                    if (movement.type === 'sale') {
-                                                        const details = movement.related.sale_details || movement.related.saleDetails;
-                                                        if (details && details.length > 0) {
-                                                            const products = details
-                                                                .map(d => d.product ? d.product.name : '')
-                                                                .filter(Boolean)
-                                                                .join(', ');
-                                                            return products ? `Venta de ${products}` : movement.description;
+                                            <div className="d-flex align-items-center gap-2">
+                                                {/* Icon Indicator */}
+                                                <div style={{ width: '20px', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                                                    {movement.type === 'income' || movement.type === 'sale' ? (
+                                                        <span className="text-success d-flex" title="Ingreso">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-banknote-arrow-up-icon lucide-banknote-arrow-up">
+                                                                <path d="M12 18H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5" />
+                                                                <path d="M18 12h.01" />
+                                                                <path d="M19 22v-6" />
+                                                                <path d="m22 19-3-3-3 3" />
+                                                                <path d="M6 12h.01" />
+                                                                <circle cx="12" cy="12" r="2" />
+                                                            </svg>
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-danger d-flex" title="Egreso">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-banknote-arrow-down-icon lucide-banknote-arrow-down">
+                                                                <path d="M12 18H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5" />
+                                                                <path d="m16 19 3 3 3-3" />
+                                                                <path d="M18 12h.01" />
+                                                                <path d="M19 16v6" />
+                                                                <path d="M6 12h.01" />
+                                                                <circle cx="12" cy="12" r="2" />
+                                                            </svg>
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                {/* Description Text */}
+                                                <div>
+                                                    {(() => {
+                                                        if (movement.related) {
+                                                            // Handle Sale
+                                                            if (movement.type === 'sale') {
+                                                                const details = movement.related.sale_details || movement.related.saleDetails;
+                                                                if (details && details.length > 0) {
+                                                                    const products = details
+                                                                        .map(d => d.product ? d.product.name : '')
+                                                                        .filter(Boolean)
+                                                                        .join(', ');
+                                                                    return products ? `Venta de ${products}` : movement.description;
+                                                                }
+                                                            }
+                                                            // Handle Purchase
+                                                            if (movement.type === 'purchase') {
+                                                                const details = movement.related.details;
+                                                                if (details && details.length > 0) {
+                                                                    const products = details
+                                                                        .map(d => d.product ? d.product.name : '')
+                                                                        .filter(Boolean)
+                                                                        .join(', ');
+                                                                    return products ? `Compra de ${products}` : movement.description;
+                                                                }
+                                                            }
+                                                            // Handle Expense
+                                                            if (movement.type === 'expense') {
+                                                                return `Gasto de ${movement.related.description}`;
+                                                            }
                                                         }
-                                                    }
-                                                    // Handle Purchase
-                                                    if (movement.type === 'purchase') {
-                                                        const details = movement.related.details;
-                                                        if (details && details.length > 0) {
-                                                            const products = details
-                                                                .map(d => d.product ? d.product.name : '')
-                                                                .filter(Boolean)
-                                                                .join(', ');
-                                                            return products ? `Compra de ${products}` : movement.description;
-                                                        }
-                                                    }
-                                                    // Handle Expense
-                                                    if (movement.type === 'expense') {
-                                                        return `Gasto de ${movement.related.description}`;
-                                                    }
-                                                }
-                                                return movement.description;
-                                            })()}
+                                                        return movement.description;
+                                                    })()}
+                                                </div>
+                                            </div>
                                         </td>
-                                        <td className="text-end font-tabular fw-semibold">{formatCurrency(movement.amount)}</td>
+                                        <td className="text-end font-tabular fw-bold text-headings" style={{ fontSize: '1em' }}>{formatCurrency(movement.amount)}</td>
                                     </tr>
                                 )) : (
                                     <tr>
