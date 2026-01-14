@@ -95,32 +95,7 @@ class CashRegisterController extends Controller
         ]);
     }
 
-    public function show($id)
-    {
-        $register = CashRegister::with(['user', 'movements.related' => function($morphTo) {
-             $morphTo->morphWith([
-                \App\Models\Sale::class => ['saleDetails.product'],
-                \App\Models\Purchase::class => ['details.product'],
-                \App\Models\Expense::class => [],
-            ]);
-        }])->findOrFail($id);
 
-        if ($register->user_id !== Auth::id()) {
-            abort(403);
-        }
-
-        // Calculate totals for the report
-        $income = $register->movements->whereIn('type', ['income', 'sale'])->sum('amount');
-        $expense = $register->movements->whereIn('type', ['expense', 'purchase'])->sum('amount');
-        $balance = $register->opening_amount + $income - $expense;
-
-        return \Inertia\Inertia::render('CashRegister/Show', [
-            'register' => $register,
-            'income' => $income,
-            'expense' => $expense,
-            'balance' => $balance,
-        ]);
-    }
 
     public function create()
     {

@@ -367,14 +367,26 @@ export default function Index({ expenses = [], categories = [] }) {
                     <div className="row mb-3">
                         <div className="col-md-6">
                             <label htmlFor="date" className="form-label">Fecha</label>
-                            <input
-                                type="date"
-                                className="form-control input-clean"
-                                id="date"
-                                value={data.date}
-                                onChange={(e) => setData('date', e.target.value)}
-                                required
-                            />
+                            <div className="minimal-date-wrapper form-control input-clean d-flex align-items-center bg-transparent">
+                                <span className="minimal-date-display w-100 text-start">
+                                    {(() => {
+                                        if (!data.date) return '';
+                                        const [y, m, d] = data.date.split('-');
+                                        return `${d}/${m}/${y}`;
+                                    })()}
+                                </span>
+                                <input
+                                    type="date"
+                                    className="minimal-date-input"
+                                    id="date"
+                                    value={data.date}
+                                    onChange={(e) => setData('date', e.target.value)}
+                                    onClick={(e) => {
+                                        if (e.target.showPicker) e.target.showPicker();
+                                    }}
+                                    required
+                                />
+                            </div>
                         </div>
                         <div className="col-md-6">
                             <label htmlFor="time" className="form-label">Hora</label>

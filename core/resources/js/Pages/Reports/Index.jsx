@@ -33,22 +33,33 @@ export default function Index({ date: initialDate, sales = 0, expenses = 0, purc
 
                 {/* Header & Filter */}
                 <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h4 className="mb-0 fw-bold">Reporte Diario <span className="text-muted fw-normal fs-6 ms-2">| {formatDate(date)}</span></h4>
+                    <h4 className="mb-0 fw-bold">Reporte Diario</h4>
                     <form onSubmit={handleFilter} className="d-flex align-items-center gap-2">
-                        <input
-                            type="date"
-                            className="form-control form-control-sm border-0 bg-transparent text-end px-2 input-clean"
-                            style={{ maxWidth: '140px' }}
-                            value={date}
-                            onChange={(e) => setDate(e.target.value)}
-                            onClick={(e) => {
-                                if (e.target.showPicker) {
-                                    e.target.showPicker();
-                                }
-                            }}
-                        />
-                        <button type="submit" className="btn btn-outline-secondary btn-sm rounded-circle d-flex align-items-center justify-content-center" style={{ width: '34px', height: '34px', minWidth: '34px', padding: '0', flexShrink: 0 }}>
-                            <i className="bi bi-arrow-clockwise" style={{ fontSize: '15px' }}></i>
+
+                        <div className="minimal-date-wrapper">
+                            <span className="minimal-date-display">
+                                {(() => {
+                                    if (!date) return '';
+                                    const [y, m, d] = date.split('-');
+                                    return `${d}/${m}/${y}`;
+                                })()}
+                            </span>
+                            <input
+                                type="date"
+                                className="minimal-date-input"
+                                value={date}
+                                onChange={(e) => setDate(e.target.value)}
+                                onClick={(e) => {
+                                    if (e.target.showPicker) e.target.showPicker();
+                                }}
+                            />
+                        </div>
+
+                        <button type="submit" className="btn btn-sm text-muted p-0 ms-2 bg-transparent border-0" title="Actualizar">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-rotate-ccw">
+                                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                                <path d="M3 3v5h5" />
+                            </svg>
                         </button>
                     </form>
                 </div>

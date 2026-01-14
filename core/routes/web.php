@@ -73,7 +73,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/cash-register', [CashRegisterController::class, 'index'])->name('cash_register.index');
     Route::post('/cash-register', [CashRegisterController::class, 'store'])->name('cash_register.store');
     Route::post('/cash-register/{id}/close', [CashRegisterController::class, 'close'])->name('cash_register.close');
-    Route::get('/cash-register/{id}', [CashRegisterController::class, 'show'])->name('cash_register.show');
     Route::get('/cash-register/{id}/pdf', [CashRegisterController::class, 'downloadPdf'])->name('cash_register.downloadPdf');
 
     // Reports

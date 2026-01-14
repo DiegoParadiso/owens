@@ -30,6 +30,8 @@ export default function Index({ products, history }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        setShowDrawer(false); // Close immediately for better UX
+
         post(route('production.store'), {
             preserveScroll: true,
             onSuccess: () => {
@@ -38,7 +40,9 @@ export default function Index({ products, history }) {
                     window.toast.success('Producción registrada', `Se han producido ${data.quantity} unidades correctamente.`);
                 }
             },
-            onError: () => {
+            onError: (errors) => {
+                setShowDrawer(true); // Re-open on error
+                console.error(errors);
                 if (window.toast) {
                     window.toast.error('Error', 'No se pudo registrar la producción. Verifica el stock de los ingredientes.');
                 }
