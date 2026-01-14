@@ -94,6 +94,9 @@ class ExpenseController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+            if ($e->getMessage() === 'REGISTER_CLOSED') {
+                return redirect()->back()->withErrors(['register_closed' => 'No hay caja abierta.']);
+            }
             return redirect()->back()->withErrors(['error' => $e->getMessage()]);
         }
     }
@@ -160,6 +163,9 @@ class ExpenseController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+            if ($e->getMessage() === 'REGISTER_CLOSED') {
+                return redirect()->back()->withErrors(['register_closed' => 'No hay caja abierta.']);
+            }
             return redirect()->back()->withErrors(['error' => $e->getMessage()]);
         }
     }
@@ -188,7 +194,7 @@ class ExpenseController extends Controller
         $register = CashRegister::where('user_id', Auth::id())->where('status', 'open')->first();
         
         if (!$register) {
-            throw new \Exception('No tienes una caja abierta para registrar este gasto en efectivo.');
+            throw new \Exception('REGISTER_CLOSED');
         }
 
         CashMovement::create([

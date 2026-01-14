@@ -945,3 +945,312 @@ body.dark-mode .border-secondary-subtle {
 .btn-action-icon:hover .material-symbols-outlined {
     color: var(--primary) !important;
 }
+
+/* --- Drawer Styles (Migrated from style.css) --- */
+.bg-minimal-success {
+    background-color: #2ecc71 !important;
+}
+
+.drawer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+}
+
+.drawer-overlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.drawer-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 800px;
+    height: 100%;
+    background-color: var(--bg-card);
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+    z-index: 1050;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+}
+
+.drawer-panel.open {
+    transform: translateX(0);
+}
+
+@media (max-width: 576px) {
+    .drawer-panel {
+        width: 100%;
+    }
+}
+
+.drawer-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.drawer-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.drawer-footer {
+    padding: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.drawer-footer .btn {
+    flex: 1;
+    min-width: 120px;
+}
+
+/* --- SweetAlert Minimal (Migrated from style.css) --- */
+.swal-minimal {
+    width: 320px !important;
+    padding: 1.5rem !important;
+}
+
+.swal-minimal .swal2-html-container {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 0.95rem !important;
+}
+
+.swal-minimal .swal2-actions {
+    margin-top: 1.5rem !important;
+}
+
+.swal-minimal .swal2-confirm {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.swal-minimal .swal2-cancel {
+    border: none !important;
+    box-shadow: none !important;
+}
+/* --- FINAL MERGE: Drawer Styles --- */
+.bg-minimal-success {
+    background-color: #2ecc71 !important;
+}
+
+.drawer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+}
+
+.drawer-overlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.drawer-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 800px;
+    height: 100%;
+    background-color: var(--bg-card);
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+    z-index: 1050;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+}
+
+.drawer-panel.open {
+    transform: translateX(0);
+}
+
+@media (max-width: 576px) {
+    .drawer-panel {
+        width: 100%;
+    }
+}
+
+.drawer-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.drawer-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.drawer-footer {
+    padding: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.drawer-footer .btn {
+    flex: 1;
+    min-width: 120px;
+}
+
+/* --- FINAL MERGE: SweetAlert Minimal --- */
+.swal-minimal {
+    width: 320px !important;
+    padding: 1.5rem !important;
+}
+
+.swal-minimal .swal2-html-container {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 0.95rem !important;
+}
+
+.swal-minimal .swal2-actions {
+    margin-top: 1.5rem !important;
+}
+
+.swal-minimal .swal2-confirm {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.swal-minimal .swal2-cancel {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* --- Print Styles for Reports --- */
+@media print {
+    /* Hide everything by default */
+    body * {
+        visibility: hidden;
+    }
+
+    /* Only show the printable area */
+    #printable-area,
+    #printable-area * {
+        visibility: visible;
+    }
+
+    /* Position the printable area absolute to top-left */
+    #printable-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        background: white;
+        color: black !important;
+        font-family: 'Inter', sans-serif; /* Clean font */
+    }
+
+    /* Reset background colors for printing */
+    #printable-area {
+        background-color: white !important;
+    }
+
+    /* Force black text */
+    #printable-area h1,
+    #printable-area h2,
+    #printable-area h3,
+    #printable-area h4,
+    #printable-area h5,
+    #printable-area h6,
+    #printable-area p,
+    #printable-area span,
+    #printable-area div,
+    #printable-area td,
+    #printable-area th {
+        color: black !important;
+    }
+
+    /* Professional Table Styling for Print */
+    #printable-area .table-report {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        font-size: 12px; /* Compact for print */
+    }
+
+    #printable-area .table-report th {
+        border-bottom: 2px solid #000;
+        padding: 8px 4px;
+        text-align: left;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    #printable-area .table-report td {
+        border-bottom: 1px solid #ddd;
+        padding: 6px 4px;
+    }
+
+    #printable-area .table-report tr:last-child td {
+        border-bottom: 0;
+    }
+
+    /* Text Utils */
+    #printable-area .text-end {
+        text-align: right !important;
+    }
+    
+    #printable-area .text-center {
+        text-align: center !important;
+    }
+
+    #printable-area .fw-bold {
+        font-weight: 700 !important;
+    }
+
+    #printable-area .report-header {
+        text-align: center;
+        margin-bottom: 30px;
+        border-bottom: 1px solid #000;
+        padding-bottom: 20px;
+    }
+
+    #printable-area .report-footer {
+        margin-top: 50px;
+        border-top: 1px solid #ccc;
+        padding-top: 10px;
+        font-size: 10px;
+        text-align: center;
+    }
+
+    /* Summary Card look in print */
+    #printable-area .summary-box {
+        border: 1px solid #000;
+        padding: 10px;
+        margin-bottom: 20px;
+    }
+}

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Index({ date: initialDate, sales = 0, expenses = 0, purchases = 0, cogs = 0, grossProfit = 0, netProfit = 0 }) {
+export default function Index({ date: initialDate, sales = 0, expenses = 0, purchases = 0, cogs = 0, grossProfit = 0, netProfit = 0, closures = [] }) {
     const [date, setDate] = useState(initialDate || new Date().toISOString().split('T')[0]);
 
     const formatCurrency = (amount, decimals = 2) => {
@@ -88,10 +88,74 @@ export default function Index({ date: initialDate, sales = 0, expenses = 0, purc
                     </div>
                 </div>
 
-                <div className="alert alert-light border d-flex align-items-center" role="alert">
-                    <i className="bi bi-info-circle-fill text-muted me-2 fs-5"></i>
-                    <div>
-                        <strong>Nota:</strong> El Resultado Neto se calcula como: <em>Ventas - Costo de Productos Vendidos - Gastos Operativos</em>.
+
+
+                {/* Daily Closures Section */}
+                <div className="card-minimal mt-4">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                        <h6 className="fw-bold mb-0">Cierres de Caja <span className="text-muted fw-normal">({closures ? closures.length : 0})</span></h6>
+                    </div>
+
+                    <div className="table-responsive">
+                        <table className="table-minimal">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Responsable</th>
+                                    <th scope="col">Inicio</th>
+                                    <th scope="col">Cierre</th>
+                                    <th scope="col" className="text-end">Apertura</th>
+                                    <th scope="col" className="text-end">Cierre</th>
+                                    <th scope="col" className="text-end">Diferencia</th>
+                                    <th scope="col" className="text-center">Reporte</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {closures && closures.length > 0 ? closures.map((closure) => (
+                                    <tr key={closure.id}>
+                                        <td className="fw-medium">{closure.user}</td>
+                                        <td className="small text-muted">{new Date(closure.opened_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                                        <td className="small text-muted">{new Date(closure.closed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                                        <td className="text-end font-tabular">{formatCurrency(closure.opening_amount)}</td>
+                                        <td className="text-end font-tabular">{formatCurrency(closure.closing_amount)}</td>
+                                        <td className={`text-end font-tabular fw-bold ${closure.difference < 0 ? 'text-danger' : (closure.difference > 0 ? 'text-success' : 'text-muted')}`}>
+                                            {formatCurrency(closure.difference)}
+                                        </td>
+                                        <td className="text-center">
+                                            <a
+                                                href={route('cash_register.downloadPdf', closure.id)}
+                                                className="btn p-1 d-inline-flex justify-content-center align-items-center"
+                                                title="Descargar PDF"
+                                                style={{ border: 'none', background: 'transparent', color: '#6c757d', transition: 'color 0.2s', cursor: 'pointer' }}
+                                                onMouseEnter={(e) => e.currentTarget.style.color = '#dc3545'}
+                                                onMouseLeave={(e) => e.currentTarget.style.color = '#6c757d'}
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="22"
+                                                    height="22"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                >
+                                                    <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" />
+                                                    <path d="M14 2v5a1 1 0 0 0 1 1h5" />
+                                                    <path d="M10 9H8" />
+                                                    <path d="M16 13H8" />
+                                                    <path d="M16 17H8" />
+                                                </svg>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                )) : (
+                                    <tr>
+                                        <td colSpan="7" className="text-center py-4 text-muted">No hay cierres de caja registrados en esta fecha.</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

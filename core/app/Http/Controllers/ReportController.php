@@ -36,6 +36,24 @@ class ReportController extends Controller
         $grossProfit = $sales - $totalCostOfGoods;
         $netProfit = $grossProfit - $expenses;
 
+        // Fetch closures for the selected date
+        $closures = \App\Models\CashRegister::with('user')
+            ->whereDate('closed_at', $date)
+            ->where('status', 'closed')
+            ->latest('closed_at')
+            ->get()
+            ->map(function ($closure) {
+                return [
+                    'id' => $closure->id,
+                    'user' => $closure->user ? $closure->user->name : 'Usuario Eliminado',
+                    'opened_at' => $closure->opened_at,
+                    'closed_at' => $closure->closed_at,
+                    'opening_amount' => $closure->opening_amount,
+                    'closing_amount' => $closure->closing_amount,
+                    'difference' => $closure->closing_amount - ($closure->opening_amount + $closure->movements()->where('type', 'income')->sum('amount') - $closure->movements()->where('type', 'expense')->sum('amount'))
+                ];
+            });
+
         return \Inertia\Inertia::render('Reports/Index', [
             'date' => $date,
             'sales' => $sales,
@@ -44,6 +62,7 @@ class ReportController extends Controller
             'cogs' => $totalCostOfGoods,
             'grossProfit' => $grossProfit,
             'netProfit' => $netProfit,
+            'closures' => $closures
         ]);
     }
 }

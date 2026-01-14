@@ -355,6 +355,38 @@ body.dark-mode .alert-light h3 {
 }
 
 
+/*** Testimonial ***/
+.progress .progress-bar {
+    width: 0px;
+    transition: 2s;
+}
+
+
+/*** Testimonial ***/
+.testimonial-carousel .owl-dots {
+    margin-top: 24px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.testimonial-carousel .owl-dot {
+    position: relative;
+    display: inline-block;
+    margin: 0 5px;
+    width: 15px;
+    height: 15px;
+    border: 5px solid var(--primary);
+    border-radius: 15px;
+    transition: .5s;
+}
+
+.testimonial-carousel .owl-dot.active {
+    background: var(--dark);
+    border-color: var(--primary);
+}
+
+
 
 
 
@@ -570,6 +602,7 @@ body.dark-mode {
 
 .badge-minimal.bg-warning {
     color: #ffc107 !important;
+    border-color: #ffc107 !important;
 }
 
 .badge-minimal.bg-warning::before {
@@ -797,63 +830,4 @@ body.dark-mode .btn-icon-only:hover {
 .swal-minimal .swal2-cancel {
     border: none !important;
     box-shadow: none !important;
-}
-
-/* Dark Mode */
-body.dark-mode .swal-minimal {
-    background-color: var(--bg-card) !important;
-    color: var(--text-main) !important;
-    border: 1px solid var(--border-color) !important;
-}
-
-body.dark-mode .swal-minimal .swal2-html-container {
-    color: var(--text-main) !important;
-}
-
-body.dark-mode .swal-minimal .swal2-confirm.btn-danger {
-    background-color: #FF5A5F !important;
-    color: #ffffff !important;
-}
-
-body.dark-mode .swal-minimal .swal2-confirm.btn-danger:hover {
-    background-color: #ff7075 !important;
-}
-
-body.dark-mode .swal-minimal .swal2-cancel {
-    background-color: #6c757d !important;
-    color: #ffffff !important;
-}
-
-body.dark-mode .swal-minimal .swal2-icon.swal2-success {
-    border-color: transparent !important;
-}
-
-body.dark-mode .swal-minimal .swal2-icon.swal2-success [class^='swal2-success-line'] {
-    background-color: #28a745 !important;
-}
-
-body.dark-mode .swal-minimal .swal2-icon.swal2-success .swal2-success-ring {
-    border-color: transparent !important;
-}
-
-/* Custom Alert Styles for Stock Warning */
-.alert-stock-warning {
-    background-color: #f8d7da !important;
-    color: #842029 !important;
-    border: 1px solid #f5c2c7 !important;
-}
-
-.alert-stock-warning .material-symbols-outlined {
-    color: #842029 !important;
-}
-
-/* Dark Mode Alert Overrides */
-body.dark-mode .alert-stock-warning {
-    background-color: rgba(220, 53, 69, 0.15) !important;
-    border: 1px solid rgba(220, 53, 69, 0.2) !important;
-    color: #ff8a8f !important;
-}
-
-body.dark-mode .alert-stock-warning .material-symbols-outlined {
-    color: #ff8a8f !important;
 }

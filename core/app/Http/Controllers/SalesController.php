@@ -126,10 +126,7 @@ class SalesController extends Controller
                                                      ->first();
                         
                         if (!$cashRegister) {
-                            DB::rollBack();
-                            return redirect()->back()->withErrors([
-                                'error' => 'No tienes una caja abierta para registrar pagos en efectivo'
-                            ]);
+                            throw new \Exception('REGISTER_CLOSED');
                         }
                         
                         // Generate description with product names
@@ -155,10 +152,7 @@ class SalesController extends Controller
                                                  ->first();
                     
                     if (!$cashRegister) {
-                        DB::rollBack();
-                        return redirect()->back()->withErrors([
-                            'error' => 'No tienes una caja abierta para registrar ventas en efectivo'
-                        ]);
+                        throw new \Exception('REGISTER_CLOSED');
                     }
                     
                     // Generate description with product names
@@ -182,6 +176,9 @@ class SalesController extends Controller
             return redirect()->route('sales.index')->with('highlight_id', $savedSale->id);
         } catch (\Exception $e) {
             DB::rollBack();
+            if ($e->getMessage() === 'REGISTER_CLOSED') {
+                return redirect()->back()->withErrors(['register_closed' => 'No hay caja abierta.']);
+            }
             return response()->json(['status' => 500, 'message' => 'Ocurrió un error: ' . $e->getMessage()]);
         }
     }

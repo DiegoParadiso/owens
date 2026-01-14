@@ -257,6 +257,31 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                 }
             },
             onError: (errors) => {
+                if (errors.register_closed) {
+                    setShowDrawer(false);
+                    Swal.fire({
+                        text: 'No has abierto caja. ¿Deseas abrirla ahora?',
+                        showCancelButton: true,
+                        confirmButtonText: 'Abrir Caja',
+                        cancelButtonText: 'Cancelar',
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        buttonsStyling: true,
+                        customClass: {
+                            popup: 'swal-minimal',
+                            confirmButton: 'btn btn-primary px-4',
+                            cancelButton: 'btn btn-secondary px-4'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            router.visit(route('cash_register.index'));
+                        } else {
+                            setShowDrawer(true);
+                        }
+                    });
+                    return;
+                }
+
                 setShowDrawer(true); // Re-open on error
                 console.error('❌ Errores:', errors);
                 const errorMsg = Object.values(errors).flat().join(', ') || 'Error al procesar la compra';

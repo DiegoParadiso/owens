@@ -7,9 +7,34 @@ use App\Models\CashMovement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class CashRegisterController extends Controller
 {
+    public function downloadPdf($id)
+    {
+        $register = CashRegister::with(['user', 'movements.related' => function($morphTo) {
+             $morphTo->morphWith([
+                \App\Models\Sale::class => ['saleDetails.product'],
+                \App\Models\Purchase::class => ['details.product'],
+                \App\Models\Expense::class => [],
+            ]);
+        }])->findOrFail($id);
+
+        if ($register->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        // Calculate totals for the report
+        $income = $register->movements->whereIn('type', ['income', 'sale'])->sum('amount');
+        $expense = $register->movements->whereIn('type', ['expense', 'purchase'])->sum('amount');
+        $balance = $register->opening_amount + $income - $expense;
+
+        $pdf = Pdf::loadView('reports.cash_register_pdf', compact('register', 'income', 'expense', 'balance'));
+        
+        return $pdf->download('Cierre_Caja_' . now()->format('Y-m-d') . '.pdf');
+    }
+
     public function index()
     {
         // Usar SQL raw con nueva tabla para bypass planes cacheados
@@ -26,7 +51,12 @@ class CashRegisterController extends Controller
                 'currentBalance' => 0,
                 'income' => 0,
                 'expense' => 0,
-                'movements' => []
+                'movements' => [],
+                'lastClosures' => CashRegister::where('user_id', Auth::id())
+                    ->where('status', 'closed')
+                    ->latest('closed_at')
+                    ->take(10)
+                    ->get()
             ]);
         }
 
@@ -48,12 +78,47 @@ class CashRegisterController extends Controller
             ->latest()
             ->get();
 
+        // Fetch history of closed sessions
+        $lastClosures = CashRegister::where('user_id', Auth::id())
+            ->where('status', 'closed')
+            ->latest('closed_at')
+            ->take(10)
+            ->get();
+
         return \Inertia\Inertia::render('CashRegister/Index', [
             'openRegister' => $openRegister,
             'currentBalance' => $currentBalance,
             'income' => $income,
             'expense' => $expense,
-            'movements' => $movements
+            'movements' => $movements,
+            'lastClosures' => $lastClosures
+        ]);
+    }
+
+    public function show($id)
+    {
+        $register = CashRegister::with(['user', 'movements.related' => function($morphTo) {
+             $morphTo->morphWith([
+                \App\Models\Sale::class => ['saleDetails.product'],
+                \App\Models\Purchase::class => ['details.product'],
+                \App\Models\Expense::class => [],
+            ]);
+        }])->findOrFail($id);
+
+        if ($register->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        // Calculate totals for the report
+        $income = $register->movements->whereIn('type', ['income', 'sale'])->sum('amount');
+        $expense = $register->movements->whereIn('type', ['expense', 'purchase'])->sum('amount');
+        $balance = $register->opening_amount + $income - $expense;
+
+        return \Inertia\Inertia::render('CashRegister/Show', [
+            'register' => $register,
+            'income' => $income,
+            'expense' => $expense,
+            'balance' => $balance,
         ]);
     }
 

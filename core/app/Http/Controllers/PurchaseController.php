@@ -181,6 +181,9 @@ class PurchaseController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+            if ($e->getMessage() === 'REGISTER_CLOSED') {
+                return redirect()->back()->withErrors(['register_closed' => 'No hay caja abierta.']);
+            }
             return redirect()->back()->with('error', 'Error al registrar la compra: ' . $e->getMessage());
         }
     }
@@ -345,6 +348,9 @@ class PurchaseController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+            if ($e->getMessage() === 'REGISTER_CLOSED') {
+                return redirect()->back()->withErrors(['register_closed' => 'No hay caja abierta.']);
+            }
             return redirect()->back()->with('error', 'Error al actualizar la compra: ' . $e->getMessage());
         }
     }
@@ -386,7 +392,7 @@ class PurchaseController extends Controller
                                      ->first();
         
         if (!$cashRegister) {
-            throw new \Exception('No tienes una caja abierta para registrar pagos en efectivo');
+            throw new \Exception('REGISTER_CLOSED');
         }
         
         CashMovement::create([

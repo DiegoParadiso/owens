@@ -373,7 +373,7 @@ export default function Index({ products }) {
 
                             {/* 2. Purchase Unit -> Base Conversion */}
                             <div className="mb-3">
-                                <label className="form-label small fw-bold text-success">2. Unidad de Compra</label>
+                                <label className="form-label small fw-bold text-dark">2. Unidad de Compra</label>
                                 <div className="d-flex align-items-center gap-2">
                                     <div style={{ flex: 1 }}>
                                         <input
@@ -423,7 +423,7 @@ export default function Index({ products }) {
                                             }
                                         }}
                                     />
-                                    <label className="form-check-label small fw-bold text-muted" htmlFor="toggleUsageUnit">
+                                    <label className="form-check-label small fw-bolder text-dark" htmlFor="toggleUsageUnit">
                                         3. Uso (Vista) <span className="text-muted fw-normal fst-italic ms-1"></span>
                                     </label>
                                 </div>

@@ -171,8 +171,11 @@ export default function Index({ openRegister, currentBalance, income, expense, m
                 <div className="card-minimal">
                     <div className="d-flex justify-content-between align-items-center mb-3">
                         <h6 className="fw-bold mb-0">Movimientos recientes</h6>
-                        <button className="btn btn-sm text-muted">
-                            <i className="bi bi-printer"></i>
+                        <button
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={() => window.print()}
+                        >
+                            <i className="bi bi-printer me-2"></i>Imprimir Reporte
                         </button>
                     </div>
 
@@ -182,7 +185,7 @@ export default function Index({ openRegister, currentBalance, income, expense, m
                                 <tr>
                                     <th scope="col" style={{ width: '120px' }}>Hora</th>
                                     <th scope="col">Descripción</th>
-                                    <th scope="col" className="text-end text-nowrap" style={{ width: '1%' }}>Monto</th>
+                                    <th scope="col" className="text-end text-nowrap" style={{ width: '15%' }}>Monto</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -258,12 +261,129 @@ export default function Index({ openRegister, currentBalance, income, expense, m
                                     </tr>
                                 )) : (
                                     <tr>
-                                        <td colSpan="4" className="text-center py-4 text-muted">No hay movimientos</td>
+                                        <td colSpan="3" className="text-center py-4 text-muted">No hay movimientos</td>
                                     </tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+
+            {/* --- Printable Report Section (Hidden in Screen, Visible in Print) --- */}
+            <div id="printable-area" className="d-none">
+                <div className="report-header">
+                    <h2 className="fw-bold mb-1">REPORTE DE CAJA</h2>
+                    <p className="text-muted mb-0 small">Generado el {new Date().toLocaleDateString()} a las {new Date().toLocaleTimeString()}</p>
+                </div>
+
+                <div className="row mb-4">
+                    <div className="col-6">
+                        <strong className="d-block text-uppercase small text-muted">Apertura</strong>
+                        <div>{openRegister ? new Date(openRegister.created_at).toLocaleString() : '-'}</div>
+                        <div className="small text-muted">Usuario: {openRegister?.user?.name || 'Cajero'}</div>
+                    </div>
+                    <div className="col-6 text-end">
+                        <strong className="d-block text-uppercase small text-muted">Estado</strong>
+                        <div className="fw-bold text-uppercase">{openRegister ? 'ABIERTA' : 'CERRADA'}</div>
+                    </div>
+                </div>
+
+                <div className="summary-box">
+                    <h5 className="fw-bold border-bottom pb-2 mb-3">RESUMEN FINANCIERO</h5>
+                    <div className="d-flex justify-content-between mb-2">
+                        <span>Saldo Inicial (Apertura):</span>
+                        <span className="font-tabular fw-bold">{formatCurrency(openRegister ? parseFloat(openRegister.opening_amount || 0) : 0)}</span>
+                    </div>
+                    <div className="d-flex justify-content-between mb-2">
+                        <span>Total Ingresos (+):</span>
+                        <span className="font-tabular text-success">{formatCurrency(income)}</span>
+                    </div>
+                    <div className="d-flex justify-content-between mb-2">
+                        <span>Total Egresos (-):</span>
+                        <span className="font-tabular text-danger">{formatCurrency(expense)}</span>
+                    </div>
+                    <div className="d-flex justify-content-between mt-3 pt-2 border-top">
+                        <span className="fw-bold h5 mb-0">SALDO ACTUAL:</span>
+                        <span className="fw-bold h5 mb-0 font-tabular">{formatCurrency(currentBalance)}</span>
+                    </div>
+                </div>
+
+                {/* Movements Table for Print */}
+                <h5 className="fw-bold mt-4 mb-2">DETALLE DE MOVIMIENTOS</h5>
+                <table className="table-report">
+                    <thead>
+                        <tr>
+                            <th style={{ width: '80px' }}>Hora</th>
+                            <th>Concepto / Descripción</th>
+                            <th style={{ width: '80px' }}>Tipo</th>
+                            <th className="text-end" style={{ width: '100px' }}>Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {movements && movements.length > 0 ? movements.map((movement) => (
+                            <tr key={'print-' + movement.id}>
+                                <td>{formatTime(movement.created_at)}</td>
+                                <td>
+                                    {(() => {
+                                        let desc = movement.description;
+                                        if (movement.related) {
+                                            if (movement.type === 'sale') {
+                                                const details = movement.related.sale_details || movement.related.saleDetails;
+                                                if (details && details.length > 0) {
+                                                    const products = details.map(d => d.product ? d.product.name : '').filter(Boolean).join(', ');
+                                                    if (products) desc = `Venta: ${products}`;
+                                                }
+                                            } else if (movement.type === 'purchase') {
+                                                const details = movement.related.details;
+                                                if (details && details.length > 0) {
+                                                    const products = details.map(d => d.product ? d.product.name : '').filter(Boolean).join(', ');
+                                                    if (products) desc = `Compra: ${products}`;
+                                                }
+                                            } else if (movement.type === 'expense') {
+                                                desc = `Gasto: ${movement.related.description}`;
+                                            }
+                                        }
+                                        return desc;
+                                    })()}
+                                </td>
+                                <td>
+                                    <span style={{
+                                        fontWeight: '500',
+                                        fontSize: '0.85em',
+                                        textTransform: 'uppercase'
+                                    }}>
+                                        {movement.type === 'income' ? 'INGRESO' :
+                                            movement.type === 'expense' ? 'EGRESO' :
+                                                movement.type === 'sale' ? 'VENTA' : 'OTRO'}
+                                    </span>
+                                </td>
+                                <td className="text-end fw-bold font-tabular">
+                                    {movement.type === 'expense' || movement.type === 'purchase' ? '-' : ''}{formatCurrency(movement.amount)}
+                                </td>
+                            </tr>
+                        )) : (
+                            <tr>
+                                <td colSpan="4" className="text-center py-3">No hay registros en esta sesión.</td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+
+                <div className="report-footer">
+                    <div className="row mt-5">
+                        <div className="col-6 text-center">
+                            <div style={{ borderTop: '1px solid #000', width: '80%', margin: '0 auto', paddingTop: '5px' }}>
+                                Firma Cajero / Responsable
+                            </div>
+                        </div>
+                        <div className="col-6 text-center">
+                            <div style={{ borderTop: '1px solid #000', width: '80%', margin: '0 auto', paddingTop: '5px' }}>
+                                Firma Supervisor / Gerente
+                            </div>
+                        </div>
+                    </div>
+                    <p className="mt-4">Reporte generado por Sistema de Gestión - Uso Interno</p>
                 </div>
             </div>
 

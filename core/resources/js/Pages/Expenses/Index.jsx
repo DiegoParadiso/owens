@@ -149,6 +149,31 @@ export default function Index({ expenses = [], categories = [] }) {
                 window.toast.success(editingExpense ? 'Gasto actualizado' : 'Gasto guardado', 'La operación se realizó con éxito.');
             },
             onError: (errors) => {
+                if (errors.register_closed) {
+                    setShowDrawer(false);
+                    Swal.fire({
+                        text: 'No has abierto caja. ¿Deseas abrirla ahora?',
+                        showCancelButton: true,
+                        confirmButtonText: 'Abrir Caja',
+                        cancelButtonText: 'Cancelar',
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        buttonsStyling: true,
+                        customClass: {
+                            popup: 'swal-minimal',
+                            confirmButton: 'btn btn-primary px-4',
+                            cancelButton: 'btn btn-secondary px-4'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            router.visit(route('cash_register.index'));
+                        } else {
+                            setShowDrawer(true);
+                        }
+                    });
+                    return;
+                }
+
                 setShowDrawer(true);
                 const errorMessage = errors.error || (editingExpense ? 'Error al actualizar el gasto' : 'Error al registrar el gasto');
                 window.toast.error('Error', errorMessage);
