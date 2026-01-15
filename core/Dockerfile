@@ -1,4 +1,4 @@
-FROM php:8.2-apache
+FROM php:8.4-apache
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
@@ -6,6 +6,7 @@ ENV COMPOSER_MEMORY_LIMIT=-1
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 
 # Install system dependencies (including Node.js for frontend build)
+# Note: Adding unzip and git which are crucial for composer
 RUN apt-get update && apt-get install -y \
     git \
     curl \
