@@ -1,6 +1,11 @@
-FROM php:8.4-apache
+FROM php:8.2-apache
 
-# Install system dependencies
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+ENV COMPOSER_MEMORY_LIMIT=-1
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+
+# Install system dependencies (including Node.js for frontend build)
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -25,17 +30,15 @@ RUN a2enmod rewrite
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy composer files first for better caching
-COPY composer.json composer.lock ./
+# COPY ALL FILES FIRST (Crucial for autoloading app/Helpers/helpers.php)
+COPY . .
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Install PHP dependencies
+# Now that files are copied, composer can find helpers.php
 RUN composer install --no-dev --optimize-autoloader
-
-# Copy the rest of the application
-COPY . .
 
 # Install Node dependencies and build assets
 RUN npm install && npm run build
@@ -44,13 +47,11 @@ RUN npm install && npm run build
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Configure Apache DocumentRoot to point to public
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf .conf
+RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
 # Expose port 80
 EXPOSE 80
 
 # Run migrations and start Apache
-# Note: We use a custom entrypoint or CMD that runs migrations
 CMD php artisan migrate --force && apache2-foreground
