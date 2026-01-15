@@ -29,7 +29,9 @@ class ReportController extends Controller
         $totalCostOfGoods = 0;
         foreach ($salesData as $sale) {
             foreach ($sale->saleDetails as $detail) {
-                $totalCostOfGoods += ($detail->product->cost ?? 0) * $detail->quantity;
+                // Use historical cost if available, otherwise fallback to current product cost
+                $cost = $detail->cost ?? ($detail->product->cost ?? 0);
+                $totalCostOfGoods += $cost * $detail->quantity;
             }
         }
 

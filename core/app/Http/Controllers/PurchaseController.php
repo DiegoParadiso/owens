@@ -355,10 +355,26 @@ class PurchaseController extends Controller
         }
     }
 
-    public function destroy(Purchase $purchase)
+    public function destroy(Request $request, Purchase $purchase)
     {
         try {
             DB::beginTransaction();
+
+            // Check for negative stock implications unless forced
+            if (!$request->input('force')) {
+                foreach ($purchase->details as $detail) {
+                    $product = Product::find($detail->product_id);
+                    if ($product) {
+                        $conversionFactor = $product->conversion_factor ?? 1;
+                        $qtyInUsageUnits = $detail->quantity * $conversionFactor;
+                        
+                        if (($product->stock - $qtyInUsageUnits) < 0) {
+                            DB::rollBack();
+                            return redirect()->back()->withErrors(['negative_stock' => 'Esta acción dejará el stock en negativo para el producto: ' . $product->name]);
+                        }
+                    }
+                }
+            }
 
             // Reverse stock
             foreach ($purchase->details as $detail) {

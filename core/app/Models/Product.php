@@ -40,4 +40,30 @@ class Product extends Model // Changed class name from Produk to Product
     {
         return $this->hasMany(PurchaseDetail::class, 'product_id');
     }
+
+    /**
+     * Calculate current cost.
+     * If product has direct cost (Supply), return it.
+     * If product is a Menu Item (Burger) with 0 cost but has components, calculate from ingredients.
+     */
+    public function getCurrentCost()
+    {
+        if ($this->cost > 0) {
+            return $this->cost;
+        }
+
+        // Calculate from recipe
+        // Load components if not loaded
+        if ($this->relationLoaded('components') || $this->components()->exists()) {
+            $totalCost = 0;
+            foreach ($this->components as $component) {
+                if ($component->childProduct) {
+                    $totalCost += $component->quantity * $component->childProduct->getCurrentCost();
+                }
+            }
+            return $totalCost;
+        }
+
+        return 0;
+    }
 }

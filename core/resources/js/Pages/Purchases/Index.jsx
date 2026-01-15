@@ -360,28 +360,63 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
         setShowDrawer(true);
     };
 
-    const handleDelete = (id) => {
-        Swal.fire({
-            text: "¿Eliminar esta compra? Esto revertirá el stock.",
-            showCancelButton: true,
-            confirmButtonColor: '#dc3545',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Eliminar',
-            cancelButtonText: 'Cancelar',
-            buttonsStyling: true,
-            customClass: {
-                popup: 'swal-minimal',
-                confirmButton: 'btn btn-danger px-4',
-                cancelButton: 'btn btn-secondary px-4'
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                destroy(route('purchase.destroy', id), {
-                    preserveScroll: true,
-                    onSuccess: () => {
-                        window.toast.success('Eliminado', 'La compra ha sido eliminada correctamente.');
-                    },
-                });
+    const handleDelete = (id, force = false) => {
+        // First confirmation (standard)
+        if (!force) {
+            Swal.fire({
+                text: "¿Eliminar esta compra? Esto revertirá el stock.",
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Eliminar',
+                cancelButtonText: 'Cancelar',
+                buttonsStyling: true,
+                customClass: {
+                    popup: 'swal-minimal',
+                    confirmButton: 'btn btn-danger px-4',
+                    cancelButton: 'btn btn-secondary px-4'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    executeDelete(id, false);
+                }
+            });
+        } else {
+            executeDelete(id, true);
+        }
+    };
+
+    const executeDelete = (id, force) => {
+        destroy(route('purchase.destroy', id), {
+            data: { force: force },
+            preserveScroll: true,
+            onSuccess: () => {
+                window.toast.success('Eliminado', 'La compra ha sido eliminada correctamente.');
+            },
+            onError: (errors) => {
+                if (errors.negative_stock) {
+                    Swal.fire({
+                        title: 'Stock Negativo',
+                        text: "Esta acción dejará el stock en negativo. ¿Desea continuar y realizar un ajuste manual?",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ffc107',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Sí, continuar',
+                        cancelButtonText: 'Cancelar',
+                        customClass: {
+                            popup: 'swal-minimal',
+                            confirmButton: 'btn btn-warning text-dark px-4',
+                            cancelButton: 'btn btn-secondary px-4'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            handleDelete(id, true);
+                        }
+                    });
+                } else {
+                    window.toast.error('Error', 'No se pudo eliminar la compra.');
+                }
             }
         });
     };

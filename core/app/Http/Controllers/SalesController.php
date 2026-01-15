@@ -97,6 +97,7 @@ class SalesController extends Controller
                     'price' => $request->price[$key],
                     'quantity' => $quantitySold,
                     'subtotal' => $request->total_price[$key],
+                    'cost' => $product->getCurrentCost(), // SAVE HISTORICAL COST
                 ]);
             }
 
@@ -276,14 +277,12 @@ class SalesController extends Controller
      */
     private function processStock($product, $quantity, $action = 'deduct')
     {
-        // SMART DEDUCTION LOGIC
-        // 1. Try to deduct from the product's own stock first (if it's a "manufactured" item like Salsa or a simple supply)
-        // 2. If stock is insufficient (or 0), check if it has components (recipe) and deduct from them.
-        
-        $stockToDeduct = 0;
-        $remainingQty = $quantity;
+        // SMART LOGIC FOR DEDUCTION AND RESTORATION
 
         if ($action === 'deduct') {
+            $stockToDeduct = 0;
+            $remainingQty = $quantity;
+
             // Check available stock
             if ($product->stock > 0) {
                 if ($product->stock >= $quantity) {
@@ -311,23 +310,46 @@ class SalesController extends Controller
                         $this->processStock($component->childProduct, $componentQty, 'deduct');
                     }
                 } else {
-                    // No components and insufficient stock -> Error
-                    // Except if it's a 'service' or non-stock item? Assuming all items in sales need stock/recipe.
-                    // For now, strict check.
-                    if ($remainingQty > 0.001) { // Floating point tolerance
-                        // Allow negative stock for base items if forced? No, let's strict check.
-                        // Actually, if it's a base item (no components) and stock is 0, we can't deduct.
-                        // But wait, if $product->components->count() == 0, it falls here.
+                    // Strictly fail if no stock and no components (unless forced, but here we strict)
+                    if ($remainingQty > 0.001) { 
                          throw new \Exception("Stock insuficiente para: " . $product->name . " (Faltan: $remainingQty)");
                     }
                 }
             }
 
         } else {
-            // Restore logic
-            // Ideally we track how it was deducted, but for simplicity we restore to STOCK.
-            // This treats the cancellation as if we "produced" the item back or returned it to shelf.
-            $product->increment('stock', $quantity);
+            // RESTORE LOGIC
+            // If it is a Made-to-Order item (Burger, Combo, Extra) OR a Formula, 
+            // we should check if we should restore the Item itself or its Ingredients.
+            
+            // Heuristic:
+            // 1. If it's a 'combo', 'burger', 'extra', primarily we restore components because we don't stock ready-made burgers.
+            // 2. If it's a 'production_formula' (Salsa), we MIGHT have stock. 
+            //    But if the sales deduction logic prioritized Taking from Stock, the Restore logic should ideally Put Back in Stock.
+            //    However, since we don't track *how* it was deducted (from stock vs made on spot) per transaction line easily without more complex logging,
+            //    we need a safe default.
+            
+            // Safe Default: 
+            // - If category is 'burger', 'extra', 'combo': Restore Components.
+            // - Else (Supply, Drinks, Pre-made Salsas): Restore Stock.
+
+            if (in_array($product->category, ['burger', 'extra', 'combo'])) {
+                if ($product->components->count() > 0) {
+                    foreach ($product->components as $component) {
+                        if (!$component->childProduct) continue;
+                        $componentQty = $component->quantity * $quantity;
+                        $this->processStock($component->childProduct, $componentQty, 'restore');
+                    }
+                } else {
+                    // Edge case: Burger with no recipe? Restore stock I guess, or do nothing.
+                    // Let's restore stock to avoid data loss, but it signals bad configuration.
+                    $product->increment('stock', $quantity);
+                }
+            } else {
+                // Supplies, Drinks, Salsas (production_formula)
+                // We assume these are returned to the shelf/fridge.
+                $product->increment('stock', $quantity);
+            }
         }
     }
 }
