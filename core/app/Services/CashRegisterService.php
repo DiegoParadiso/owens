@@ -5,81 +5,58 @@ namespace App\Services;
 use App\Models\CashRegister;
 use App\Models\CashMovement;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Exception;
 
 class CashRegisterService
 {
     /**
-     * Open a new cash register
+     * Get the currently open cash register for the authenticated user.
+     * 
+     * @return CashRegister
+     * @throws Exception if no register is open
      */
-    public function openCashRegister(float $openingAmount): CashRegister
+    public function getOpenRegister()
     {
-        // Check if user already has an open register
-        $existingRegister = CashRegister::where('user_id', Auth::id())
-            ->where('status', 'open')
-            ->first();
-            
-        if ($existingRegister) {
-            throw new \Exception('Ya existe una caja abierta para este usuario.');
-        }
+        $cashRegister = CashRegister::where('user_id', Auth::id())
+                                     ->where('status', 'open')
+                                     ->first();
         
-        return CashRegister::create([
-            'user_id' => Auth::id(),
-            'opening_amount' => $openingAmount,
-            'status' => 'open',
-            'opened_at' => now(),
-        ]);
-    }
+        if (!$cashRegister) {
+            throw new Exception('REGISTER_CLOSED');
+        }
 
-    /**
-     * Close the current cash register
-     */
-    public function closeCashRegister(CashRegister $cashRegister, float $closingAmount): CashRegister
-    {
-        if ($cashRegister->status !== 'open') {
-            throw new \Exception('La caja no está abierta.');
-        }
-        
-        if ($cashRegister->user_id !== Auth::id()) {
-            throw new \Exception('No puedes cerrar una caja de otro usuario.');
-        }
-        
-        $cashRegister->update([
-            'status' => 'closed',
-            'closing_amount' => $closingAmount,
-            'closed_at' => now(),
-        ]);
-        
         return $cashRegister;
     }
 
     /**
-     * Get current balance of cash register
+     * Record a cash movement.
+     * 
+     * @param float $amount
+     * @param string $type 'sale', 'purchase', 'expense', etc.
+     * @param string $description
+     * @param int|null $relatedId ID of the related Sale/Purchase/Expense
      */
-    public function getCurrentBalance(CashRegister $cashRegister): float
+    public function recordMovement(float $amount, string $type, string $description, int $relatedId = null)
     {
-        $income = $cashRegister->movements()->where('type', 'income')->sum('amount');
-        $expense = $cashRegister->movements()->where('type', 'expense')->sum('amount');
-        
-        return $cashRegister->opening_amount + $income - $expense;
-    }
+        $register = $this->getOpenRegister();
 
-    /**
-     * Record a cash movement
-     */
-    public function recordMovement(CashRegister $cashRegister, string $type, float $amount, string $description): CashMovement
-    {
-        if ($cashRegister->status !== 'open') {
-            throw new \Exception('La caja debe estar abierta para registrar movimientos.');
-        }
-        
-        return CashMovement::create([
-            'cash_register_id' => $cashRegister->id,
+        CashMovement::create([
+            'cash_session_id' => $register->id,
             'type' => $type,
             'amount' => $amount,
             'description' => $description,
+            'related_id' => $relatedId,
         ]);
     }
+    
+    /**
+     * Delete movements related to a transaction.
+     * 
+     * @param string $type
+     * @param int $relatedId
+     */
+    public function deleteRelatedMovements(string $type, int $relatedId)
+    {
+        CashMovement::where('type', $type)->where('related_id', $relatedId)->delete();
+    }
 }
-
-

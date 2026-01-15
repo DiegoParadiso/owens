@@ -16,6 +16,15 @@ use Illuminate\Support\Facades\DB;
 class SalesController extends Controller
 {
 
+    protected $stockService;
+    protected $cashRegisterService;
+
+    public function __construct(\App\Services\StockService $stockService, \App\Services\CashRegisterService $cashRegisterService)
+    {
+        $this->stockService = $stockService;
+        $this->cashRegisterService = $cashRegisterService;
+    }
+
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
@@ -70,6 +79,12 @@ class SalesController extends Controller
         DB::beginTransaction();
 
         try {
+            // Ensure register is open check if paying by cash (or partial cash)
+            if ($request->payment_method === 'cash' || 
+               ($request->payment_method === 'multiple' && collect($request->split_payments)->contains('method', 'cash'))) {
+                $this->cashRegisterService->getOpenRegister();
+            }
+
             // Data penjualan yang será será guardada
             $sale_data = [
                 'sale_date' => now(),
@@ -85,7 +100,7 @@ class SalesController extends Controller
                 $quantitySold = $request->quantity[$key];
 
                 try {
-                    $this->processStock($product, $quantitySold, 'deduct');
+                    $this->stockService->processStock($product, $quantitySold, 'deduct');
                 } catch (\Exception $e) {
                     DB::rollBack();
                     return redirect()->back()->with('error', $e->getMessage());
@@ -122,53 +137,35 @@ class SalesController extends Controller
 
                     // Only create cash movement for cash portions
                     if ($payment['method'] === 'cash') {
-                        $cashRegister = CashRegister::where('user_id', Auth::id())
-                                                     ->where('status', 'open')
-                                                     ->first();
-                        
-                        if (!$cashRegister) {
-                            throw new \Exception('REGISTER_CLOSED');
-                        }
-                        
                         // Generate description with product names
                         $productNames = SaleDetail::where('sale_id', $savedSale->id)
                             ->join('products', 'sale_details.product_id', '=', 'products.id')
                             ->pluck('products.name')
                             ->implode(', ');
 
-                        CashMovement::create([
-                            'cash_session_id' => $cashRegister->id,
-                            'type' => 'sale',
-                            'amount' => $payment['amount'],
-                            'description' => 'Venta de ' . $productNames . ' (Pago parcial en efectivo)',
-                            'related_id' => $savedSale->id,
-                        ]);
+                        $this->cashRegisterService->recordMovement(
+                            $payment['amount'], 
+                            'sale', 
+                            'Venta de ' . $productNames . ' (Pago parcial en efectivo)', 
+                            $savedSale->id
+                        );
                     }
                 }
             } else {
                 // Single payment method
                 if ($request->payment_method === 'cash') {
-                    $cashRegister = CashRegister::where('user_id', Auth::id())
-                                                 ->where('status', 'open')
-                                                 ->first();
-                    
-                    if (!$cashRegister) {
-                        throw new \Exception('REGISTER_CLOSED');
-                    }
-                    
                     // Generate description with product names
                     $productNames = SaleDetail::where('sale_id', $savedSale->id)
                         ->join('products', 'sale_details.product_id', '=', 'products.id')
                         ->pluck('products.name')
                         ->implode(', ');
 
-                    CashMovement::create([
-                        'cash_session_id' => $cashRegister->id,
-                        'type' => 'sale',
-                        'amount' => $request->total,
-                        'description' => 'Venta de ' . $productNames,
-                        'related_id' => $savedSale->id,
-                    ]);
+                    $this->cashRegisterService->recordMovement(
+                        $request->total,
+                        'sale',
+                        'Venta de ' . $productNames,
+                        $savedSale->id
+                    );
                 }
             }
 
@@ -248,13 +245,13 @@ class SalesController extends Controller
             foreach ($saleDetails as $detail) {
                 $product = Product::with('components.childProduct')->find($detail->product_id);
                 if ($product) {
-                    $this->processStock($product, $detail->quantity, 'restore');
+                    $this->stockService->processStock($product, $detail->quantity, 'restore');
                 }
                 $detail->delete();
             }
 
             // Eliminar movimiento de caja si existe
-            CashMovement::where('type', 'sale')->where('related_id', $id)->delete();
+            $this->cashRegisterService->deleteRelatedMovements('sale', $id);
             
             // Eliminar la venta
             $sale->delete();
@@ -265,91 +262,6 @@ class SalesController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->route('sales.index')->with('error', 'Error al eliminar la venta: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Recursively process stock (deduct or restore)
-     * 
-     * @param Product $product
-     * @param float $quantity
-     * @param string $action 'deduct' or 'restore'
-     */
-    private function processStock($product, $quantity, $action = 'deduct')
-    {
-        // SMART LOGIC FOR DEDUCTION AND RESTORATION
-
-        if ($action === 'deduct') {
-            $stockToDeduct = 0;
-            $remainingQty = $quantity;
-
-            // Check available stock
-            if ($product->stock > 0) {
-                if ($product->stock >= $quantity) {
-                    $stockToDeduct = $quantity;
-                    $remainingQty = 0;
-                } else {
-                    $stockToDeduct = $product->stock;
-                    $remainingQty = $quantity - $product->stock;
-                }
-            }
-
-            // Deduct available stock
-            if ($stockToDeduct > 0) {
-                $product->decrement('stock', $stockToDeduct);
-            }
-
-            // If there's still quantity needed to be covered and product has components
-            if ($remainingQty > 0) {
-                if ($product->components->count() > 0) {
-                    // Recurse for remaining quantity
-                    foreach ($product->components as $component) {
-                        if (!$component->childProduct) continue;
-
-                        $componentQty = $component->quantity * $remainingQty;
-                        $this->processStock($component->childProduct, $componentQty, 'deduct');
-                    }
-                } else {
-                    // Strictly fail if no stock and no components (unless forced, but here we strict)
-                    if ($remainingQty > 0.001) { 
-                         throw new \Exception("Stock insuficiente para: " . $product->name . " (Faltan: $remainingQty)");
-                    }
-                }
-            }
-
-        } else {
-            // RESTORE LOGIC
-            // If it is a Made-to-Order item (Burger, Combo, Extra) OR a Formula, 
-            // we should check if we should restore the Item itself or its Ingredients.
-            
-            // Heuristic:
-            // 1. If it's a 'combo', 'burger', 'extra', primarily we restore components because we don't stock ready-made burgers.
-            // 2. If it's a 'production_formula' (Salsa), we MIGHT have stock. 
-            //    But if the sales deduction logic prioritized Taking from Stock, the Restore logic should ideally Put Back in Stock.
-            //    However, since we don't track *how* it was deducted (from stock vs made on spot) per transaction line easily without more complex logging,
-            //    we need a safe default.
-            
-            // Safe Default: 
-            // - If category is 'burger', 'extra', 'combo': Restore Components.
-            // - Else (Supply, Drinks, Pre-made Salsas): Restore Stock.
-
-            if (in_array($product->category, ['burger', 'extra', 'combo'])) {
-                if ($product->components->count() > 0) {
-                    foreach ($product->components as $component) {
-                        if (!$component->childProduct) continue;
-                        $componentQty = $component->quantity * $quantity;
-                        $this->processStock($component->childProduct, $componentQty, 'restore');
-                    }
-                } else {
-                    // Edge case: Burger with no recipe? Restore stock I guess, or do nothing.
-                    // Let's restore stock to avoid data loss, but it signals bad configuration.
-                    $product->increment('stock', $quantity);
-                }
-            } else {
-                // Supplies, Drinks, Salsas (production_formula)
-                // We assume these are returned to the shelf/fridge.
-                $product->increment('stock', $quantity);
-            }
         }
     }
 }

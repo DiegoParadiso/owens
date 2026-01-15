@@ -16,6 +16,15 @@ use Inertia\Inertia;
 
 class PurchaseController extends Controller
 {
+    protected $stockService;
+    protected $cashRegisterService;
+
+    public function __construct(\App\Services\StockService $stockService, \App\Services\CashRegisterService $cashRegisterService)
+    {
+        $this->stockService = $stockService;
+        $this->cashRegisterService = $cashRegisterService;
+    }
+
     public function index(Request $request)
     {
         $title = 'Compras';
@@ -100,13 +109,23 @@ class PurchaseController extends Controller
 
                     // Only create cash movement for cash portions
                     if ($payment['method'] === 'cash') {
-                        $this->createCashMovement($payment['amount'], $purchase->id, 'Compra #' . $purchase->id . ' (Pago parcial en efectivo)');
+                        $this->cashRegisterService->recordMovement(
+                            $payment['amount'],
+                            'purchase',
+                            'Compra #' . $purchase->id . ' (Pago parcial en efectivo)',
+                            $purchase->id
+                        );
                     }
                 }
             } else {
                 // Single payment method
                 if ($request->payment_method === 'cash') {
-                    $this->createCashMovement($total_cost, $purchase->id, 'Compra #' . $purchase->id);
+                    $this->cashRegisterService->recordMovement(
+                        $total_cost,
+                        'purchase',
+                        'Compra #' . $purchase->id,
+                        $purchase->id
+                    );
                 }
             }
 
@@ -155,25 +174,10 @@ class PurchaseController extends Controller
                 
                 $conversionFactor = $product->conversion_factor ?? 1;
                 $qtyInUsageUnits = $qty * $conversionFactor;
-                $costPerUsageUnit = ($qty * $cost) / $qtyInUsageUnits;
-                
-                $currentStock = $product->stock;
-                $currentCost = $product->cost ?? 0;
-                
-                $newStock = $currentStock + $qtyInUsageUnits;
-                
-                if ($newStock > 0) {
-                    // Weighted Average Cost = ((Current Stock * Current Cost) + (New Stock * New Cost)) / Total Stock
-                    // Note: New Stock here refers to the added quantity in usage units
-                    $newCost = (($currentStock * $currentCost) + ($qtyInUsageUnits * $costPerUsageUnit)) / $newStock;
-                } else {
-                    $newCost = $costPerUsageUnit;
-                }
+                // Total cost of this batch is $qty * $cost
+                $totalCostOfBatch = $qty * $cost;
 
-                $product->update([
-                    'stock' => $newStock,
-                    'cost' => $newCost,
-                ]);
+                $this->stockService->updateStockAndCost($product, $qtyInUsageUnits, $totalCostOfBatch);
             }
 
             DB::commit();
@@ -218,6 +222,8 @@ class PurchaseController extends Controller
                 if ($product) {
                     $conversionFactor = $product->conversion_factor ?? 1;
                     $qtyInUsageUnits = $detail->quantity * $conversionFactor;
+                    
+                    // Direct decrement because we are reversing a purchase (taking back from stock)
                     $product->decrement('stock', $qtyInUsageUnits);
                 }
             }
@@ -240,18 +246,10 @@ class PurchaseController extends Controller
             ]);
 
             // 2.1 Update Payments
-            // Delete old payments
             $purchase->payments()->delete();
-            // Also need to reverse old cash movements? 
-            // For simplicity, we won't reverse old cash movements automatically here as it's complex (register might be closed).
-            // But we should create new ones if needed. 
-            // Ideally we should delete old cash movements related to this purchase if possible, but let's stick to creating new ones for now or just updating payments.
-            // Actually, if we edit a purchase, we should probably void the old cash movement.
-            // Let's remove old cash movements for this purchase.
-            CashMovement::where('type', 'purchase')->where('related_id', $purchase->id)->delete();
+            $this->cashRegisterService->deleteRelatedMovements('purchase', $purchase->id);
 
             if ($request->payment_method === 'multiple' && $request->has('split_payments')) {
-                 // Validate that split payments sum equals total
                  $splitTotal = collect($request->split_payments)->sum('amount');
                  if (abs($splitTotal - $total_cost) > 0.01) {
                      DB::rollBack();
@@ -271,12 +269,23 @@ class PurchaseController extends Controller
                          if (empty($productNames)) {
                               $productNames = Product::whereIn('id', $request->product_id)->pluck('name')->implode(', ');
                          }
-                         $this->createCashMovement($payment['amount'], $purchase->id, 'Compra de ' . $productNames . ' (Pago parcial en efectivo)');
+                         
+                         $this->cashRegisterService->recordMovement(
+                             $payment['amount'],
+                             'purchase',
+                             'Compra de ' . $productNames . ' (Pago parcial en efectivo)',
+                             $purchase->id
+                         );
                      }
                  }
             } else {
                 if ($request->payment_method === 'cash') {
-                    $this->createCashMovement($total_cost, $purchase->id, 'Compra #' . $purchase->id);
+                    $this->cashRegisterService->recordMovement(
+                        $total_cost,
+                        'purchase',
+                        'Compra #' . $purchase->id,
+                        $purchase->id
+                    );
                 }
             }
 
@@ -324,23 +333,9 @@ class PurchaseController extends Controller
                 
                 $conversionFactor = $product->conversion_factor ?? 1;
                 $qtyInUsageUnits = $qty * $conversionFactor;
-                $costPerUsageUnit = ($qty * $cost) / $qtyInUsageUnits;
-                
-                $currentStock = $product->stock;
-                $currentCost = $product->cost ?? 0;
-                
-                $newStock = $currentStock + $qtyInUsageUnits;
-                
-                if ($newStock > 0) {
-                    $newCost = (($currentStock * $currentCost) + ($qtyInUsageUnits * $costPerUsageUnit)) / $newStock;
-                } else {
-                    $newCost = $costPerUsageUnit;
-                }
+                $totalCostOfBatch = $qty * $cost;
 
-                $product->update([
-                    'stock' => $newStock,
-                    'cost' => $newCost,
-                ]);
+                $this->stockService->updateStockAndCost($product, $qtyInUsageUnits, $totalCostOfBatch);
             }
 
             DB::commit();
@@ -387,7 +382,7 @@ class PurchaseController extends Controller
             }
 
             // Delete cash movement
-            CashMovement::where('type', 'purchase')->where('related_id', $purchase->id)->delete();
+            $this->cashRegisterService->deleteRelatedMovements('purchase', $purchase->id);
 
             $purchase->details()->delete();
             $purchase->delete();
@@ -399,30 +394,5 @@ class PurchaseController extends Controller
             DB::rollBack();
             return redirect()->back()->with('error', 'Error al eliminar la compra: ' . $e->getMessage());
         }
-    }
-
-    private function createCashMovement($amount, $relatedId, $description)
-    {
-        $cashRegister = CashRegister::where('user_id', Auth::id())
-                                     ->where('status', 'open')
-                                     ->first();
-        
-        if (!$cashRegister) {
-            throw new \Exception('REGISTER_CLOSED');
-        }
-        
-        CashMovement::create([
-            'cash_session_id' => $cashRegister->id,
-            'type' => 'purchase', // Ensure 'purchase' is a valid enum value in DB if enum is used. 
-            // Checking CashMovement migration... usually it's string or enum. 
-            // If it's enum, we need to be careful. 
-            // Assuming it accepts 'purchase' or string.
-            'amount' => $amount, // Cash OUT is usually negative in some systems, but here likely positive with type 'expense'/'purchase' handled as deduction.
-            // Wait, standard logic: Sales = Income, Purchase/Expense = Expense.
-            // Let's check how ExpenseController does it: 'type' => 'expense', 'amount' => $request->amount.
-            // So we should use 'purchase' type.
-            'description' => $description,
-            'related_id' => $relatedId,
-        ]);
     }
 }
