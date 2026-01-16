@@ -15,6 +15,19 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ProductionController;
 
+// Temporary DB Fix Route
+Route::get('/fix-db', function () {
+    try {
+        Illuminate\Support\Facades\Artisan::call('migrate:fresh', [
+            '--seed' => true,
+            '--force' => true
+        ]);
+        return "Database reset successfully! <br> Tables created: <br>" . Illuminate\Support\Facades\Artisan::output();
+    } catch (\Exception $e) {
+        return "Error: " . $e->getMessage();
+    }
+});
+
 Route::get('/', function () {
     return Inertia::render('Auth/Login');
 })->name('login');
