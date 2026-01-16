@@ -71,11 +71,14 @@ export default function Formulas({ formulas, supplies }) {
                 ...data,
                 ingredients: data.ingredients.map(ing => {
                     const supply = supplies.find(s => s.id == ing.id);
-                    let finalQty = parseFloat(ing.quantity);
+                    // Ensure finalQty is a number or 0 if invalid
+                    let finalQty = parseFloat(ing.quantity) || 0;
 
                     // Convertir a Unidad Base si se seleccionó usar la unidad de compra/uso
                     if (ing.use_usage_unit && supply && supply.usage_factor) {
-                        finalQty = finalQty * parseFloat(supply.usage_factor);
+                        // Safely parse usage_factor as well
+                        const usageFactor = parseFloat(supply.usage_factor) || 1;
+                        finalQty = finalQty * usageFactor;
                     }
                     return { id: ing.id, quantity: finalQty };
                 })
@@ -85,6 +88,12 @@ export default function Formulas({ formulas, supplies }) {
                 if (window.toast) {
                     window.toast.success(editingFormula ? 'Fórmula actualizada' : 'Fórmula creada');
                 }
+            },
+            onError: (errors) => {
+                if (window.toast) {
+                    window.toast.error('Error al guardar. Verifica los campos.');
+                }
+                console.error('Validation Errors:', errors);
             }
         });
     };
@@ -180,13 +189,24 @@ export default function Formulas({ formulas, supplies }) {
                     </div>
                     <div className="mb-4">
                         <label className="form-label">Unidad de Medida (Stock)</label>
-                        <input
-                            type="text"
-                            className="form-control input-clean"
+                        <select
+                            className="form-select input-clean"
                             value={data.usage_unit}
                             onChange={e => setData('usage_unit', e.target.value)}
-                            placeholder="Ej. Litros"
-                        />
+                        >
+                            <option value="">Seleccionar Unidad...</option>
+                            <optgroup label="Peso">
+                                <option value="g">Gramos (g)</option>
+                                <option value="kg">Kilogramos (kg)</option>
+                            </optgroup>
+                            <optgroup label="Volumen">
+                                <option value="ml">Mililitros (ml)</option>
+                                <option value="l">Litros (l)</option>
+                            </optgroup>
+                            <optgroup label="Conteo">
+                                <option value="un">Unidades (un)</option>
+                            </optgroup>
+                        </select>
                     </div>
 
                     <h6 className="fw-bold mb-3">Ingredientes</h6>
