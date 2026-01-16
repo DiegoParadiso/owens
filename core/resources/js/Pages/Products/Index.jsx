@@ -373,13 +373,13 @@ export default function Index({ products }) {
 
                             {/* 2. Purchase Unit -> Base Conversion */}
                             <div className="mb-3">
-                                <label className="form-label small fw-bold text-dark">2. Unidad de Compra</label>
+                                <label className="form-label small fw-bold text-muted">2. Unidad de Compra</label>
                                 <div className="d-flex align-items-center gap-2">
                                     <div style={{ flex: 1 }}>
                                         <input
                                             type="text"
                                             className="form-control form-control-sm input-clean"
-                                            placeholder="Ej. Caja, Pack"
+                                            placeholder="Ej. Kg, Caja, Pack"
                                             value={data.purchase_unit || ''}
                                             onChange={(e) => setData('purchase_unit', e.target.value)}
                                         />
@@ -392,7 +392,24 @@ export default function Index({ products }) {
                                                 className="form-control form-control-sm"
                                                 placeholder="Cant."
                                                 value={data.conversion_factor || ''}
-                                                onChange={(e) => setData('conversion_factor', e.target.value)}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    const newFactor = parseFloat(val);
+                                                    const oldFactor = parseFloat(data.conversion_factor);
+
+                                                    if (data.type === 'supply' && data.stock !== '' && oldFactor > 0 && newFactor > 0) {
+                                                        const currentQty = data.stock / oldFactor;
+                                                        const newStock = Math.round(currentQty * newFactor); // Keep integer if possible
+
+                                                        setData(prev => ({
+                                                            ...prev,
+                                                            conversion_factor: val,
+                                                            stock: newStock
+                                                        }));
+                                                    } else {
+                                                        setData('conversion_factor', val);
+                                                    }
+                                                }}
                                             />
                                             <span className="input-group-text bg-light text-muted">
                                                 {data.base_unit || 'Base'}
@@ -423,7 +440,7 @@ export default function Index({ products }) {
                                             }
                                         }}
                                     />
-                                    <label className="form-check-label small fw-bolder text-dark" htmlFor="toggleUsageUnit">
+                                    <label className="form-check-label small fw-bolder text-muted" htmlFor="toggleUsageUnit">
                                         3. Uso (Vista) <span className="text-muted fw-normal fst-italic ms-1"></span>
                                     </label>
                                 </div>
@@ -511,9 +528,9 @@ export default function Index({ products }) {
                                         </div>
                                         <div className="form-text mt-1" style={{ fontSize: '0.75rem' }}>
                                             {usageCalcMode === 'purchase' ? (
-                                                <>Ej: 1 <b>{data.purchase_unit || 'Caja'}</b> trae <b>{data.usage_factor && data.conversion_factor ? Math.round(data.conversion_factor / data.usage_factor) : '56'}</b> {data.usage_unit || 'Unidades'}.</>
+                                                <>Ej: 1 <b>{data.purchase_unit || 'Caja'}</b> trae <b>{data.usage_factor && data.conversion_factor ? Math.round(data.conversion_factor / data.usage_factor) : '56'}</b> {data.usage_unit || (['ml', 'l'].includes(data.base_unit) ? 'Baldes' : (data.base_unit === 'un' ? 'Packs' : 'Unidades'))}.</>
                                             ) : (
-                                                <>Ej: 1 <b>{data.usage_unit || 'Unidad'}</b> pesa <b>{data.usage_factor ? parseFloat(Number(data.usage_factor).toFixed(2)) : '20'}</b> {data.base_unit || 'gramos'}.</>
+                                                <>Ej: 1 <b>{data.usage_unit || (['ml', 'l'].includes(data.base_unit) ? 'Balde' : (data.base_unit === 'un' ? 'Pack' : 'Unidad'))}</b> {['ml', 'l'].includes(data.base_unit) || data.base_unit === 'un' ? 'trae' : 'pesa'} <b>{data.usage_factor ? parseFloat(Number(data.usage_factor).toFixed(2)) : '20'}</b> {data.base_unit || 'gramos'}.</>
                                             )}
                                         </div>
                                     </>
