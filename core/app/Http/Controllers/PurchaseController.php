@@ -137,7 +137,7 @@ class PurchaseController extends Controller
                 if (!$productId) {
                     $newProduct = Product::create([
                         'name' => $request->product_name[$key],
-                        'price' => ($request->product_type[$key] ?? 'single') === 'supply' ? null : $request->sale_price[$key],
+                        'price' => ($request->product_type[$key] ?? 'single') === 'supply' ? 0 : ($request->sale_price[$key] ?? 0),
                         'stock' => 0, // Will be updated below
                         'cost' => 0, // Will be updated below
                         'type' => $request->product_type[$key] ?? 'supply',
@@ -153,7 +153,7 @@ class PurchaseController extends Controller
                     if ($product) {
                         $product->update([
                             'type' => $request->product_type[$key] ?? $product->type,
-                            'price' => ($request->product_type[$key] ?? $product->type) === 'supply' ? null : ($request->sale_price[$key] ?? $product->price),
+                            'price' => ($request->product_type[$key] ?? $product->type) === 'supply' ? 0 : ($request->sale_price[$key] ?? $product->price),
                             'purchase_unit' => !empty($request->purchase_unit[$key]) ? $request->purchase_unit[$key] : $product->purchase_unit,
                             'usage_unit' => !empty($request->usage_unit[$key]) ? $request->usage_unit[$key] : $product->usage_unit,
                             'conversion_factor' => !empty($request->conversion_factor[$key]) ? $request->conversion_factor[$key] : ($product->conversion_factor ?? 1),
@@ -298,7 +298,7 @@ class PurchaseController extends Controller
                 if (!$productId) {
                     $newProduct = Product::create([
                         'name' => $request->product_name[$key],
-                        'price' => $request->sale_price[$key],
+                        'price' => $request->sale_price[$key] ?? 0,
                         'stock' => 0, // Will be updated below
                         'cost' => 0,
                         'type' => 'supply',
@@ -312,7 +312,7 @@ class PurchaseController extends Controller
                     if ($product) {
                         $product->update([
                             'type' => $request->product_type[$key] ?? $product->type,
-                            'price' => ($request->product_type[$key] ?? $product->type) === 'supply' ? null : ($request->sale_price[$key] ?? $product->price),
+                            'price' => ($request->product_type[$key] ?? $product->type) === 'supply' ? 0 : ($request->sale_price[$key] ?? $product->price),
                             'purchase_unit' => !empty($request->purchase_unit[$key]) ? $request->purchase_unit[$key] : $product->purchase_unit,
                             'usage_unit' => !empty($request->usage_unit[$key]) ? $request->usage_unit[$key] : $product->usage_unit,
                             'conversion_factor' => !empty($request->conversion_factor[$key]) ? $request->conversion_factor[$key] : ($product->conversion_factor ?? 1),

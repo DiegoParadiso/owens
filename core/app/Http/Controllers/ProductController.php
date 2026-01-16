@@ -91,8 +91,8 @@ class ProductController extends Controller
             $validated['price'] = 0;
         }
         $validated['user_id'] = auth()->id();
-        $validated['conversion_factor'] = $request->input('conversion_factor', 1);
-        $validated['usage_factor'] = $request->input('usage_factor', 1);
+        $validated['conversion_factor'] = $request->input('conversion_factor') ?? 1;
+        $validated['usage_factor'] = $request->input('usage_factor') ?? 1;
         
         $validated['price'] = $validated['price'] ?? 0;
         $validated['cost'] = $validated['cost'] ?? 0;
@@ -124,8 +124,8 @@ class ProductController extends Controller
         ]);
         
         $validate['user_id'] = Auth::user()->id;
-        $validate['conversion_factor'] = $request->input('conversion_factor', 1);
-        $validate['usage_factor'] = $request->input('usage_factor', 1);
+        $validate['conversion_factor'] = $request->input('conversion_factor') ?? 1;
+        $validate['usage_factor'] = $request->input('usage_factor') ?? 1;
         
         // If type is supply (we might need to check current type if not in request, but usually it is)
         // Actually, type is not in validation for update, so we assume it's not changing or we should check.

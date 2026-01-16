@@ -66,10 +66,15 @@ class SalesController extends Controller
     public function store(Request $request)
     {
         $validate = $request->validate([
+            'total' => 'required|numeric|min:0',
             'product_id' => 'required',
             'quantity' => 'required',
             'product_id.*' => 'exists:products,id',
             'quantity.*' => 'numeric|min:1',
+            'price' => 'required|array',
+            'price.*' => 'numeric|min:0',
+            'total_price' => 'required|array',
+            'total_price.*' => 'numeric|min:0',
             'payment_method' => 'required',
             'split_payments' => 'nullable|array',
             'split_payments.*.method' => 'required_with:split_payments|in:cash,debit_card,credit_card,transfer,qr',
