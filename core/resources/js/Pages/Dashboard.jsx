@@ -125,7 +125,7 @@ export default function Dashboard({ stats, recentSales, chartData, cashRegister 
                         <div className="card-minimal h-100">
                             <div className="d-flex align-items-center justify-content-between mb-4">
                                 <h6 className="mb-0 fw-bold">Ventas Globales</h6>
-                                <a href="#" className="small text-muted text-decoration-none">Mostrar Todo</a>
+                                <Link href={route('sales.index')} className="small text-muted text-decoration-none">Mostrar Todo</Link>
                             </div>
                             <Bar options={{ responsive: true }} data={salesChartData} />
                         </div>
@@ -134,7 +134,7 @@ export default function Dashboard({ stats, recentSales, chartData, cashRegister 
                         <div className="card-minimal h-100">
                             <div className="d-flex align-items-center justify-content-between mb-4">
                                 <h6 className="mb-0 fw-bold">Ventas e Ingresos</h6>
-                                <a href="#" className="small text-muted text-decoration-none">Mostrar Todo</a>
+                                <Link href={route('sales.index')} className="small text-muted text-decoration-none">Mostrar Todo</Link>
                             </div>
                             <Line options={{ responsive: true }} data={revenueChartData} />
                         </div>
@@ -147,31 +147,49 @@ export default function Dashboard({ stats, recentSales, chartData, cashRegister 
                         <Link href={route('sales.index')} className="small text-muted text-decoration-none">Ver Todo</Link>
                     </div>
                     <div className="table-responsive">
-                        <table className="table-minimal">
+                        <table className="table-minimal align-top">
                             <thead>
                                 <tr>
-                                    <th scope="col">Fecha</th>
-                                    <th scope="col">Factura</th>
+                                    <th scope="col" style={{ width: '140px' }}>Fecha</th>
+                                    <th scope="col">Detalles</th>
                                     <th scope="col">Cajero</th>
-                                    <th scope="col" className="text-end">Monto</th>
-                                    <th scope="col" className="text-end">Acción</th>
+                                    <th scope="col" style={{ width: '130px' }} className="text-end">Monto</th>
+                                    <th scope="col" style={{ width: '130px' }}>Método Pago</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {recentSales.map((sale) => (
                                     <tr key={sale.id}>
-                                        <td>{sale.date}</td>
-                                        <td className="fw-medium">{sale.invoice}</td>
+                                        <td>{new Date(sale.sale_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</td>
+                                        <td>
+                                            <ul className="list-unstyled mb-0 small">
+                                                {sale.sale_details && sale.sale_details.length > 0 ? (
+                                                    sale.sale_details.map((detail, idx) => (
+                                                        <li key={idx}>
+                                                            <span className="text-muted">{parseInt(detail.quantity)}x</span> {detail.product.name}
+                                                        </li>
+                                                    ))
+                                                ) : (
+                                                    <li className="text-muted fst-italic">Sin detalles</li>
+                                                )}
+                                            </ul>
+                                        </td>
                                         <td>{sale.cashier}</td>
-                                        <td className="text-end font-tabular fw-semibold">{formatCurrency(sale.amount)}</td>
-                                        <td className="text-end">
-                                            <button
-                                                className="btn btn-icon-only bg-transparent border-0"
-                                                onClick={() => handleDelete(sale.id)}
-                                                title="Eliminar"
-                                            >
-                                                <span className="material-symbols-outlined" style={{ fontSize: '22px', color: 'var(--text-muted)', transform: 'translateY(-1px)' }}>delete</span>
-                                            </button>
+                                        <td className="text-end font-tabular fw-semibold">{formatCurrency(sale.total_price)}</td>
+                                        <td>
+                                            <span className="badge bg-transparent border text-dark">
+                                                {(() => {
+                                                    const methods = {
+                                                        'cash': 'Efectivo',
+                                                        'debit_card': 'Débito',
+                                                        'credit_card': 'Crédito',
+                                                        'transfer': 'Transferencia',
+                                                        'qr': 'QR',
+                                                        'multiple': 'Múltiple'
+                                                    };
+                                                    return methods[sale.payment_method] || sale.payment_method;
+                                                })()}
+                                            </span>
                                         </td>
                                     </tr>
                                 ))}

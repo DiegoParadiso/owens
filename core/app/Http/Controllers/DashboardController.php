@@ -21,7 +21,7 @@ class DashboardController extends Controller
             $totalRevenue = Sale::sum('total_price') ?? 0;
 
             // Ventas recientes (últimas 5)
-            $recentSales = Sale::with(['user', 'payment'])->latest()->take(5)->get();
+            $recentSales = Sale::with(['user', 'payment', 'saleDetails.product'])->latest()->take(5)->get();
 
             // Datos de gráficos (últimos 7 días)
             $last7Days = Carbon::now()->subDays(6);
@@ -82,11 +82,19 @@ class DashboardController extends Controller
             'recentSales' => $recentSales->map(function($sale) {
                 return [
                     'id' => $sale->id,
-                    'date' => $sale->sale_date->format('Y-m-d H:i'),
+                    'sale_date' => $sale->sale_date, // Pass full date for formatting
                     'invoice' => 'INV-' . str_pad($sale->id, 5, '0', STR_PAD_LEFT),
                     'cashier' => $sale->user->name ?? 'Sistema',
-                    'amount' => $sale->total_price,
-                    'status' => $sale->payment ? 'Lunas' : 'Pendiente',
+                    'total_price' => $sale->total_price, // Match sales index param name
+                    'payment_method' => $sale->payment_method,
+                    'sale_details' => $sale->saleDetails->map(function($detail) {
+                        return [
+                            'quantity' => $detail->quantity,
+                            'product' => [
+                                'name' => $detail->product->name ?? 'Producto eliminado'
+                            ]
+                        ];
+                    }),
                 ];
             }),
             'chartData' => [

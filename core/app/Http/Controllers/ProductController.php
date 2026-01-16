@@ -76,7 +76,7 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'nullable|numeric|min:0',
-            'stock' => 'required|numeric|min:0', // Changed to numeric to allow decimals for usage units
+            'stock' => 'required|integer|min:0',
             'cost' => 'nullable|numeric|min:0',
             'type' => 'nullable|in:single,supply',
             'purchase_unit' => 'nullable|string|max:50',
@@ -88,11 +88,14 @@ class ProductController extends Controller
         
         $validated['type'] = $request->input('type', 'single');
         if ($validated['type'] === 'supply') {
-            $validated['price'] = null;
+            $validated['price'] = 0;
         }
         $validated['user_id'] = auth()->id();
         $validated['conversion_factor'] = $request->input('conversion_factor', 1);
         $validated['usage_factor'] = $request->input('usage_factor', 1);
+        
+        $validated['price'] = $validated['price'] ?? 0;
+        $validated['cost'] = $validated['cost'] ?? 0;
         
         Product::create($validated);
         
@@ -129,6 +132,9 @@ class ProductController extends Controller
         // If we want to support changing type, we should add it.
         // For now, let's just check if price is null, it's fine.
         // But if the user explicitly sends empty price, we should save it as null.
+        
+        // Explicitly handle null values for numeric fields that can't be null in DB
+        $validate['price'] = $validate['price'] ?? 0;
         
         $product->update($validate);
         
