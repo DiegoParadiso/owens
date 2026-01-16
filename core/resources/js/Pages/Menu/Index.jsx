@@ -358,7 +358,16 @@ export default function Index({ products = [], supplies = [], category = 'burger
                                                 required={category === 'combo'}
                                             >
                                                 <option value="">Seleccionar...</option>
-                                                {supplies.map(supply => (
+                                                {supplies.filter(s => {
+                                                    if (category === 'combo') {
+                                                        // Combos only see Burgers and Extras (finished products)
+                                                        return ['burger', 'extra'].includes(s.category);
+                                                    } else {
+                                                        // Burgers/Extras only see Ingredients/Formulas (raw materials)
+                                                        // Exclude other Burgers, Extras, and Combos
+                                                        return !['burger', 'extra', 'combo'].includes(s.category);
+                                                    }
+                                                }).map(supply => (
                                                     <option key={supply.id} value={supply.id}>{supply.name}</option>
                                                 ))}
                                             </select>
@@ -377,7 +386,7 @@ export default function Index({ products = [], supplies = [], category = 'burger
                                         <td className="small text-muted">
                                             {(() => {
                                                 const selectedSupply = supplies.find(s => s.id == row.child_product_id);
-                                                return selectedSupply && selectedSupply.usage_unit ? selectedSupply.usage_unit : '-';
+                                                return selectedSupply ? (selectedSupply.usage_unit || selectedSupply.base_unit || selectedSupply.purchase_unit || '-') : '-';
                                             })()}
                                         </td>
                                         <td className="text-end">
