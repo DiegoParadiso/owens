@@ -156,15 +156,15 @@ class ProductionController extends Controller
             // Log production
             LogStock::create([
                 'product_id' => $product->id,
-                'quantity' => $quantity,
+                'quantity' => $productionQty,
                 'user_id' => Auth::id(),
                 'type' => 'production',
-                'description' => "Producción de cocina"
+                'description' => "Producción de cocina ({$batches} lotes)"
             ]);
 
             DB::commit();
 
-            return redirect()->back()->with('success', "Producido: {$quantity}x {$product->name}");
+            return redirect()->back()->with('success', "Producido: {$productionQty} {$product->usage_unit} de {$product->name}");
 
         } catch (\Exception $e) {
             DB::rollBack();

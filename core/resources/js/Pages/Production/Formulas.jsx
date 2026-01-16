@@ -73,6 +73,7 @@ export default function Formulas({ formulas, supplies }) {
             preserveScroll: true,
             transform: (data) => ({
                 ...data,
+                batch_yield: data.batch_yield === '' ? null : parseFloat(data.batch_yield),
                 ingredients: data.ingredients.map(ing => {
                     const supply = supplies.find(s => s.id == ing.id);
                     // Ensure finalQty is a number or 0 if invalid
@@ -192,7 +193,7 @@ export default function Formulas({ formulas, supplies }) {
                                                     onClick={() => handleDelete(formula.id)}
                                                     title="Eliminar"
                                                 >
-                                                    <span className="material-symbols-outlined" style={{ fontSize: '22px', color: '#dc3545', transform: 'translateY(-1px)' }}>delete</span>
+                                                    <span className="material-symbols-outlined" style={{ fontSize: '22px', color: 'var(--text-muted)', transform: 'translateY(-1px)' }}>delete</span>
                                                 </button>
                                             </div>
                                         </td>
