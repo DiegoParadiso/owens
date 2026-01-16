@@ -29,6 +29,10 @@ return [
     |
     */
 
+    'schema' => [
+        'path' => null,
+    ],
+
     'connections' => [
 
         'mysql' => [
