@@ -32,6 +32,7 @@ class ProductionController extends Controller
                                    'name' => $product->name,
                                    'stock' => $product->stock,
                                    'usage_unit' => $product->usage_unit,
+                                   'batch_yield' => $product->batch_yield, // Pass yield to frontend
                                    'components' => $product->components->map(function ($comp) {
                                        return [
                                            'id' => $comp->id,
@@ -117,12 +118,13 @@ class ProductionController extends Controller
             DB::beginTransaction();
 
             $product = Product::findOrFail($request->product_id);
-            $quantity = $request->quantity;
+            $batches = $request->quantity; // Conceptually "Batches" if yield exists
 
             // 1. Deduct Ingredients
             foreach ($product->components as $component) {
                 if ($component->childProduct) {
-                    $requiredQty = $component->quantity * $quantity;
+                    // Usage is simply Formula Component Qty * Number of Batches
+                    $requiredQty = $component->quantity * $batches;
                     $child = $component->childProduct;
 
                     if ($child->stock < $requiredQty) {
@@ -137,13 +139,19 @@ class ProductionController extends Controller
                         'quantity' => -$requiredQty, // Negative for deduction
                         'user_id' => Auth::id(),
                         'type' => 'production_ingredient',
-                        'description' => "Usado para producir {$quantity}x {$product->name}"
+                        'description' => "Usado para producir {$batches} lotes de {$product->name}"
                     ]);
                 }
             }
 
             // 2. Add Finished Product to Stock
-            $product->increment('stock', $quantity);
+            // If batch_yield is defined, production = Batches * Yield
+            // Otherwise legacy behavior: production = Input Quantity
+            $productionQty = ($product->batch_yield && $product->batch_yield > 0) 
+                           ? ($batches * $product->batch_yield) 
+                           : $batches;
+
+            $product->increment('stock', $productionQty);
             
             // Log production
             LogStock::create([
@@ -168,7 +176,13 @@ class ProductionController extends Controller
     {
         $formulas = Product::where('category', 'production_formula')
             ->with('components.childProduct')
-            ->get();
+            ->get()
+            ->map(function ($f) {
+                // Ensure batch_yield is explicit if needed, though default serialization should include it.
+                // Just making sure existing frontend logic receives what it expects + new field.
+                $f->batch_yield = $f->batch_yield ? (float) $f->batch_yield : null; 
+                return $f;
+            });
 
         $supplies = Product::all(); // Ingredients
 
@@ -183,6 +197,7 @@ class ProductionController extends Controller
         $request->validate([
             'name' => 'required|string',
             'usage_unit' => 'nullable|string',
+            'batch_yield' => 'nullable|numeric|min:0',
             'ingredients' => 'nullable|array',
             'ingredients.*.id' => 'required|exists:products,id',
             'ingredients.*.quantity' => 'required|numeric|min:0.001',
@@ -197,6 +212,7 @@ class ProductionController extends Controller
                     'name' => $request->name,
                     'usage_unit' => $request->usage_unit,
                     'base_unit' => $request->usage_unit,
+                    'batch_yield' => $request->batch_yield, // Save yield
                     'user_id' => Auth::id(),
                 ]);
             } else {
@@ -208,6 +224,7 @@ class ProductionController extends Controller
                     'user_id' => Auth::id(),
                     'stock' => 0,
                     'base_unit' => $request->usage_unit, // Formulas usually defined in their base unit
+                    'batch_yield' => $request->batch_yield, // Save yield
                     'conversion_factor' => 1,
                     'usage_factor' => 1,
                     'price' => 0,
@@ -245,6 +262,29 @@ class ProductionController extends Controller
             DB::rollBack();
             \Log::error('Error saving formula: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Error al guardar: ' . $e->getMessage());
+        }
+    }
+
+    public function destroyFormula($id)
+    {
+        try {
+            DB::beginTransaction();
+            $product = Product::findOrFail($id);
+
+            // Ensure it's a formula
+            if ($product->category !== 'production_formula') {
+                 throw new \Exception('Este producto no es una fórmula.');
+            }
+            
+            // Delete product (cascade deletes components, or we can force it)
+            $product->components()->delete();
+            $product->delete();
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Fórmula eliminada correctamente.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Error al eliminar: ' . $e->getMessage());
         }
     }
 }

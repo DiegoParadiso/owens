@@ -23,6 +23,7 @@ class Product extends Model // Changed class name from Produk to Product
         'conversion_factor',
         'base_unit',
         'usage_factor',
+        'batch_yield', // Added batch_yield
         'user_id' // Changed from 'Users_id' to 'user_id'
     ];
 

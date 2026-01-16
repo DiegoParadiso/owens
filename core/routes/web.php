@@ -91,6 +91,7 @@ Route::middleware(['auth'])->group(function () {
     // Production
     Route::get('/production/formulas', [ProductionController::class, 'formulas'])->name('production.formulas');
     Route::post('/production/formulas', [ProductionController::class, 'storeFormula'])->name('production.storeFormula');
+    Route::delete('/production/formulas/{id}', [ProductionController::class, 'destroyFormula'])->name('production.destroyFormula');
     Route::get('/production', [ProductionController::class, 'index'])->name('production.index');
     Route::post('/production', [ProductionController::class, 'store'])->name('production.store');
 });

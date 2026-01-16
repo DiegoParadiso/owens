@@ -198,26 +198,57 @@ export default function Index({ products, history }) {
                     }
                 >
                     <div className="text-center mb-4">
-                        <label className="form-label text-muted text-uppercase small fw-bold spacing-2 mb-3">Cantidad a Producir</label>
+                        <label className="form-label text-muted text-uppercase small fw-bold spacing-2 mb-3">
+                            {selectedProduct?.batch_yield > 0 ? 'Lotes a Producir' : 'Cantidad a Producir'}
+                        </label>
                         <div className="d-flex justify-content-center align-items-baseline gap-2">
                             <input
                                 type="number"
                                 className="form-control border-0 border-bottom border-2 rounded-0 text-center fw-bold p-0 text-body-emphasis bg-transparent"
                                 style={{ fontSize: '3rem', width: '140px', boxShadow: 'none' }}
                                 value={data.quantity}
-                                onChange={e => setData('quantity', e.target.value === '' ? '' : parseInt(e.target.value))}
+                                onChange={e => setData('quantity', e.target.value === '' ? '' : parseFloat(e.target.value))}
                                 placeholder="0"
-                                min="1"
+                                min="0.1"
                                 step="1"
                                 autoFocus
                             />
                             <span className="text-muted fw-bold" style={{ fontSize: '1.25rem' }}>
-                                {selectedProduct?.usage_unit || 'u'}
+                                {selectedProduct?.batch_yield > 0 ? 'Lotes' : (selectedProduct?.usage_unit || 'u')}
                             </span>
                         </div>
+
+                        {/* Batch Helper Text */}
+                        {selectedProduct && selectedProduct.batch_yield > 0 && (
+                            <div className="mt-2 small text-muted">
+                                1 Lote = <strong>{parseFloat(selectedProduct.batch_yield)} {selectedProduct.usage_unit}</strong>
+                                {data.quantity > 0 && (
+                                    <div className="text-success mt-1">
+                                        <i className="bi bi-arrow-return-right me-1"></i>
+                                        Total a producir: <strong>{data.quantity * parseFloat(selectedProduct.batch_yield)} {selectedProduct.usage_unit}</strong>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {selectedProduct && (
                             <div className={`mt-2 small fw-bold ${selectedProduct.max_producible > 0 ? 'text-success' : 'text-danger'}`}>
-                                Máximo posible: {Math.floor(selectedProduct.max_producible) > 9000 ? '∞' : Math.floor(selectedProduct.max_producible)}
+                                Máximo posible: {Math.floor(selectedProduct.max_producible) > 9000 ? '∞' : Math.floor(selectedProduct.max_producible)} {selectedProduct.batch_yield > 0 ? 'lotes' : ''}
+                            </div>
+                        )}
+
+                        {selectedProduct && selectedProduct.batch_yield > 0 && (
+                            <div className="d-flex justify-content-center gap-2 mt-3">
+                                {[1, 2, 3, 4, 5].map(num => (
+                                    <button
+                                        key={num}
+                                        type="button"
+                                        className={`btn btn-sm rounded-pill px-3 ${data.quantity === num ? 'btn-dark' : 'btn-outline-secondary'}`}
+                                        onClick={() => setData('quantity', num)}
+                                    >
+                                        {num} Lote{num > 1 ? 's' : ''}
+                                    </button>
+                                ))}
                             </div>
                         )}
                     </div>

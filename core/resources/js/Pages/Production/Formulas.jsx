@@ -2,15 +2,17 @@ import React, { useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
 import { Head, useForm, Link } from '@inertiajs/react';
+import Swal from 'sweetalert2';
 
 export default function Formulas({ formulas, supplies }) {
     const [editingFormula, setEditingFormula] = useState(null);
     const [showDrawer, setShowDrawer] = useState(false);
 
-    const { data, setData, post, processing, reset, errors } = useForm({
+    const { data, setData, post, processing, reset, errors, delete: destroy } = useForm({
         id: null,
         name: '',
         usage_unit: '',
+        batch_yield: '',
         ingredients: [] // { id, quantity }
     });
 
@@ -21,6 +23,7 @@ export default function Formulas({ formulas, supplies }) {
                 id: formula.id,
                 name: formula.name,
                 usage_unit: formula.usage_unit || '',
+                batch_yield: formula.batch_yield ? parseFloat(formula.batch_yield) : '',
                 ingredients: formula.components.map(c => ({
                     id: c.child_product_id,
                     quantity: parseFloat(c.quantity)
@@ -32,6 +35,7 @@ export default function Formulas({ formulas, supplies }) {
                 id: null,
                 name: '',
                 usage_unit: '',
+                batch_yield: '',
                 ingredients: [{ id: '', quantity: '' }]
             });
         }
@@ -98,6 +102,32 @@ export default function Formulas({ formulas, supplies }) {
         });
     };
 
+    const handleDelete = (id) => {
+        Swal.fire({
+            text: "¿Eliminar esta fórmula?",
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Eliminar',
+            cancelButtonText: 'Cancelar',
+            buttonsStyling: true,
+            customClass: {
+                popup: 'swal-minimal',
+                confirmButton: 'btn btn-danger px-4',
+                cancelButton: 'btn btn-secondary px-4'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                destroy(route('production.destroyFormula', id), {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        if (window.toast) window.toast.success('Fórmula eliminada correctamente.');
+                    }
+                });
+            }
+        });
+    };
+
     return (
         <MainLayout>
             <Head title="Gestionar Fórmulas" />
@@ -122,8 +152,9 @@ export default function Formulas({ formulas, supplies }) {
                                 <tr>
                                     <th>Nombre</th>
                                     <th>Unidad</th>
+                                    <th>Rendimiento (Yield)</th>
                                     <th>Ingredientes</th>
-                                    <th className="text-end">Acciones</th>
+                                    <th className="text-center" style={{ width: '100px' }}>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -131,6 +162,13 @@ export default function Formulas({ formulas, supplies }) {
                                     <tr key={formula.id}>
                                         <td className="fw-bold">{formula.name}</td>
                                         <td>{formula.usage_unit}</td>
+                                        <td>
+                                            {formula.batch_yield ? (
+                                                <span className="badge bg-secondary-subtle text-secondary border border-secondary-subtle">
+                                                    {parseFloat(formula.batch_yield)} {formula.usage_unit} / lote
+                                                </span>
+                                            ) : <span className="text-muted small">-</span>}
+                                        </td>
                                         <td>
                                             <div className="d-flex flex-wrap gap-1">
                                                 {formula.components.map(comp => (
@@ -140,20 +178,29 @@ export default function Formulas({ formulas, supplies }) {
                                                 ))}
                                             </div>
                                         </td>
-                                        <td className="text-end">
-                                            <button
-                                                className="btn btn-icon-only bg-transparent border-0"
-                                                onClick={() => openDrawer(formula)}
-                                                title="Editar"
-                                            >
-                                                <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--text-muted)' }}>edit_square</span>
-                                            </button>
+                                        <td className="text-center">
+                                            <div className="d-flex justify-content-center gap-1">
+                                                <button
+                                                    className="btn btn-icon-only bg-transparent border-0 btn-action-icon"
+                                                    onClick={() => openDrawer(formula)}
+                                                    title="Editar"
+                                                >
+                                                    <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--text-muted)' }}>edit_square</span>
+                                                </button>
+                                                <button
+                                                    className="btn btn-icon-only bg-transparent border-0 btn-action-icon"
+                                                    onClick={() => handleDelete(formula.id)}
+                                                    title="Eliminar"
+                                                >
+                                                    <span className="material-symbols-outlined" style={{ fontSize: '22px', color: '#dc3545', transform: 'translateY(-1px)' }}>delete</span>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
                                 {formulas.length === 0 && (
                                     <tr>
-                                        <td colSpan="4" className="text-center py-4 text-muted">
+                                        <td colSpan="5" className="text-center py-4 text-muted">
                                             No hay fórmulas registradas.
                                         </td>
                                     </tr>
@@ -207,6 +254,29 @@ export default function Formulas({ formulas, supplies }) {
                                 <option value="un">Unidades (un)</option>
                             </optgroup>
                         </select>
+                    </div>
+
+                    <div className="mb-4">
+                        <label className="form-label">Rendimiento del Lote (Yield)</label>
+                        <div className="input-group">
+                            <input
+                                type="number"
+                                className="form-control input-clean"
+                                value={data.batch_yield}
+                                onChange={e => setData('batch_yield', e.target.value)}
+                                placeholder="Ej. 4850"
+                                min="0"
+                                step="0.01"
+                            />
+                            {data.usage_unit && (
+                                <span className="input-group-text bg-light text-muted">
+                                    {data.usage_unit}
+                                </span>
+                            )}
+                        </div>
+                        <div className="form-text small text-muted">
+                            Indica cuánto rinde esta receta completa (ej. suma de ingredientes ≈ 4850 {data.usage_unit || 'unidades'}).
+                        </div>
                     </div>
 
                     <h6 className="fw-bold mb-3">Ingredientes</h6>
