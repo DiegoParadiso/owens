@@ -62,6 +62,24 @@ export default function MainLayout({ children }) {
                     />
                 </div>
 
+                {/* Mobile Hamburger Button */}
+                <button
+                    className="btn btn-lg-square d-lg-none position-fixed top-0 start-0 m-3"
+                    onClick={toggleSidebar}
+                    style={{ zIndex: 1000, background: 'transparent', border: 'none', color: 'var(--text-main)', fontSize: '1.5rem' }}
+                >
+                    <i className="fa fa-bars"></i>
+                </button>
+
+                {/* Mobile Overlay */}
+                {isSidebarOpen && (
+                    <div
+                        className="d-lg-none position-fixed top-0 start-0 w-100 h-100"
+                        style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 998 }}
+                        onClick={toggleSidebar}
+                    ></div>
+                )}
+
                 <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} darkMode={darkMode} />
 
 

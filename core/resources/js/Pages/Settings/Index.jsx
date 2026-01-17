@@ -206,7 +206,7 @@ export default function Index({ users }) {
 
                 {activeTab === 'system' && (
                     <div className="py-2">
-                        <div className="d-flex align-items-center justify-content-between p-4 rounded-3" style={{ backgroundColor: 'rgba(220, 53, 69, 0.04)' }}>
+                        <div className="d-flex flex-wrap align-items-center justify-content-between p-4 rounded-3 gap-3" style={{ backgroundColor: 'rgba(220, 53, 69, 0.04)' }}>
                             <div>
                                 <h6 className="fw-bold text-danger mb-1">Zona de Peligro</h6>
                                 <p className="small text-muted mb-0">Reiniciar la base de datos borrará toda la información permanentemente.</p>

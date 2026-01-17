@@ -212,6 +212,8 @@ h6,
 @media (max-width: 991.98px) {
     .sidebar {
         margin-left: -250px;
+        box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+        /* Add shadow for floating effect */
     }
 
     .sidebar.open {
@@ -221,6 +223,12 @@ h6,
     .content {
         width: 100%;
         margin-left: 0;
+    }
+
+    .content.open {
+        /* Prevent content shifting on mobile when sidebar opens */
+        margin-left: 0;
+        width: 100%;
     }
 }
 
@@ -888,6 +896,20 @@ body.dark-mode .text-adaptive-contrast {
 
 .alert-stock-warning .material-symbols-outlined {
     color: #842029 !important;
+}
+
+/* --- Responsive Tables --- */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+}
+
+@media (max-width: 991.98px) {
+    .table-responsive table {
+        min-width: 800px;
+        /* Ensure table keeps its structure and scrolls */
+    }
 }
 
 /* Dark Mode Alert Overrides */
