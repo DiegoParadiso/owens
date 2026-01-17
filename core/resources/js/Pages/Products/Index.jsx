@@ -24,6 +24,23 @@ export default function Index({ products }) {
         base_unit: '', // Added missing field
     });
 
+    // Search State
+    const [searchQuery, setSearchQuery] = useState(new URLSearchParams(window.location.search).get('search') || '');
+    const [isFocused, setIsFocused] = useState(false);
+
+    const handleSearch = (query = searchQuery) => {
+        router.get(
+            route('product.index'),
+            { search: query },
+            { preserveState: true, preserveScroll: true, replace: true }
+        );
+    };
+
+    const handleClear = () => {
+        setSearchQuery('');
+        handleSearch('');
+    };
+
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
@@ -146,18 +163,59 @@ export default function Index({ products }) {
 
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <h4 className="mb-0 fw-bold">Inventario</h4>
-                    <div className="d-flex gap-2">
-
-                        <button
-                            className="btn btn-primary rounded-pill px-3"
-                            onClick={() => setShowDrawer(true)}
-                        >
-                            <i className="bi bi-plus-lg me-2"></i>Agregar Producto
-                        </button>
-                    </div>
+                    <button
+                        className="btn btn-primary rounded-pill px-3"
+                        onClick={() => setShowDrawer(true)}
+                    >
+                        <i className="bi bi-plus-lg me-2"></i>Agregar Producto
+                    </button>
                 </div>
 
                 <div className="card-minimal">
+                    <div className="mb-4">
+                        <div
+                            className={`d-flex align-items-center rounded-3 ps-3 pe-2 py-0 transition-all bg-white ${isFocused ? 'border-primary ring-2 ring-primary-100' : ''}`}
+                            style={{
+                                transition: 'all 0.2s ease-in-out',
+                                height: '38px' // Explicit height constraint for compacter look
+                            }}
+                        >
+                            <i className={`bi bi-search me-2 transition-colors ${isFocused ? 'text-primary' : 'text-muted'}`}></i>
+                            <input
+                                type="text"
+                                className="form-control border-0 bg-transparent shadow-none p-0 py-1"
+                                placeholder="Buscar productos..."
+                                style={{
+                                    fontSize: '0.95rem'
+                                }}
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onFocus={() => setIsFocused(true)}
+                                onBlur={() => setIsFocused(false)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                            />
+                            {searchQuery && (
+                                <button
+                                    className="btn btn-link text-decoration-none p-0 me-2 text-muted opacity-50 hover-opacity-100"
+                                    type="button"
+                                    onClick={handleClear}
+                                    title="Limpiar búsqueda"
+                                    style={{ border: 'none' }}
+                                >
+                                    <i className="bi bi-x-circle-fill" style={{ fontSize: '1rem' }}></i>
+                                </button>
+                            )}
+                            <div className="vr mx-2 text-muted opacity-25" style={{ height: '20px' }}></div>
+                            <button
+                                className={`btn btn-link text-decoration-none px-2 fw-semibold transition-colors ${isFocused ? 'text-primary' : 'text-muted'}`}
+                                type="button"
+                                onClick={() => handleSearch()}
+                                style={{ fontSize: '0.85rem' }}
+                            >
+                                BUSCAR
+                            </button>
+                        </div>
+                    </div>
                     <div className="table-responsive">
                         <table className="table-minimal align-top">
                             <thead>

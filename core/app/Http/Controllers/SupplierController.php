@@ -13,9 +13,16 @@ class SupplierController extends Controller
         $subtitle = 'Gestión de Proveedores';
         
         $perPage = $request->input('per_page', 10);
+        $search = $request->input('search');
+
+        $query = Supplier::latest();
+
+        if ($search) {
+             $query->where('name', 'LIKE', "%{$search}%")
+                   ->orWhere('contact_info', 'LIKE', "%{$search}%");
+        }
         
-        $suppliers = Supplier::latest()
-            ->paginate($perPage)
+        $suppliers = $query->paginate($perPage)
             ->withQueryString();
 
         return \Inertia\Inertia::render('Suppliers/Index', compact('title', 'subtitle', 'suppliers'));
