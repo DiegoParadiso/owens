@@ -52,6 +52,9 @@ export default function Index({ products = [], supplies = [], category = 'burger
     const updateRow = (id, field, value) => {
         const newRows = rows.map(row => {
             if (row.id === id) {
+                if (typeof field === 'object') {
+                    return { ...row, ...field };
+                }
                 return { ...row, [field]: value };
             }
             return row;
@@ -363,8 +366,10 @@ export default function Index({ products = [], supplies = [], category = 'burger
                                                 className="form-select form-select-sm input-clean"
                                                 value={row.child_product_id}
                                                 onChange={(e) => {
-                                                    updateRow(row.id, 'child_product_id', e.target.value);
-                                                    updateRow(row.id, 'use_usage_unit', false); // Reset unit on product change
+                                                    updateRow(row.id, {
+                                                        child_product_id: e.target.value,
+                                                        use_usage_unit: false
+                                                    });
                                                 }}
                                                 required={category === 'combo'}
                                             >
