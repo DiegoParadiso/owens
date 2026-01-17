@@ -46,6 +46,7 @@ class SalesController extends Controller
                   });
         })
         ->with('components.childProduct')
+        ->orderBy('name')
         ->get();
         
         return \Inertia\Inertia::render('Sales/Index', [

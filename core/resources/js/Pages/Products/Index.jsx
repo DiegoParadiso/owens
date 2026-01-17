@@ -181,7 +181,7 @@ export default function Index({ products }) {
                                             </div>
                                         </td>
                                         <td className="font-tabular fw-semibold text-end">
-                                            {product.price ? formatCurrency(product.price) : <span className="text-muted">-</span>}
+                                            {product.type === 'single' && product.price ? formatCurrency(product.price) : <span className="text-muted">-</span>}
                                         </td>
                                         <td className="font-tabular text-muted text-end">
                                             {product.cost > 0 ? (

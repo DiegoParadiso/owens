@@ -402,11 +402,60 @@ export default function Index({ sales = [], products = [] }) {
                                                     required
                                                 >
                                                     <option value="">Seleccionar</option>
-                                                    {products.map(product => (
-                                                        <option key={product.id} value={product.id}>
-                                                            {product.name} {product.type === 'combo' || (product.components && product.components.length > 0) ? '' : `(Stock: ${product.stock})`}
-                                                        </option>
-                                                    ))}
+                                                    {(() => {
+                                                        const grouped = {
+                                                            'combo': [],
+                                                            'burger': [],
+                                                            'extra': [],
+                                                            'other': []
+                                                        };
+
+                                                        products.forEach(p => {
+                                                            if (p.type === 'combo') grouped.combo.push(p);
+                                                            else if (p.category === 'burger') grouped.burger.push(p);
+                                                            else if (p.category === 'extra') grouped.extra.push(p);
+                                                            else grouped.other.push(p);
+                                                        });
+
+                                                        return (
+                                                            <>
+                                                                {grouped.combo.length > 0 && (
+                                                                    <optgroup label="Combos">
+                                                                        {grouped.combo.map(product => (
+                                                                            <option key={product.id} value={product.id}>{product.name}</option>
+                                                                        ))}
+                                                                    </optgroup>
+                                                                )}
+                                                                {grouped.burger.length > 0 && (
+                                                                    <optgroup label="Hamburguesas">
+                                                                        {grouped.burger.map(product => (
+                                                                            <option key={product.id} value={product.id}>
+                                                                                {product.name} (Stock: {product.stock})
+                                                                            </option>
+                                                                        ))}
+                                                                    </optgroup>
+                                                                )}
+                                                                {grouped.extra.length > 0 && (
+                                                                    <optgroup label="Extras">
+                                                                        {grouped.extra.map(product => (
+                                                                            <option key={product.id} value={product.id}>
+                                                                                {product.name} (Stock: {product.stock})
+                                                                            </option>
+                                                                        ))}
+                                                                    </optgroup>
+                                                                )}
+                                                                {grouped.other.length > 0 && (
+                                                                    <optgroup label="Otros / Individuales">
+                                                                        {grouped.other.map(product => (
+                                                                            <option key={product.id} value={product.id}>
+                                                                                {product.name} (Stock: {product.stock})
+                                                                            </option>
+                                                                        ))}
+                                                                    </optgroup>
+                                                                )}
+                                                            </>
+                                                        );
+                                                    })()}
                                                 </select>
                                             </td>
                                             <td>

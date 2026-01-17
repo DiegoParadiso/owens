@@ -374,15 +374,54 @@ export default function Index({ products = [], supplies = [], category = 'burger
                                                 required={category === 'combo'}
                                             >
                                                 <option value="">Seleccionar...</option>
-                                                {supplies.filter(s => {
-                                                    if (category === 'combo') {
-                                                        return ['burger', 'extra'].includes(s.category);
-                                                    } else {
-                                                        return !['burger', 'extra', 'combo'].includes(s.category);
-                                                    }
-                                                }).map(supply => (
-                                                    <option key={supply.id} value={supply.id}>{supply.name}</option>
-                                                ))}
+                                                {(() => {
+                                                    const filtered = supplies.filter(s => {
+                                                        if (category === 'combo') {
+                                                            return ['burger', 'extra'].includes(s.category);
+                                                        } else {
+                                                            return !['burger', 'extra', 'combo'].includes(s.category);
+                                                        }
+                                                    });
+
+                                                    const grouped = {
+                                                        'burger': [],
+                                                        'extra': [],
+                                                        'ingredient': [],
+                                                        'other': []
+                                                    };
+
+                                                    filtered.forEach(s => {
+                                                        if (s.category === 'burger') grouped.burger.push(s);
+                                                        else if (s.category === 'extra') grouped.extra.push(s);
+                                                        else if (s.type === 'supply') grouped.ingredient.push(s);
+                                                        else grouped.other.push(s);
+                                                    });
+
+                                                    return (
+                                                        <>
+                                                            {grouped.burger.length > 0 && (
+                                                                <optgroup label="Hamburguesas">
+                                                                    {grouped.burger.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                                                </optgroup>
+                                                            )}
+                                                            {grouped.extra.length > 0 && (
+                                                                <optgroup label="Extras / Acompañamientos">
+                                                                    {grouped.extra.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                                                </optgroup>
+                                                            )}
+                                                            {grouped.ingredient.length > 0 && (
+                                                                <optgroup label="Insumos / Ingredientes">
+                                                                    {grouped.ingredient.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                                                </optgroup>
+                                                            )}
+                                                            {grouped.other.length > 0 && (
+                                                                <optgroup label="Otros">
+                                                                    {grouped.other.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                                                </optgroup>
+                                                            )}
+                                                        </>
+                                                    );
+                                                })()}
                                             </select>
                                             {(() => {
                                                 const selectedSupply = supplies.find(s => s.id == row.child_product_id);
