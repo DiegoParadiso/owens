@@ -40,7 +40,7 @@ export default function Index({ products = [], supplies = [], category = 'burger
     };
 
     const addRow = () => {
-        setRows([...rows, { id: Date.now(), child_product_id: '', quantity: 1 }]);
+        setRows([...rows, { id: Date.now(), child_product_id: '', quantity: 1, use_usage_unit: false }]);
     };
 
     const removeRow = (id) => {
@@ -74,11 +74,12 @@ export default function Index({ products = [], supplies = [], category = 'burger
             const itemRows = item.components.map((comp, idx) => ({
                 id: Date.now() + idx,
                 child_product_id: comp.child_product_id,
-                quantity: parseFloat(comp.quantity)
+                quantity: parseFloat(comp.quantity),
+                use_usage_unit: false
             }));
             setRows(itemRows);
         } else {
-            setRows([{ id: Date.now(), child_product_id: '', quantity: 1 }]);
+            setRows([{ id: Date.now(), child_product_id: '', quantity: 1, use_usage_unit: false }]);
         }
 
         setShowDrawer(true);
@@ -101,7 +102,14 @@ export default function Index({ products = [], supplies = [], category = 'burger
             price: data.price,
             category: data.category,
             child_product_id: validRows.map(row => row.child_product_id),
-            quantity: validRows.map(row => parseFloat(row.quantity)),
+            quantity: validRows.map(row => {
+                let qty = parseFloat(row.quantity);
+                const supply = supplies.find(s => s.id == row.child_product_id);
+                if (supply && row.use_usage_unit && supply.usage_factor) {
+                    qty = qty * (parseFloat(supply.usage_factor) || 1);
+                }
+                return qty;
+            }),
         };
 
         const options = {
@@ -354,23 +362,38 @@ export default function Index({ products = [], supplies = [], category = 'burger
                                             <select
                                                 className="form-select form-select-sm input-clean"
                                                 value={row.child_product_id}
-                                                onChange={(e) => updateRow(row.id, 'child_product_id', e.target.value)}
+                                                onChange={(e) => {
+                                                    updateRow(row.id, 'child_product_id', e.target.value);
+                                                    updateRow(row.id, 'use_usage_unit', false); // Reset unit on product change
+                                                }}
                                                 required={category === 'combo'}
                                             >
                                                 <option value="">Seleccionar...</option>
                                                 {supplies.filter(s => {
                                                     if (category === 'combo') {
-                                                        // Combos only see Burgers and Extras (finished products)
                                                         return ['burger', 'extra'].includes(s.category);
                                                     } else {
-                                                        // Burgers/Extras only see Ingredients/Formulas (raw materials)
-                                                        // Exclude other Burgers, Extras, and Combos
                                                         return !['burger', 'extra', 'combo'].includes(s.category);
                                                     }
                                                 }).map(supply => (
                                                     <option key={supply.id} value={supply.id}>{supply.name}</option>
                                                 ))}
                                             </select>
+                                            {(() => {
+                                                const selectedSupply = supplies.find(s => s.id == row.child_product_id);
+                                                if (selectedSupply && selectedSupply.usage_unit && row.use_usage_unit) {
+                                                    const baseUnitName = selectedSupply.base_unit || 'Base';
+                                                    const usageFactor = parseFloat(selectedSupply.usage_factor) || 1;
+                                                    const qty = parseFloat(row.quantity) || 0;
+                                                    return (
+                                                        <div className="small text-muted mt-1">
+                                                            <i className="bi bi-arrow-return-right me-1"></i>
+                                                            = {qty * usageFactor} {baseUnitName}
+                                                        </div>
+                                                    );
+                                                }
+                                                return null;
+                                            })()}
                                         </td>
                                         <td>
                                             <input
@@ -378,7 +401,7 @@ export default function Index({ products = [], supplies = [], category = 'burger
                                                 className="form-control form-control-sm text-center input-clean"
                                                 value={row.quantity}
                                                 min="0.01"
-                                                step="0.01"
+                                                step="0.001"
                                                 onChange={(e) => updateRow(row.id, 'quantity', e.target.value === '' ? '' : parseFloat(e.target.value))}
                                                 required={category === 'combo'}
                                             />
@@ -386,7 +409,24 @@ export default function Index({ products = [], supplies = [], category = 'burger
                                         <td className="small text-muted">
                                             {(() => {
                                                 const selectedSupply = supplies.find(s => s.id == row.child_product_id);
-                                                return selectedSupply ? (selectedSupply.usage_unit || selectedSupply.base_unit || selectedSupply.purchase_unit || '-') : '-';
+                                                const hasUsageUnit = selectedSupply && selectedSupply.usage_unit;
+                                                const baseUnitName = selectedSupply?.base_unit || selectedSupply?.purchase_unit || '-';
+
+                                                if (hasUsageUnit) {
+                                                    return (
+                                                        <select
+                                                            className="form-select form-select-sm input-clean p-0 ps-1"
+                                                            style={{ border: 'none', background: 'transparent', fontWeight: '500' }}
+                                                            value={row.use_usage_unit ? 'true' : 'false'}
+                                                            onChange={(e) => updateRow(row.id, 'use_usage_unit', e.target.value === 'true')}
+                                                        >
+                                                            <option value="false">{baseUnitName}</option>
+                                                            <option value="true">{selectedSupply.usage_unit}</option>
+                                                        </select>
+                                                    );
+                                                }
+
+                                                return baseUnitName;
                                             })()}
                                         </td>
                                         <td className="text-end">
