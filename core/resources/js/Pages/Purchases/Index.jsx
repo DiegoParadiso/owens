@@ -268,7 +268,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                         cancelButtonColor: '#6c757d',
                         buttonsStyling: true,
                         customClass: {
-                            popup: 'swal-minimal',
+                            popup: 'swal-medium',
                             confirmButton: 'btn btn-primary px-4',
                             cancelButton: 'btn btn-secondary px-4'
                         }

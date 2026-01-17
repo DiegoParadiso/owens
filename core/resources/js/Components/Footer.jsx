@@ -9,7 +9,7 @@ export default function Footer() {
                         <small className="text-muted">&copy; <a href="https://www.instagram.com/owens.arg/" target="_blank" rel="noopener noreferrer" className="text-decoration-none">OWEN'S Argentina</a> Todos los derechos reservados.</small>
                     </div>
                     <div className="col-12 col-sm-6 text-center text-sm-end">
-                        <small className="text-muted">Diseñado por Paradiso</small>
+                        <small className="text-muted">Diseñado por D. Paradiso</small>
                     </div>
                 </div>
             </div>

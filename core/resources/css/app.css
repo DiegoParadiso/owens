@@ -1026,7 +1026,8 @@ body.dark-mode .border-secondary-subtle {
 
 /* --- SweetAlert Minimal (Migrated from style.css) --- */
 .swal-minimal {
-    width: 320px !important;
+    width: 600px !important;
+    max-width: 90vw !important;
     padding: 1.5rem !important;
 }
 
@@ -1046,6 +1047,36 @@ body.dark-mode .border-secondary-subtle {
 }
 
 .swal-minimal .swal2-cancel {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* --- New Medium Modal (Cache busting) --- */
+.swal-medium {
+    width: 480px !important;
+    /* Balanced width */
+    max-width: 90vw !important;
+    padding: 1.5rem !important;
+}
+
+.swal-medium .swal2-html-container {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 0.95rem !important;
+    /* Restored font size */
+    line-height: 1.5 !important;
+}
+
+.swal-medium .swal2-actions {
+    margin-top: 1.5rem !important;
+}
+
+.swal-medium .swal2-confirm {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.swal-medium .swal2-cancel {
     border: none !important;
     box-shadow: none !important;
 }

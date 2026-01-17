@@ -45,7 +45,7 @@ class SalesController extends Controller
                         ->where('stock', '>', 0);
                   });
         })
-        ->with('components.childProduct')
+        ->with('components.childProduct.components.childProduct') // Deep eager load for nested components (Combo -> Extra -> Supply)
         ->orderBy('name')
         ->get();
         

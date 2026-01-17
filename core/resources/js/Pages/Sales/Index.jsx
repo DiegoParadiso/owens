@@ -101,37 +101,51 @@ export default function Index({ sales = [], products = [] }) {
 
         const missingComponents = [];
 
-        if (product.type === 'combo' || (product.components && product.components.length > 0)) {
-            if (product.components && product.components.length > 0) {
-                product.components.forEach(component => {
-                    const requiredQty = component.quantity * quantity;
-                    const availableStock = component.child_product?.stock || 0;
+        // Recursive function to gather required vs available leaf components
+        const gatherRequirements = (prod, requiredQty) => {
+            const requirements = [];
 
-                    if (availableStock < requiredQty) {
-                        missingComponents.push({
-                            name: component.child_product?.name || 'Producto desconocido',
-                            required: requiredQty,
-                            available: availableStock,
-                            missing: requiredQty - availableStock
-                        });
+            if (prod.type === 'combo' || (prod.components && prod.components.length > 0)) {
+                // console.log(`Checking components for ${prod.name}`, prod.components);
+
+                prod.components.forEach(comp => {
+                    const child = comp.child_product;
+                    if (child) {
+                        const childReqQty = comp.quantity * requiredQty;
+                        // Recursively gather requirements for the child
+                        requirements.push(...gatherRequirements(child, childReqQty));
                     }
                 });
-            }
-        } else {
+            } else {
+                // It's a leaf product (Supply or Single), check its stock
+                // Only consider it missing if it tracks stock and stock < required
+                // Note: Menu items like 'burger' category might have 0 stock but logic usually implies they have components.
+                // If they don't have components and have 0 stock, they are effectively out of stock if we treat them as counting stock.
+                // However, based on user context, if it's an ingredient/supply, we check stock.
 
-            if (product.stock < quantity) {
-                missingComponents.push({
-                    name: product.name,
-                    required: quantity,
-                    available: product.stock,
-                    missing: quantity - product.stock
-                });
+                // If the product is a 'supply' or 'single' that tracks stock:
+                // We assume if it has no components, it MUST have stock.
+
+                if (prod.stock < requiredQty) {
+                    requirements.push({
+                        name: prod.name,
+                        required: requiredQty,
+                        available: prod.stock,
+                        missing: requiredQty - prod.stock
+                    });
+                }
             }
-        }
+            return requirements;
+        };
+
+        const requirements = gatherRequirements(product, quantity);
+
+        // Aggregate missing simple components to avoid duplicates if multiple paths use same supply?
+        // For now, simpler list is fine.
 
         return {
-            hasStock: missingComponents.length === 0,
-            missingComponents: missingComponents
+            hasStock: requirements.length === 0,
+            missingComponents: requirements
         };
     };
 
@@ -242,7 +256,7 @@ export default function Index({ sales = [], products = [] }) {
                         cancelButtonColor: '#6c757d',
                         buttonsStyling: true,
                         customClass: {
-                            popup: 'swal-minimal',
+                            popup: 'swal-medium',
                             confirmButton: 'btn btn-primary px-4',
                             cancelButton: 'btn btn-secondary px-4'
                         }
@@ -426,20 +440,19 @@ export default function Index({ sales = [], products = [] }) {
                                                                         ))}
                                                                     </optgroup>
                                                                 )}
-                                                                {grouped.burger.length > 0 && (
-                                                                    <optgroup label="Hamburguesas">
-                                                                        {grouped.burger.map(product => (
-                                                                            <option key={product.id} value={product.id}>
-                                                                                {product.name} (Stock: {product.stock})
-                                                                            </option>
-                                                                        ))}
-                                                                    </optgroup>
-                                                                )}
+                                                                <optgroup label="Hamburguesas">
+                                                                    {grouped.burger.map(product => (
+                                                                        <option key={product.id} value={product.id}>
+                                                                            {product.name}
+                                                                        </option>
+                                                                    ))}
+                                                                </optgroup>
+                                                                )
                                                                 {grouped.extra.length > 0 && (
                                                                     <optgroup label="Extras">
                                                                         {grouped.extra.map(product => (
                                                                             <option key={product.id} value={product.id}>
-                                                                                {product.name} (Stock: {product.stock})
+                                                                                {product.name}
                                                                             </option>
                                                                         ))}
                                                                     </optgroup>

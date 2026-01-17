@@ -160,7 +160,7 @@ export default function Index({ expenses = [], categories = [] }) {
                         cancelButtonColor: '#6c757d',
                         buttonsStyling: true,
                         customClass: {
-                            popup: 'swal-minimal',
+                            popup: 'swal-medium',
                             confirmButton: 'btn btn-primary px-4',
                             cancelButton: 'btn btn-secondary px-4'
                         }

@@ -808,7 +808,8 @@ body.dark-mode .btn-icon-only:hover {
 
 /* SweetAlert2 Custom Styles */
 .swal-minimal {
-    width: 320px !important;
+    width: 600px !important;
+    max-width: 90vw !important;
     padding: 1.5rem !important;
 }
 
