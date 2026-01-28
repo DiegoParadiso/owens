@@ -2,6 +2,11 @@
 
 Sistema integral de gestión de inventario, producción y punto de venta (POS).
 
+| | |
+|:-:|:-:|
+| ![](https://github.com/user-attachments/assets/c515bfd0-3453-4983-8d77-b53568551aab) | ![](https://github.com/user-attachments/assets/fba03ec5-f4d2-46db-8662-1672c394369e) |
+| ![](https://github.com/user-attachments/assets/2fd78a84-bf39-4c8d-a815-832ef9eddc0f) | ![](https://github.com/user-attachments/assets/9a3406a0-33ed-48d3-b04d-ea38956e99ad) |
+
 ## Tecnologías
 
 *   **Backend Framework:** [Laravel 11](https://laravel.com) (PHP ^8.2)
@@ -25,7 +30,7 @@ El sistema cuenta con los siguientes módulos funcionales:
 *   **Reportes**: Generación de reportes detallados y visualización de datos.
 *   **Configuración**: Ajustes generales del sistema y gestión de usuarios.
 
-## 🛠️ Requisitos Previos
+## Requisitos Previos
 
 Asegúrate de tener instalado en tu entorno de desarrollo:
 
@@ -33,7 +38,7 @@ Asegúrate de tener instalado en tu entorno de desarrollo:
 *   Composer
 *   Node.js & NPM
 
-## ⚡ Instalación y Configuración
+## Instalación y Configuración
 
 Sigue estos pasos para levantar el proyecto localmente:
 
@@ -47,24 +52,17 @@ Sigue estos pasos para levantar el proyecto localmente:
     npm install
     ```
 
-3.  **Configurar variables de entorno:**
-    Copia el archivo de ejemplo y configura tu base de datos:
-    ```bash
-    cp .env.example .env
-    ```
-    *Edita el archivo `.env` con tus credenciales de base de datos.*
-
-4.  **Generar clave de aplicación:**
+3.  **Generar clave de aplicación:**
     ```bash
     php artisan key:generate
     ```
 
-5.  **Ejecutar migraciones:**
+4.  **Ejecutar migraciones:**
     ```bash
     php artisan migrate
     ```
 
-6.  **Iniciar servidor de desarrollo:**
+5.  **Iniciar servidor de desarrollo:**
     ```bash
     composer run dev
     ```
