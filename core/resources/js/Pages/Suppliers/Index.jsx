@@ -5,6 +5,7 @@ import { Head, Link, useForm, router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
 
 import Pagination from '@/Components/Pagination';
+import FinanceNavbar from '@/Components/FinanceNavbar';
 
 export default function Index({ suppliers }) {
     const [showDrawer, setShowDrawer] = useState(false);
@@ -83,9 +84,10 @@ export default function Index({ suppliers }) {
         <MainLayout>
             <Head title="Proveedores" />
             <div className="container-fluid pt-4 px-4">
+                <FinanceNavbar />
 
                 <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h4 className="mb-0 fw-bold">Proveedores</h4>
+                    <h5 className="mb-0 fw-bold">Listado de Proveedores</h5>
                     <button
                         className="btn btn-primary rounded-pill px-3"
                         onClick={() => setShowDrawer(true)}

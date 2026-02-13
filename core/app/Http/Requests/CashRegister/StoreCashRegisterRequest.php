@@ -42,3 +42,4 @@ class StoreCashRegisterRequest extends FormRequest
 }
 
 
+

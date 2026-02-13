@@ -109,6 +109,9 @@ class CashRegisterController extends Controller
     {
         $request->validate([
             'opening_amount' => 'required|numeric|min:0',
+        ], [
+            'opening_amount.required' => 'El monto de apertura es obligatorio.',
+            'opening_amount.numeric' => 'El monto debe ser numérico.',
         ]);
 
         // Asegurar que no haya otra caja abierta para este usuario
@@ -137,6 +140,9 @@ class CashRegisterController extends Controller
 
         $request->validate([
             'closing_amount' => 'required|numeric|min:0',
+        ], [
+            'closing_amount.required' => 'El monto de cierre es obligatorio.',
+            'closing_amount.numeric' => 'El monto debe ser numérico.',
         ]);
 
         $register->update([

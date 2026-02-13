@@ -72,6 +72,13 @@ class PurchaseController extends Controller
             'split_payments' => 'nullable|array|required_if:payment_method,multiple',
             'split_payments.*.method' => 'required_if:payment_method,multiple|in:cash,debit_card,credit_card,transfer,qr',
             'split_payments.*.amount' => 'required_if:payment_method,multiple|numeric|min:0.01',
+        ], [
+            'supplier_id.required' => 'El proveedor es obligatorio.',
+            'date.required' => 'La fecha es obligatoria.',
+            'product_id.required' => 'Debes agregar productos.',
+            'quantity.required' => 'La cantidad es obligatoria.',
+            'unit_cost.required' => 'El costo unitario es obligatorio.',
+            'payment_method.required' => 'El método de pago es obligatorio.',
         ]);
 
         try {
@@ -202,15 +209,22 @@ class PurchaseController extends Controller
             'product_name' => 'array',
             'product_name.*' => 'nullable|string|max:255|required_without:product_id.*',
             'sale_price' => 'array',
-            'sale_price.*' => 'nullable|numeric|min:0|required_without:product_id.*',
+            'sale_price.*' => 'nullable|numeric|min:0',
             'quantity' => 'required|array',
             'quantity.*' => 'numeric|min:0.01',
             'unit_cost' => 'required|array',
             'unit_cost.*' => 'numeric|min:0',
             'payment_method' => 'required',
-            'split_payments' => 'nullable|array',
-            'split_payments.*.method' => 'required_with:split_payments|in:cash,debit_card,credit_card,transfer,qr',
-            'split_payments.*.amount' => 'required_with:split_payments|numeric|min:0.01',
+            'split_payments' => 'nullable|array|required_if:payment_method,multiple',
+            'split_payments.*.method' => 'required_if:payment_method,multiple|in:cash,debit_card,credit_card,transfer,qr',
+            'split_payments.*.amount' => 'required_if:payment_method,multiple|numeric|min:0.01',
+        ], [
+            'supplier_id.required' => 'El proveedor es obligatorio.',
+            'date.required' => 'La fecha es obligatoria.',
+            'product_id.required' => 'Debes agregar productos.',
+            'quantity.required' => 'La cantidad es obligatoria.',
+            'unit_cost.required' => 'El costo unitario es obligatorio.',
+            'payment_method.required' => 'El método de pago es obligatorio.',
         ]);
 
         try {

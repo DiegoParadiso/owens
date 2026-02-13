@@ -40,6 +40,8 @@ class SupplierController extends Controller
         $validate = $request->validate([
             'name' => 'required|string|max:255',
             'contact_info' => 'nullable|string',
+        ], [
+            'name.required' => 'El nombre del proveedor es obligatorio.',
         ]);
 
         $supplier = Supplier::create($validate);
@@ -60,6 +62,8 @@ class SupplierController extends Controller
         $validate = $request->validate([
             'name' => 'required|string|max:255',
             'contact_info' => 'nullable|string',
+        ], [
+            'name.required' => 'El nombre del proveedor es obligatorio.',
         ]);
 
         $supplier->update($validate);

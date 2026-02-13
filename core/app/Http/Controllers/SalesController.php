@@ -80,6 +80,11 @@ class SalesController extends Controller
             'split_payments' => 'nullable|array',
             'split_payments.*.method' => 'required_with:split_payments|in:cash,debit_card,credit_card,transfer,qr',
             'split_payments.*.amount' => 'required_with:split_payments|numeric|min:0.01',
+        ], [
+            'total.required' => 'El total es obligatorio.',
+            'product_id.required' => 'Debes agregar al menos un producto.',
+            'payment_method.required' => 'Selecciona un método de pago.',
+            'split_payments.required' => 'Debes especificar los pagos divididos.',
         ]);
 
         DB::beginTransaction();
@@ -200,6 +205,8 @@ class SalesController extends Controller
     {
         $validate = $request->validate([
             'amount_paid' => 'required',
+        ], [
+            'amount_paid.required' => 'El monto pagado es obligatorio.',
         ]);
 
         $saved = Payment::create([

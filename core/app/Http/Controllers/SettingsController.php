@@ -25,6 +25,13 @@ class SettingsController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
             'role' => 'required|string|in:admin,employee,owner',
+        ], [
+            'name.required' => 'El nombre es obligatorio.',
+            'email.required' => 'El correo es obligatorio.',
+            'email.unique' => 'Este correo ya está registrado.',
+            'password.required' => 'La contraseña es obligatoria.',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'role.required' => 'El rol es obligatorio.',
         ]);
 
         User::create([
@@ -44,6 +51,12 @@ class SettingsController extends Controller
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'role' => 'required|string|in:admin,employee,owner',
             'password' => 'nullable|string|min:8',
+        ], [
+            'name.required' => 'El nombre es obligatorio.',
+            'email.required' => 'El correo es obligatorio.',
+            'email.unique' => 'Este correo ya está registrado.',
+            'role.required' => 'El rol es obligatorio.',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
         ]);
 
         $user->name = $request->name;

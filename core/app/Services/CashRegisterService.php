@@ -60,3 +60,4 @@ class CashRegisterService
         CashMovement::where('type', $type)->where('related_id', $relatedId)->delete();
     }
 }
+

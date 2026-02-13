@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
+import CurrencyInput from '@/Components/CurrencyInput';
 import { Head, Link, useForm } from '@inertiajs/react';
 import Swal from 'sweetalert2';
 
@@ -9,13 +10,19 @@ export default function Index({ openRegister, currentBalance, income, expense, m
     const [showCloseDrawer, setShowCloseDrawer] = useState(false);
     const [showOpenDrawer, setShowOpenDrawer] = useState(false);
 
-    const { data: closeData, setData: setCloseData, post: postClose, processing: closeProsessing, errors: closeErrors, reset: resetClose } = useForm({
+    const { data: closeData, setData: setCloseData, post: postClose, processing: closeProsessing, errors: closeErrors, reset: resetClose, transform: transformClose } = useForm({
         closing_amount: '',
     });
 
-    const { data: openData, setData: setOpenData, post: postOpen, processing: openProcessing, errors: openErrors, reset: resetOpen } = useForm({
+    const { data: openData, setData: setOpenData, post: postOpen, processing: openProcessing, errors: openErrors, reset: resetOpen, transform: transformOpen } = useForm({
         opening_amount: '',
     });
+
+    const cleanCurrency = (val) => {
+        if (!val) return 0;
+        if (typeof val === 'number') return val;
+        return parseFloat(String(val).replace(/[$,]/g, '')) || 0;
+    };
 
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('en-US', {
@@ -35,6 +42,11 @@ export default function Index({ openRegister, currentBalance, income, expense, m
         e.preventDefault();
         setShowCloseDrawer(false);
 
+        transformClose((data) => ({
+            ...data,
+            closing_amount: cleanCurrency(data.closing_amount)
+        }));
+
         postClose(route('cash_register.close', openRegister.id), {
             preserveScroll: true,
             onSuccess: () => {
@@ -51,6 +63,11 @@ export default function Index({ openRegister, currentBalance, income, expense, m
     const submitOpen = (e) => {
         e.preventDefault();
         setShowOpenDrawer(false);
+
+        transformOpen((data) => ({
+            ...data,
+            opening_amount: cleanCurrency(data.opening_amount)
+        }));
 
         postOpen(route('cash_register.store'), {
             preserveScroll: true,
@@ -104,16 +121,13 @@ export default function Index({ openRegister, currentBalance, income, expense, m
                     <form id="openRegisterForm" onSubmit={submitOpen}>
                         <div className="mb-3">
                             <label htmlFor="opening_amount" className="form-label">Monto Inicial</label>
-                            <input
-                                type="number"
+                            <CurrencyInput
                                 className="form-control input-clean"
                                 id="opening_amount"
-                                min="0"
-                                step="0.01"
                                 required
                                 value={openData.opening_amount}
                                 onChange={(e) => setOpenData('opening_amount', e.target.value)}
-                                placeholder="0.00"
+                                placeholder="$0.00"
                                 autoFocus
                             />
                             {openErrors.opening_amount && <div className="text-danger small mt-1">{openErrors.opening_amount}</div>}
@@ -287,16 +301,13 @@ export default function Index({ openRegister, currentBalance, income, expense, m
 
                     <div className="mb-3">
                         <label htmlFor="closing_amount" className="form-label">Efectivo Contado Físicamente</label>
-                        <input
-                            type="number"
+                        <CurrencyInput
                             className="form-control input-clean"
                             id="closing_amount"
-                            min="0"
-                            step="0.01"
                             required
                             value={closeData.closing_amount}
                             onChange={(e) => setCloseData('closing_amount', e.target.value)}
-                            placeholder="0.00"
+                            placeholder="$0.00"
                             autoFocus
                         />
                         {closeErrors.closing_amount && <div className="text-danger small mt-1">{closeErrors.closing_amount}</div>}

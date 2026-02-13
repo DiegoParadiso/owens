@@ -42,3 +42,4 @@ class AddStockRequest extends FormRequest
 }
 
 
+

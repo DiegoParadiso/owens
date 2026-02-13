@@ -87,6 +87,12 @@ class ProductController extends Controller
             'conversion_factor' => 'nullable|numeric|min:0.0001',
             'base_unit' => 'nullable|string|max:50',
             'usage_factor' => 'nullable|numeric|min:0.0001',
+        ], [
+            'name.required' => 'El nombre del producto es obligatorio.',
+            'price.numeric' => 'El precio debe ser un número.',
+            'stock.required' => 'El stock es obligatorio.',
+            'stock.integer' => 'El stock debe ser un número entero.',
+            'cost.numeric' => 'El costo debe ser un número.',
         ]);
         
         $validated['type'] = $request->input('type', 'single');
@@ -124,6 +130,10 @@ class ProductController extends Controller
             'conversion_factor' => 'nullable|numeric|min:0.0001',
             'base_unit' => 'nullable|string|max:50',
             'usage_factor' => 'nullable|numeric|min:0.0001',
+        ], [
+            'name.required' => 'El nombre del producto es obligatorio.',
+            'price.numeric' => 'El precio debe ser un número.',
+            'stock.required' => 'El stock es obligatorio.',
         ]);
         
         $validate['user_id'] = Auth::user()->id;
@@ -173,6 +183,9 @@ class ProductController extends Controller
     {
         $validate = $request->validate([
             'stock' => 'required|numeric',
+        ], [
+            'stock.required' => 'La cantidad de stock es obligatoria.',
+            'stock.numeric' => 'El stock debe ser numérico.',
         ]);
         $product = Product::find($id);
         $product->stock += $validate['stock'];
@@ -214,6 +227,11 @@ class ProductController extends Controller
             'child_product_id.*' => 'exists:products,id',
             'quantity' => 'nullable|array',
             'quantity.*' => 'numeric|min:0.01',
+        ], [
+            'name.required' => 'El nombre es obligatorio.',
+            'price.required' => 'El precio es obligatorio.',
+            'price.numeric' => 'El precio debe ser numérico.',
+            'category.required' => 'La categoría es obligatoria.',
         ]);
 
         try {
@@ -262,6 +280,10 @@ class ProductController extends Controller
             'child_product_id.*' => 'exists:products,id',
             'quantity' => 'nullable|array',
             'quantity.*' => 'numeric|min:0.01',
+        ], [
+            'name.required' => 'El nombre es obligatorio.',
+            'price.required' => 'El precio es obligatorio.',
+            'category.required' => 'La categoría es obligatoria.',
         ]);
 
         try {

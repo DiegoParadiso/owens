@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, usePage } from '@inertiajs/react';
+import { moduleConfig } from '../Config/moduleConfig';
 
 export default function Sidebar({ isOpen, toggleSidebar, darkMode }) {
     const { url, props } = usePage();
@@ -26,6 +27,7 @@ export default function Sidebar({ isOpen, toggleSidebar, darkMode }) {
                                 style={{ width: '150px', height: 'auto', paddingLeft: '15px' }}
                             />
                         </Link>
+
                         <div className="d-flex align-items-center ms-4 mb-4">
                             <div className="position-relative">
                                 <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold" style={{ width: '35px', height: '35px', backgroundColor: 'var(--border-color)', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
@@ -43,49 +45,70 @@ export default function Sidebar({ isOpen, toggleSidebar, darkMode }) {
                                 </span>
                             </div>
                         </div>
-                        <div className="navbar-nav w-100">
-                            <Link href="/dashboard" className={`nav-item nav-link ${isActive('/dashboard')}`}>
-                                <i className="fa fa-tachometer-alt me-2"></i>Dashboard
-                            </Link>
-                            <Link href="/cash-register" className={`nav-item nav-link ${isActive('/cash-register')}`}>
-                                <i className="fa fa-cash-register me-2"></i>Caja
-                            </Link>
-                            <Link href="/products" className={`nav-item nav-link ${isActive('/products')}`}>
-                                <i className="fa fa-box me-2"></i>Inventario
-                            </Link>
-                            <Link href="/menu" className={`nav-item nav-link ${isActive('/menu')}`}>
-                                <i className="fa fa-book-open me-2"></i>Menú
-                            </Link>
-                            <Link href="/production" className={`nav-item nav-link ${isActive('/production')}`}>
-                                <i className="fa fa-blender me-2"></i>Producción
-                            </Link>
 
-                            <Link href="/sales" className={`nav-item nav-link ${isActive('/sales')}`}>
-                                <i className="fa fa-shopping-cart me-2"></i>Ventas
-                            </Link>
-                            <Link href="/suppliers" className={`nav-item nav-link ${isActive('/suppliers')}`}>
-                                <i className="fa fa-truck me-2"></i>Proveedores
-                            </Link>
-                            <Link href="/purchases" className={`nav-item nav-link ${isActive('/purchases')}`}>
-                                <i className="fa fa-shopping-bag me-2"></i>Compras
-                            </Link>
-                            <Link href="/expenses" className={`nav-item nav-link ${isActive('/expenses')}`}>
-                                <i className="fa fa-money-bill-wave me-2"></i>Gastos
-                            </Link>
-                            <Link href="/reports" className={`nav-item nav-link ${isActive('/reports')}`}>
-                                <i className="fa fa-chart-line me-2"></i>Reportes
-                            </Link>
-                            {(user.role === 'admin' || user.role === 'owner') && (
-                                <Link href="/settings" className={`nav-item nav-link ${isActive('/settings')}`}>
-                                    <i className="fa fa-cog me-2"></i>Configuración
+                        <div className="navbar-nav w-100">
+                            {moduleConfig.dashboard && (
+                                <Link href="/dashboard" className={`nav-item nav-link d-flex align-items-center ${isActive('/dashboard')}`}>
+                                    <i className="fa fa-tachometer-alt me-3" style={{ width: '24px', textAlign: 'center' }}></i>Dashboard
+                                </Link>
+                            )}
+                            {moduleConfig.cashRegister && (
+                                <Link href="/cash-register" className={`nav-item nav-link d-flex align-items-center ${isActive('/cash-register')}`}>
+                                    <i className="fa fa-cash-register me-3" style={{ width: '24px', textAlign: 'center' }}></i>Caja
+                                </Link>
+                            )}
+                            {moduleConfig.products && (
+                                <Link href="/products" className={`nav-item nav-link d-flex align-items-center ${isActive('/products')}`}>
+                                    <i className="fa fa-box me-3" style={{ width: '24px', textAlign: 'center' }}></i>Inventario
+                                </Link>
+                            )}
+                            {moduleConfig.menu && (
+                                <Link href="/menu" className={`nav-item nav-link d-flex align-items-center ${isActive('/menu')}`}>
+                                    <i className="fa fa-book-open me-3" style={{ width: '24px', textAlign: 'center' }}></i>Menú
+                                </Link>
+                            )}
+                            {moduleConfig.whatsapp && (
+                                <Link href="/whatsapp" className={`nav-item nav-link d-flex align-items-center ${isActive('/whatsapp')}`}>
+                                    <i className="bi bi-whatsapp me-3" style={{ width: '24px', textAlign: 'center' }}></i>WhatsApp
+                                </Link>
+                            )}
+                            {moduleConfig.production && (
+                                <Link href="/production" className={`nav-item nav-link d-flex align-items-center ${isActive('/production')}`}>
+                                    <i className="fa fa-blender me-3" style={{ width: '24px', textAlign: 'center' }}></i>Producción
+                                </Link>
+                            )}
+                            {moduleConfig.tables && (
+                                <Link href="/tables" className={`nav-item nav-link d-flex align-items-center ${isActive('/tables')}`}>
+                                    <i className="fa fa-chair me-3" style={{ width: '24px', textAlign: 'center' }}></i>Mesas
+                                </Link>
+                            )}
+
+                            {moduleConfig.sales && (
+                                <Link href="/sales" className={`nav-item nav-link d-flex align-items-center ${isActive('/sales')}`}>
+                                    <i className="fa fa-shopping-cart me-3" style={{ width: '24px', textAlign: 'center' }}></i>Ventas
+                                </Link>
+                            )}
+                            {moduleConfig.finances && (
+                                <Link href="/expenses" className={`nav-item nav-link d-flex align-items-center ${isActive('/expenses') || isActive('/purchases') || isActive('/suppliers') ? 'active' : ''}`}>
+                                    <i className="fa fa-wallet me-3" style={{ width: '24px', textAlign: 'center' }}></i>Finanzas
+                                </Link>
+                            )}
+                            {moduleConfig.reports && (
+                                <Link href="/reports" className={`nav-item nav-link d-flex align-items-center ${isActive('/reports')}`}>
+                                    <i className="fa fa-chart-line me-3" style={{ width: '24px', textAlign: 'center' }}></i>Reportes
+                                </Link>
+                            )}
+                            {(user.role === 'admin' || user.role === 'owner') && moduleConfig.settings && (
+                                <Link href="/settings" className={`nav-item nav-link d-flex align-items-center ${isActive('/settings')}`}>
+                                    <i className="fa fa-cog me-3" style={{ width: '24px', textAlign: 'center' }}></i>Configuración
                                 </Link>
                             )}
                         </div>
                     </div>
 
                     <div className="navbar-nav w-100 mt-auto">
-                        <Link href="/logout" className="nav-item nav-link">
-                            <i className="fa fa-sign-out-alt me-2"></i>Cerrar Sesión
+                        <Link href="/logout" className="nav-item nav-link d-flex align-items-center">
+                            <i className="fa fa-sign-out-alt me-3" style={{ width: '24px', textAlign: 'center' }}></i>Cerrar Sesión
                         </Link>
                     </div>
                 </nav>

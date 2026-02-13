@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
+import CurrencyInput from '@/Components/CurrencyInput';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
 
 import Pagination from '@/Components/Pagination';
+import FinanceNavbar from '@/Components/FinanceNavbar';
 
 export default function Index({ expenses = [], categories = [] }) {
 
@@ -51,8 +53,15 @@ export default function Index({ expenses = [], categories = [] }) {
         setData('split_payments', data.split_payments.filter((_, i) => i !== index));
     };
 
+    // Helper to clean currency string to float
+    const cleanCurrency = (val) => {
+        if (!val) return 0;
+        if (typeof val === 'number') return val;
+        return parseFloat(String(val).replace(/[$,]/g, '')) || 0;
+    };
+
     const calculateSplitTotal = () => {
-        return data.split_payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+        return data.split_payments.reduce((sum, p) => sum + cleanCurrency(p.amount), 0);
     };
 
     const formatCurrency = (amount) => {
@@ -74,7 +83,7 @@ export default function Index({ expenses = [], categories = [] }) {
         const expenseDate = new Date(expense.date);
         setData({
             description: expense.description,
-            amount: expense.amount,
+            amount: expense.amount, // Will be auto-formatted by component
             category_id: expense.category_id,
             date: expenseDate.toISOString().split('T')[0],
             time: expenseDate.toTimeString().slice(0, 5),
@@ -125,8 +134,9 @@ export default function Index({ expenses = [], categories = [] }) {
 
         if (data.payment_method === 'multiple') {
             const splitTotal = calculateSplitTotal();
-            if (Math.abs(splitTotal - parseFloat(data.amount)) > 0.01) {
-                window.toast.error('Error en distribución', `La suma de los pagos (${formatCurrency(splitTotal)}) debe ser igual al total (${formatCurrency(data.amount)})`);
+            const totalAmount = cleanCurrency(data.amount);
+            if (Math.abs(splitTotal - totalAmount) > 0.01) {
+                window.toast.error('Error en distribución', `La suma de los pagos (${formatCurrency(splitTotal)}) debe ser igual al total (${formatCurrency(totalAmount)})`);
                 return;
             }
         }
@@ -138,6 +148,11 @@ export default function Index({ expenses = [], categories = [] }) {
         setShowDrawer(false);
         transform((data) => ({
             ...data,
+            amount: cleanCurrency(data.amount),
+            split_payments: data.split_payments.map(p => ({
+                ...p,
+                amount: cleanCurrency(p.amount)
+            })),
             date: `${data.date}T${data.time}:00`
         }));
 
@@ -223,9 +238,10 @@ export default function Index({ expenses = [], categories = [] }) {
         <MainLayout>
             <Head title="Gastos" />
             <div className="container-fluid pt-4 px-4">
+                <FinanceNavbar />
 
                 <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h4 className="mb-0 fw-bold">Gastos</h4>
+                    <h5 className="mb-0 fw-bold">Listado de Gastos</h5>
                     <button
                         className="btn btn-primary rounded-pill px-3"
                         onClick={() => setShowDrawer(true)}
@@ -334,17 +350,14 @@ export default function Index({ expenses = [], categories = [] }) {
                         />
                     </div>
                     <div className="mb-3">
-                        <label htmlFor="amount" className="form-label">Monto ($)</label>
-                        <input
-                            type="number"
+                        <label htmlFor="amount" className="form-label">Monto</label>
+                        <CurrencyInput
                             className="form-control input-clean"
                             id="amount"
-                            min="0"
-                            step="0.01"
                             required
                             value={data.amount}
                             onChange={(e) => setData('amount', e.target.value)}
-                            placeholder="0.00"
+                            placeholder="$0.00"
                         />
                     </div>
                     <div className="mb-3">
@@ -460,7 +473,7 @@ export default function Index({ expenses = [], categories = [] }) {
                             <div className="mt-3 p-3 border rounded" style={{ backgroundColor: 'var(--bg-card)' }}>
                                 <div className="d-flex justify-content-between align-items-center mb-3">
                                     <strong className="small">Distribución de Pago</strong>
-                                    <small className="text-muted">Total: {formatCurrency(data.amount || 0)}</small>
+                                    <small className="text-muted">Total: {formatCurrency(cleanCurrency(data.amount || 0))}</small>
                                 </div>
 
                                 {data.split_payments.map((payment, index) => (
@@ -479,11 +492,9 @@ export default function Index({ expenses = [], categories = [] }) {
                                             </select>
                                         </div>
                                         <div className="col-6">
-                                            <input
-                                                type="number"
-                                                step="0.01"
+                                            <CurrencyInput
                                                 className="form-control form-control-sm input-clean"
-                                                placeholder="Monto"
+                                                placeholder="$0.00"
                                                 value={payment.amount}
                                                 onChange={(e) => updateSplitPayment(index, 'amount', e.target.value)}
                                             />
@@ -513,7 +524,7 @@ export default function Index({ expenses = [], categories = [] }) {
                                 </button>
 
 
-                                {Math.abs(calculateSplitTotal() - (parseFloat(data.amount) || 0)) > 0.01 && (
+                                {Math.abs(calculateSplitTotal() - (parseFloat(cleanCurrency(data.amount)) || 0)) > 0.01 && (
                                     <div
                                         className="mt-3 p-2 rounded small border"
                                         style={{
@@ -528,8 +539,8 @@ export default function Index({ expenses = [], categories = [] }) {
                                         <div className="d-flex justify-content-between mt-1">
                                             <span>Diferencia:</span>
                                             <strong style={{ color: '#dc3545' }}>
-                                                {formatCurrency(Math.abs((parseFloat(data.amount) || 0) - calculateSplitTotal()))}
-                                                {calculateSplitTotal() < (parseFloat(data.amount) || 0) ? ' (falta)' : ' (sobra)'}
+                                                {formatCurrency(Math.abs((parseFloat(cleanCurrency(data.amount)) || 0) - calculateSplitTotal()))}
+                                                {calculateSplitTotal() < (parseFloat(cleanCurrency(data.amount)) || 0) ? ' (falta)' : ' (sobra)'}
                                             </strong>
                                         </div>
                                     </div>

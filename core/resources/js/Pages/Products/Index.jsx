@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
+import CurrencyInput from '@/Components/CurrencyInput';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
 
@@ -12,7 +13,7 @@ export default function Index({ products }) {
     const [selectedProducts, setSelectedProducts] = useState([]);
     const [showUsageConfig, setShowUsageConfig] = useState(false); // New state for toggle
     const [usageCalcMode, setUsageCalcMode] = useState('direct'); // 'direct' or 'purchase'
-    const { data, setData, post, put, processing, errors, reset, delete: destroy } = useForm({
+    const { data, setData, post, put, processing, errors, reset, transform, delete: destroy } = useForm({
         name: '',
         type: 'single',
         price: '',
@@ -48,6 +49,12 @@ export default function Index({ products }) {
             minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
             maximumFractionDigits: 2
         }).format(amount);
+    };
+
+    const cleanCurrency = (val) => {
+        if (!val) return '';
+        if (typeof val === 'number') return val;
+        return parseFloat(String(val).replace(/[$,]/g, '')) || '';
     };
 
     const handleSelectAll = (e) => {
@@ -98,7 +105,7 @@ export default function Index({ products }) {
         setData({
             name: product.name,
             type: product.type || 'single',
-            price: product.price ? parseFloat(product.price) : '',
+            price: product.price ? String(product.price) : '', // Ensure string for input
             stock: product.stock ? parseFloat(product.stock) : '',
             purchase_unit: product.purchase_unit,
             usage_unit: product.usage_unit,
@@ -115,7 +122,7 @@ export default function Index({ products }) {
         setData({
             name: product.name,
             type: product.type || 'single',
-            price: product.price ? parseFloat(product.price) : '',
+            price: product.price ? String(product.price) : '', // Ensure string for input
             stock: product.stock ? parseFloat(product.stock) : '',
             purchase_unit: product.purchase_unit,
             usage_unit: product.usage_unit,
@@ -129,6 +136,11 @@ export default function Index({ products }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         setShowDrawer(false);
+
+        transform((data) => ({
+            ...data,
+            price: cleanCurrency(data.price),
+        }));
 
         const options = {
             preserveScroll: true,
@@ -377,16 +389,14 @@ export default function Index({ products }) {
 
                     {data.type === 'single' && (
                         <div className="mb-3">
-                            <label htmlFor="price" className="form-label">Precio de Venta ($)</label>
-                            <input
-                                type="number"
+                            <label htmlFor="price" className="form-label">Precio de Venta</label>
+                            <CurrencyInput
                                 className="form-control input-clean"
                                 id="price"
-                                min="0"
                                 required
                                 value={data.price}
                                 onChange={(e) => setData('price', e.target.value)}
-                                placeholder="0.00"
+                                placeholder="$0.00"
                             />
                         </div>
                     )}

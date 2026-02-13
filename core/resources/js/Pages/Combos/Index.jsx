@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
+import CurrencyInput from '@/Components/CurrencyInput';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
 
@@ -88,9 +89,16 @@ export default function Index({ combos = [], products = [] }) {
 
         setShowDrawer(false); // Close immediately
 
+        // cleanCurrency helper local or inline
+        const cleanCurrency = (val) => {
+            if (!val) return 0;
+            if (typeof val === 'number') return val;
+            return parseFloat(String(val).replace(/[$,]/g, '')) || 0;
+        };
+
         const formData = {
             name: data.name,
-            price: data.price,
+            price: cleanCurrency(data.price),
             child_product_id: validRows.map(row => row.child_product_id),
             quantity: validRows.map(row => parseInt(row.quantity)),
         };
@@ -268,15 +276,13 @@ export default function Index({ combos = [], products = [] }) {
                     </div>
                     <div className="mb-4">
                         <label htmlFor="price" className="form-label">Precio ($)</label>
-                        <input
-                            type="number"
+                        <CurrencyInput
                             className="form-control input-clean"
                             id="price"
-                            min="0"
                             required
                             value={data.price}
                             onChange={(e) => setData('price', e.target.value)}
-                            placeholder="0.00"
+                            placeholder="$0.00"
                         />
                     </div>
 

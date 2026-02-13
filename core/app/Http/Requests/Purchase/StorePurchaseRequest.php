@@ -59,3 +59,4 @@ class StorePurchaseRequest extends FormRequest
 }
 
 
+

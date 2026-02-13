@@ -52,7 +52,7 @@ export default function MainLayout({ children }) {
                 )}
             </button>
 
-            <div className="container-xxl position-relative d-flex p-0" style={{ background: 'var(--light)' }}>
+            <div className="container-fluid position-relative d-flex p-0" style={{ background: 'var(--light)' }}>
                 <div id="loading-screen" className={loading ? '' : 'hidden'}>
                     <Player
                         autoplay
@@ -85,7 +85,7 @@ export default function MainLayout({ children }) {
 
 
                 <div className={`content position-relative ${isSidebarOpen ? 'open' : ''}`}>
-                    <div className="container-fluid pt-4 px-4">
+                    <div className={`${url.startsWith('/whatsapp') ? 'container-fluid p-0' : 'container-xxl pt-4 px-4'}`}>
                         {children}
                     </div>
 

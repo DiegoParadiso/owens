@@ -20,6 +20,9 @@ class ExpenseCategoryController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|in:fixed,variable',
+        ], [
+            'name.required' => 'El nombre de la categoría es obligatorio.',
+            'type.required' => 'El tipo es obligatorio.',
         ]);
 
         ExpenseCategory::create([
@@ -35,6 +38,9 @@ class ExpenseCategoryController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|in:fixed,variable',
+        ], [
+            'name.required' => 'El nombre de la categoría es obligatorio.',
+            'type.required' => 'El tipo es obligatorio.',
         ]);
 
         $category->update([

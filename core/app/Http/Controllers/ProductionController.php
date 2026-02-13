@@ -30,6 +30,7 @@ class ProductionController extends Controller
                                return [
                                    'id' => $product->id,
                                    'name' => $product->name,
+                                   'icon' => $product->icon, // Pass icon
                                    'stock' => $product->stock,
                                    'usage_unit' => $product->usage_unit,
                                    'batch_yield' => $product->batch_yield, // Pass yield to frontend
@@ -112,6 +113,9 @@ class ProductionController extends Controller
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|numeric|min:0.01',
+        ], [
+            'product_id.required' => 'Debes seleccionar un producto.',
+            'quantity.required' => 'La cantidad es obligatoria.',
         ]);
 
         try {
@@ -201,6 +205,9 @@ class ProductionController extends Controller
             'ingredients' => 'nullable|array',
             'ingredients.*.id' => 'required|exists:products,id',
             'ingredients.*.quantity' => 'required|numeric|min:0.001',
+        ], [
+            'name.required' => 'El nombre de la fórmula es obligatorio.',
+            'ingredients.required' => 'Debes agregar ingredientes.',
         ]);
 
         try {
@@ -286,5 +293,17 @@ class ProductionController extends Controller
             DB::rollBack();
             return redirect()->back()->with('error', 'Error al eliminar: ' . $e->getMessage());
         }
+    }
+
+    public function updateIcon(Request $request, $id)
+    {
+        $request->validate([
+            'icon' => 'required|string|max:50',
+        ]);
+
+        $product = Product::findOrFail($id);
+        $product->update(['icon' => $request->icon]);
+
+        return redirect()->back(); // Inertia will handle the partial reload if configured, or just standard reload
     }
 }

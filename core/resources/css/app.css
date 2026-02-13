@@ -13,6 +13,8 @@
     --table-header-bg: #F3F6F9;
     --input-bg: transparent;
     --input-border: #e9ecef;
+    --wp-sent-bg: #d9fdd3;
+    --chat-bg-image: url("/img/fondo-chat-light.png");
 }
 
 body.dark-mode {
@@ -23,8 +25,11 @@ body.dark-mode {
     --border-color: #33363d;
     --table-header-bg: #2c3038;
     --input-bg: #191C24;
+    --input-bg: #191C24;
     --input-border: #2c3038;
     --light: #111318;
+    --wp-sent-bg: #005c4b;
+    --chat-bg-image: url("/img/fondo-chat-dark.png");
     /* Override bootstrap light var if needed */
 }
 
@@ -945,6 +950,18 @@ body.dark-mode .border-secondary-subtle {
     border-color: var(--border-color) !important;
 }
 
+/* Global Border Override for Dark Mode */
+body.dark-mode .border,
+body.dark-mode .border-top,
+body.dark-mode .border-bottom,
+body.dark-mode .border-start,
+body.dark-mode .border-end,
+body.dark-mode .list-group-item,
+body.dark-mode .table td,
+body.dark-mode .table th {
+    border-color: var(--border-color) !important;
+}
+
 /* Forms Checks & Switches - Use Theme Primary */
 .form-check-input:checked {
     background-color: var(--primary) !important;
@@ -1075,10 +1092,15 @@ body.dark-mode .border-secondary-subtle {
 
 /* --- New Medium Modal (Cache busting) --- */
 .swal-medium {
-    width: 480px !important;
+    width: 380px !important;
     /* Balanced width */
     max-width: 90vw !important;
-    padding: 1.5rem !important;
+    padding: 2.5rem 2rem !important;
+    /* Visual balance: Top/Bottom 2.5rem, Sides 2rem */
+}
+
+.swal-medium .swal2-input-label {
+    margin-top: 0 !important;
 }
 
 .swal-medium .swal2-html-container {
@@ -1362,4 +1384,36 @@ body.dark-mode .swal2-close {
 
 body.dark-mode .swal2-timer-progress-bar {
     background-color: var(--border-color) !important;
+}
+
+/* --- Delete Button for Tables (Theme Adaptive) --- */
+.btn-delete-table {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    cursor: pointer;
+    z-index: 100;
+    transition: transform 0.2s;
+
+    /* Light Mode: Primary Red (matches table), White Icon */
+    background-color: var(--primary);
+    color: #ffffff;
+    border: 2px solid var(--bg-card);
+    /* Cutout effect matches grid */
+}
+
+.btn-delete-table:hover {
+    transform: translate(-50%, -50%) scale(1.1) !important;
+}
+
+/* Dark Mode Override: Red BG, White Icon */
+body.dark-mode .btn-delete-table {
+    background-color: #ff4d4f;
+    color: #ffffff;
+    border: 2px solid var(--bg-card);
+    /* Cutout effect matches dark grid */
 }

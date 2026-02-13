@@ -13,6 +13,7 @@ class Product extends Model // Changed class name from Produk to Product
 
     protected $fillable = [
         'name', // Changed from 'Nama' to 'name'
+        'icon', // Icon for display
         'price', // Changed from 'Harga' to 'price'
         'stock', // Changed from 'Stok' to 'stock'
         'cost', // Changed from 'cost_price' to 'cost'

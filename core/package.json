@@ -3,7 +3,8 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "start": "concurrently \"php artisan serve\" \"npm run dev\""
     },
     "devDependencies": {
         "autoprefixer": "^10.4.20",
@@ -21,6 +22,7 @@
         "@vitejs/plugin-react": "^5.1.2",
         "bootstrap": "^5.3.8",
         "chart.js": "^4.5.1",
+        "dayjs": "^1.11.19",
         "jquery": "^3.7.1",
         "react": "^19.2.3",
         "react-chartjs-2": "^5.3.1",

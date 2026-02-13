@@ -13,7 +13,12 @@ use App\Http\Controllers\ExpenseCategoryController;
 use App\Http\Controllers\CashRegisterController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\WhatsAppController;
 use App\Http\Controllers\ProductionController;
+use App\Http\Controllers\TableController;
+
+Route::match(['get', 'post'], '/webhook/whatsapp', [WhatsAppController::class, 'verifyWebhook'])->name('whatsapp.webhook');
+Route::post('/webhook/whatsapp', [WhatsAppController::class, 'handleWebhook']); // Explicit POST handler if needed or use match logic
 
 
 
@@ -94,4 +99,16 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/production/formulas/{id}', [ProductionController::class, 'destroyFormula'])->name('production.destroyFormula');
     Route::get('/production', [ProductionController::class, 'index'])->name('production.index');
     Route::post('/production', [ProductionController::class, 'store'])->name('production.store');
+
+    // WhatsApp
+    Route::get('/whatsapp', [WhatsAppController::class, 'index'])->name('whatsapp.index');
+    Route::post('/whatsapp/token', [WhatsAppController::class, 'storeToken'])->name('whatsapp.storeToken');
+    Route::post('/whatsapp/logout', [WhatsAppController::class, 'logout'])->name('whatsapp.logout');
+    
+    // Tables
+    Route::get('/tables', [TableController::class, 'index'])->name('tables.index');
+    Route::post('/tables', [TableController::class, 'store'])->name('tables.store');
+    Route::post('/production/product/{id}/icon', [ProductionController::class, 'updateIcon'])->name('production.updateIcon');
+    Route::post('/tables/positions', [TableController::class, 'updatePositions'])->name('tables.updatePositions');
+    Route::delete('/tables/{id}', [TableController::class, 'destroy'])->name('tables.destroy');
 });

@@ -44,12 +44,16 @@ class ExpenseController extends Controller
             'amount' => 'required|numeric|min:0',
             'category_id' => 'required|exists:expense_categories,id',
             'date' => 'required|date',
-            'category_id' => 'required|exists:expense_categories,id',
-            'date' => 'required|date',
             'payment_method' => 'required',
             'split_payments' => 'nullable|array',
             'split_payments.*.method' => 'required_with:split_payments|in:cash,debit_card,credit_card,transfer,qr',
             'split_payments.*.amount' => 'required_with:split_payments|numeric|min:0.01',
+        ], [
+            'description.required' => 'La descripción es obligatoria.',
+            'amount.required' => 'El monto es obligatorio.',
+            'category_id.required' => 'La categoría es obligatoria.',
+            'date.required' => 'La fecha es obligatoria.',
+            'payment_method.required' => 'El método de pago es obligatorio.',
         ]);
 
         try {
@@ -108,12 +112,16 @@ class ExpenseController extends Controller
             'amount' => 'required|numeric|min:0',
             'category_id' => 'required|exists:expense_categories,id',
             'date' => 'required|date',
-            'category_id' => 'required|exists:expense_categories,id',
-            'date' => 'required|date',
             'payment_method' => 'required',
             'split_payments' => 'nullable|array',
             'split_payments.*.method' => 'required_with:split_payments|in:cash,debit_card,credit_card,transfer,qr',
             'split_payments.*.amount' => 'required_with:split_payments|numeric|min:0.01',
+        ], [
+            'description.required' => 'La descripción es obligatoria.',
+            'amount.required' => 'El monto es obligatorio.',
+            'category_id.required' => 'La categoría es obligatoria.',
+            'date.required' => 'La fecha es obligatoria.',
+            'payment_method.required' => 'El método de pago es obligatorio.',
         ]);
 
         try {

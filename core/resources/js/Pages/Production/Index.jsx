@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
-import { Head, useForm, Link } from '@inertiajs/react';
+import { Head, useForm, Link, router } from '@inertiajs/react';
 
-export default function Index({ products, history }) {
+export default function Index({ products: initialProducts, history }) {
+    const [products, setProducts] = useState(initialProducts);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [showDrawer, setShowDrawer] = useState(false);
+
+    useEffect(() => {
+        setProducts(initialProducts);
+    }, [initialProducts]);
 
     // Form handling
     const { data, setData, post, processing, reset, errors } = useForm({
@@ -94,12 +99,47 @@ export default function Index({ products, history }) {
                             <div key={product.id} className="col-12 col-md-6 col-lg-4 col-xl-3">
                                 <div
                                     className="card h-100 border-0 shadow-sm hover-scale cursor-pointer"
-                                    onClick={() => openProductionDrawer(product)}
+                                    onClick={(e) => {
+                                        // If clicking icon container, don't open drawer
+                                        if (e.target.closest('.icon-container')) return;
+                                        openProductionDrawer(product);
+                                    }}
                                     style={{ transition: 'transform 0.2s', background: 'var(--bg-card)' }}
                                 >
                                     <div className="card-body d-flex flex-column align-items-center text-center p-4">
-                                        <div className="mb-3 text-primary">
-                                            <span className="material-symbols-outlined" style={{ fontSize: '42px' }}>skillet</span>
+                                        <div
+                                            className="mb-3 text-primary icon-container"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                const icons = ['skillet', 'blender', 'kitchen', 'restaurant', 'lunch_dining', 'bakery_dining', 'soup_kitchen', 'emoji_food_beverage', 'cake', 'set_meal'];
+                                                const currentIcon = product.icon || 'skillet';
+                                                const currentIndex = icons.indexOf(currentIcon);
+                                                const nextIcon = icons[(currentIndex + 1) % icons.length];
+
+                                                // Optimistic update
+                                                setProducts(prev => prev.map(p =>
+                                                    p.id === product.id ? { ...p, icon: nextIcon } : p
+                                                ));
+
+                                                // Silent background request
+                                                if (window.axios) {
+                                                    window.axios.post(route('production.updateIcon', product.id), {
+                                                        icon: nextIcon
+                                                    }).catch(err => {
+                                                        console.error('Failed to update icon', err);
+                                                        // Revert on error
+                                                        setProducts(prev => prev.map(p =>
+                                                            p.id === product.id ? { ...p, icon: currentIcon } : p
+                                                        ));
+                                                    });
+                                                }
+                                            }}
+                                            style={{ cursor: 'pointer' }}
+                                            title="Click para cambiar icono"
+                                        >
+                                            <span className="material-symbols-outlined" style={{ fontSize: '42px', userSelect: 'none' }}>
+                                                {product.icon || 'skillet'}
+                                            </span>
                                         </div>
                                         <h5 className="card-title fw-bold mb-1">{product.name}</h5>
                                         <p className="text-muted small mb-3">
@@ -108,7 +148,7 @@ export default function Index({ products, history }) {
 
                                         <div className="mt-auto w-100">
                                             <div className="d-flex justify-content-between text-muted small mb-1">
-                                                <span className="text-nowrap">Disponible:</span>
+                                                <span className="text-nowrap">Producción disponible:</span>
                                                 <span className="fw-bold">{product.max_producible > 9000 ? '∞' : product.max_producible}</span>
                                             </div>
                                             <div className="progress" style={{ height: '6px' }}>

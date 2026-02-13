@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
+import CurrencyInput from '@/Components/CurrencyInput';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
 
 import Pagination from '@/Components/Pagination';
+import FinanceNavbar from '@/Components/FinanceNavbar';
 
 export default function Index({ purchases = [], suppliers = [], products = [] }) {
     const [showDrawer, setShowDrawer] = useState(false);
@@ -35,6 +37,12 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
         return methods[method] || method;
     };
 
+    const cleanCurrency = (val) => {
+        if (!val) return 0;
+        if (typeof val === 'number') return val;
+        return parseFloat(String(val).replace(/[$,]/g, '')) || 0;
+    };
+
     // Split payment helper functions
     const updateSplitPayment = (index, field, value) => {
         const updated = [...data.split_payments];
@@ -54,7 +62,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
     };
 
     const calculateSplitTotal = () => {
-        return data.split_payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+        return data.split_payments.reduce((sum, p) => sum + cleanCurrency(p.amount), 0);
     };
 
     const formatCurrency = (amount) => {
@@ -99,7 +107,8 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                 const updatedRow = { ...row, [field]: value };
 
                 if (field === 'quantity' || field === 'unit_cost') {
-                    updatedRow.subtotal = updatedRow.quantity * updatedRow.unit_cost;
+                    const cost = cleanCurrency(updatedRow.unit_cost);
+                    updatedRow.subtotal = (parseInt(updatedRow.quantity) || 0) * cost;
                 }
 
                 return updatedRow;
@@ -226,8 +235,8 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
             conversion_factor: validRows.map(r => r.conversion_factor), // Send for both
             product_type: validRows.map(r => r.productType), // Send for both
             quantity: validRows.map(r => r.quantity),
-            unit_cost: validRows.map(r => r.unit_cost),
-            split_payments: data.payment_method === 'multiple' ? data.split_payments : [],
+            unit_cost: validRows.map(r => cleanCurrency(r.unit_cost)),
+            split_payments: data.payment_method === 'multiple' ? data.split_payments.map(p => ({ ...p, amount: cleanCurrency(p.amount) })) : [],
         }));
 
         const options = {
@@ -442,7 +451,6 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
             supplier_id: '',
             date: new Date().toISOString().split('T')[0],
             items: [],
-            items: [],
             total_cost: 0,
             payment_method: 'cash',
             split_payments: []
@@ -473,9 +481,10 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
         <MainLayout>
             <Head title="Compras" />
             <div className="container-fluid pt-4 px-4">
+                <FinanceNavbar />
 
                 <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h4 className="mb-0 fw-bold">Compras</h4>
+                    <h5 className="mb-0 fw-bold">Listado de Compras</h5>
                     <button
                         onClick={handleOpenDrawer}
                         className="btn btn-primary rounded-pill px-3"
@@ -724,12 +733,11 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                                             </div>
                                         </td>
                                         <td>
-                                            <input
-                                                type="text"
+                                            <CurrencyInput
                                                 className="form-control form-control-sm input-clean"
-                                                value={row.unit_cost || ''}
-                                                onChange={(e) => updateRow(row.id, 'unit_cost', parseFloat(e.target.value) || 0)}
-                                                placeholder="Costo"
+                                                value={row.unit_cost}
+                                                onChange={(e) => updateRow(row.id, 'unit_cost', e.target.value)}
+                                                placeholder="$0.00"
                                             />
                                         </td>
                                         <td>
@@ -853,9 +861,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                                             </select>
                                         </div>
                                         <div className="col-6">
-                                            <input
-                                                type="number"
-                                                step="0.01"
+                                            <CurrencyInput
                                                 className="form-control form-control-sm"
                                                 placeholder="Monto"
                                                 value={payment.amount}
