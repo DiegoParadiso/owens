@@ -15,9 +15,10 @@ export default function BurgerSelector() {
         extraPapas: 0,
         extraBacon: 0,
         extraCheddar: 0,
-        barbacoa: 0,
-        coke: 0
+        coke: 0,
+        extraSalsaAjo: 0
     });
+
     const [deliveryMethod, setDeliveryMethod] = useState('pickup'); // 'pickup' or 'delivery'
     const [address, setAddress] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('transfer'); // 'cash' or 'transfer'
@@ -27,7 +28,7 @@ export default function BurgerSelector() {
     const [cart, setCart] = useState([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
 
-    const burgerNames = ["CHEESE BURGER", "BACON BURGER", "AMERICAN BURGER"];
+    const burgerNames = ["CHEESE BURGER", "BACON BURGER", "BACON CRISPY", "AMERICAN BURGER"];
 
     const addToCart = () => {
         const burgerName = burgerNames[currentBurgerIndex] || "CUSTOM BURGER";
@@ -116,8 +117,8 @@ export default function BurgerSelector() {
         { id: 'extraPapas', label: '+ Extra Papas' },
         { id: 'extraBacon', label: '+ Extra Bacon' },
         { id: 'extraCheddar', label: '+ Extra Cheddar' },
-        { id: 'barbacoa', label: '+ Barbacoa' },
         { id: 'coke', label: '+ Lata de Coca Cola' },
+        { id: 'extraSalsaAjo', label: '+ Extra Salsa de Ajo' },
     ];
 
     const handleExtraClick = (id) => {
@@ -250,6 +251,7 @@ export default function BurgerSelector() {
         const cheeseGroup = select('.cheeseGroup');
         const pickleGroup = select('.pickleGroup');
         const bacon = select('.bacon');
+        const crispyOnionGroup = select('.crispyOnionGroup');
         const bunTop = select('.bunTop');
         const burgerGroup = select('.burgerGroup');
         const meatPatty2 = select('.meatPatty2');
@@ -258,7 +260,7 @@ export default function BurgerSelector() {
         const initPos = { x: 141 };
         const maxPos = { x: 541 };
         const dragRange = maxPos.x - initPos.x;
-        const numStages = 2;
+        const numStages = 3;
         const step = dragRange / numStages;
 
         let currentId = -1;
@@ -278,7 +280,7 @@ export default function BurgerSelector() {
         gsap.set(bunTop, { y: 68 });
 
         // Initial visibility
-        gsap.set([cheeseGroup, bacon, tomatoGroup, lettuce, '.filling', pickleGroup.querySelectorAll('rect')], { opacity: 0 });
+        gsap.set([cheeseGroup, bacon, tomatoGroup, lettuce, '.filling', pickleGroup.querySelectorAll('rect'), crispyOnionGroup], { opacity: 0 });
         gsap.set('.meatPatty', { opacity: 1 });
 
         window.updateBurgerState = (id) => {
@@ -289,7 +291,7 @@ export default function BurgerSelector() {
             const container = document.querySelector('.burger-selector-container');
             const size = parseInt(container?.getAttribute('data-size') || '0');
 
-            const offsetPerPatty = 15;
+            const offsetPerPatty = 12;
             const yOffset = -(size * offsetPerPatty);
 
             // Update extra patties
@@ -297,14 +299,19 @@ export default function BurgerSelector() {
             gsap.to(meatPatty3, { opacity: size >= 2 ? 1 : 0, duration, ease });
 
             // Ingredients reset
-            if (id !== 1) {
+            if (id !== 1 && id !== 2) { // 1 is Bacon, 2 is Bacon Crispy
                 gsap.to(bacon, { opacity: 0, duration, ease });
             }
+
+            if (id !== 2) {
+                gsap.to(crispyOnionGroup, { opacity: 0, duration, ease });
+            }
+
             // Tomato and Lettuce always move to their position based on size, only opacity changes
             gsap.to(tomatoGroup, { y: 35 + yOffset, duration, ease });
             gsap.to(lettuce, { y: 43 + yOffset, duration, ease });
 
-            if (id !== 2) {
+            if (id !== 3) {
                 gsap.to(tomatoGroup, { opacity: 0, duration, ease });
                 gsap.to(lettuce, { opacity: 0, duration, ease });
             } else {
@@ -316,10 +323,15 @@ export default function BurgerSelector() {
             // Common elements - apply offset
             gsap.to(cheeseGroup, { opacity: 1, y: 14 + yOffset, duration, ease });
 
-            if (id === 0 || id === 2) {
+            if (id === 0 || id === 3) {
                 gsap.to(pickleGroup.querySelectorAll('rect'), { opacity: 1, y: 18 + yOffset, duration, ease });
             } else {
                 gsap.to(pickleGroup.querySelectorAll('rect'), { opacity: 0, duration, ease });
+            }
+
+            // Adjust crispy onion position
+            if (id === 2) {
+                gsap.to(crispyOnionGroup, { opacity: 1, y: 32 + yOffset, duration, ease });
             }
 
             if (id === 0) { // CHEESE
@@ -327,7 +339,11 @@ export default function BurgerSelector() {
             } else if (id === 1) { // BACON
                 gsap.to(bacon, { opacity: 1, y: 29 + yOffset, duration, ease });
                 gsap.to(bunTop, { y: 66 + yOffset, duration, ease });
-            } else if (id === 2) { // AMERICAN
+            } else if (id === 2) { // BACON CRISPY
+                gsap.to(bacon, { opacity: 1, y: 29 + yOffset, duration, ease });
+                // Crispy onions directly above bacon
+                gsap.to(bunTop, { y: 60 + yOffset, duration, ease });
+            } else if (id === 3) { // AMERICAN
                 // Already handled above
             }
 
@@ -339,7 +355,7 @@ export default function BurgerSelector() {
 
             // Update arrows visibility
             gsap.to('.arrowL-group', { autoAlpha: id === 0 ? 0 : 1, duration, ease });
-            gsap.to('.arrowR-group', { autoAlpha: id === 2 ? 0 : 1, duration, ease });
+            gsap.to('.arrowR-group', { autoAlpha: id === 3 ? 0 : 1, duration, ease });
         };
 
         const syncState = () => {
@@ -488,6 +504,25 @@ export default function BurgerSelector() {
                                         <rect className="slice" x="2" y="81.8" width="111" height="5" rx="2.5" ry="2.5" fill="#FCDF6C" />
                                         <polygon className="hang" points="49.5 85.3 69.5 99.3 88.5 85.3 49.5 85.3" fill="#FCDF6C" />
                                     </g>
+
+                                    {/* Crispy Onions - Small oval rings scattered */}
+                                    <g className="crispyOnionGroup">
+                                        {/* Row of small crispy onion rings */}
+                                        <ellipse cx="12" cy="58" rx="8" ry="3" fill="none" stroke="#C8860A" strokeWidth="2.5" />
+                                        <ellipse cx="30" cy="56" rx="9" ry="3.5" fill="none" stroke="#D4A017" strokeWidth="2.5" />
+                                        <ellipse cx="48" cy="58" rx="7" ry="3" fill="none" stroke="#B8860B" strokeWidth="2.5" />
+                                        <ellipse cx="65" cy="56" rx="10" ry="3.5" fill="none" stroke="#C8860A" strokeWidth="2.5" />
+                                        <ellipse cx="83" cy="58" rx="8" ry="3" fill="none" stroke="#D4A017" strokeWidth="2.5" />
+                                        <ellipse cx="100" cy="56" rx="7" ry="3" fill="none" stroke="#B8860B" strokeWidth="2.5" />
+                                        {/* Subtle fill for depth */}
+                                        <ellipse cx="12" cy="58" rx="8" ry="3" fill="#F5DEB3" opacity="0.4" />
+                                        <ellipse cx="30" cy="56" rx="9" ry="3.5" fill="#F5DEB3" opacity="0.4" />
+                                        <ellipse cx="48" cy="58" rx="7" ry="3" fill="#F5DEB3" opacity="0.4" />
+                                        <ellipse cx="65" cy="56" rx="10" ry="3.5" fill="#F5DEB3" opacity="0.4" />
+                                        <ellipse cx="83" cy="58" rx="8" ry="3" fill="#F5DEB3" opacity="0.4" />
+                                        <ellipse cx="100" cy="56" rx="7" ry="3" fill="#F5DEB3" opacity="0.4" />
+                                    </g>
+
                                     <g className="pickleGroup">
                                         <rect x="4.5" y="72.8" width="20.84" height="5" fill="#cdf953" />
                                         <rect x="32.89" y="72.8" width="20.84" height="5" fill="#cdf953" />
@@ -499,19 +534,21 @@ export default function BurgerSelector() {
                                         <rect x="6.31" y="47.3" width="45.95" height="8" fill="#ffb7b3" stroke="#fc5a51" strokeMiterlimit="10" strokeWidth="4" />
                                         <rect x="62.74" y="47.3" width="45.95" height="8" fill="#ffb7b3" stroke="#fc5a51" strokeMiterlimit="10" strokeWidth="4" />
                                     </g>
-                                    <path class="lettuce" d="M2,31.3c5.55,0,5.55,8,11.1,8s5.55-8,11.1-8,5.55,8,11.1,8,5.55-8,11.1-8,5.55,8,11.1,8,5.55-8,11.1-8,5.55,8,11.1,8,5.55-8,11.1-8,5.55,8,11.11,8,5.55-8,11.11-8" fill="none" stroke="#5af96c" stroke-linejoin="bevel" stroke-width="5" />                                    <g className="bunTop">
+
+                                    <path class="lettuce" d="M2,31.3c5.55,0,5.55,8,11.1,8s5.55-8,11.1-8,5.55,8,11.1,8,5.55-8,11.1-8,5.55,8,11.1,8,5.55-8,11.1-8,5.55,8,11.1,8,5.55-8,11.1-8,5.55,8,11.11,8,5.55-8,11.11-8" fill="none" stroke="#5af96c" stroke-linejoin="bevel" stroke-width="5" />                                        <g className="bunTop">
                                         <path d="M109.5,24.65H5.5S9.62,0,57.5,0C103.32,0,109.5,24.65,109.5,24.65Z" fill="#ffca63" fillRule="evenodd" />
                                         <path fill="#FDE7BD" d="M43.08,11.78a2.57,2.57,0,1,1-2.57-2.57A2.57,2.57,0,0,1,43.08,11.78Zm34,0a2.57,2.57,0,1,1-2.57-2.57A2.57,2.57,0,0,1,77.06,11.78Zm-17,0A2.57,2.57,0,1,1,57.5,9.21,2.57,2.57,0,0,1,60.07,11.78Zm8.5-5.15A2.57,2.57,0,1,1,66,4.06,2.57,2.57,0,0,1,68.57,6.63Zm-17,0A2.57,2.57,0,1,1,49,4.06,2.57,2.57,0,0,1,51.58,6.63Z" />
                                     </g>
                                 </g>
+                                {/* Ingredient labels inside burgerGroup so they move with it */}
+                                <text x="57" y="155" className="filling" textAnchor="middle">CHEESE</text>
+                                <text x="57" y="155" className="filling" textAnchor="middle">BACON</text>
+                                <text x="57" y="155" className="filling" textAnchor="middle">BACON CRISPY</text>
+                                <text x="57" y="155" className="filling" textAnchor="middle">AMERICAN</text>
                                 <rect className="dragHit" width="118" height="228" fill="transparent" />
                             </g>
 
-                            <g className="ingredients">
-                                <text x="200" y="320" className="filling">CHEESE</text>
-                                <text x="400" y="320" className="filling">BACON</text>
-                                <text x="600" y="320" className="filling">AMERICAN</text>
-                            </g>
+
                         </svg>
                     </div>
 
@@ -536,7 +573,7 @@ export default function BurgerSelector() {
                                 Triple
                             </button>
                         </div>
-                        <div className="fries-included-msg">*Las hamburguesas vienen con papas fritas incluidas</div>
+                        <div className="fries-included-msg">*Las hamburguesas vienen con papas fritas y salsa de ajo incluidas</div>
                     </div>
 
                     {/* Extras Section */}
