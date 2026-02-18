@@ -1,0 +1,140 @@
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;700;900&display=swap');
+
+body.combo-selector-page {
+    font-family: 'Inter', sans-serif;
+    background-color: #fef9f6;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body.combo-selector-page.dark-mode {
+    background-color: #1a1a1a;
+}
+
+.combo-container {
+    width: 100%;
+    max-width: 800px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Red Card Design */
+.combo-card {
+    background-color: #e31818;
+    /* Vibrant Red */
+    border-radius: 40px;
+    padding: 40px;
+    color: white;
+    box-shadow: 0 10px 30px rgba(227, 24, 24, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.combo-header {
+    text-align: center;
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.combo-title-main {
+    font-family: 'Anton', sans-serif;
+    /* Impact-like font */
+    font-size: 5rem;
+    text-transform: uppercase;
+    margin: -70px 0 10px 0;
+    /* Pull up to overlap/sit on top */
+    text-shadow: 4px 4px 0px #ab0f0f;
+    letter-spacing: 2px;
+    display: inline-block;
+    background-color: #e31818;
+    padding: 0 20px;
+    border-radius: 10px;
+    transform: rotate(-2deg);
+}
+
+.combo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.combo-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.combo-row-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.combo-name {
+    font-family: 'Anton', sans-serif;
+    font-size: 2.2rem;
+    text-transform: uppercase;
+    margin: 0;
+    line-height: 1;
+}
+
+.combo-row-bottom {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.combo-description {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    text-transform: uppercase;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.combo-dots {
+    flex: 1;
+    border-bottom: 2px dotted rgba(255, 255, 255, 0.8);
+    margin: 0 10px;
+    position: relative;
+    top: -5px;
+}
+
+.combo-price {
+    font-family: 'Anton', sans-serif;
+    font-size: 1.8rem;
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .combo-title-main {
+        font-size: 3.5rem;
+        margin-top: -50px;
+    }
+
+    .combo-card {
+        padding: 25px;
+        border-radius: 30px;
+    }
+
+    .combo-name {
+        font-size: 1.8rem;
+    }
+
+    .combo-description {
+        font-size: 0.8rem;
+        white-space: normal;
+        /* Wrap text on mobile if needed, but horizontal layout prefers nowrap with dots */
+    }
+
+    .combo-row-bottom {
+        /* If description is too long, we might need to stack, but the design suggests single lines. 
+            Let's keep typical behavior but allow wrap if absolutely necessary */
+    }
+}

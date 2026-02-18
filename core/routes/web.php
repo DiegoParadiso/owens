@@ -23,15 +23,23 @@ Route::post('/webhook/whatsapp', [WhatsAppController::class, 'handleWebhook']); 
 
 
 Route::get('/', function () {
+    return Inertia::render('Landing');
+})->name('landing');
+
+Route::get('/hacer-pedido', function () {
+    return Inertia::render('BurgerSelector');
+})->name('burger.select');
+
+Route::get('/admin', function () {
     return Inertia::render('Auth/Login');
 })->name('login');
 
-Route::post('/login', [UserController::class, 'loginCheck'])
+Route::post('/admin/login', [UserController::class, 'loginCheck'])
     ->middleware(['throttle:5,1'])
     ->name('login.check');
 
 // Rutas protegidas con autenticación
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/logout', [UserController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 

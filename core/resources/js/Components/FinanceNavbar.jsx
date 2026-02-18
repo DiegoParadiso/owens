@@ -5,9 +5,9 @@ export default function FinanceNavbar() {
     const { url } = usePage();
 
     const tabs = [
-        { name: 'Gastos', route: '/expenses', active: url.startsWith('/expenses') },
-        { name: 'Compras', route: '/purchases', active: url.startsWith('/purchases') },
-        { name: 'Proveedores', route: '/suppliers', active: url.startsWith('/suppliers') },
+        { name: 'Gastos', route: '/admin/expenses', active: url.startsWith('/admin/expenses') },
+        { name: 'Compras', route: '/admin/purchases', active: url.startsWith('/admin/purchases') },
+        { name: 'Proveedores', route: '/admin/suppliers', active: url.startsWith('/admin/suppliers') },
     ];
 
     return (

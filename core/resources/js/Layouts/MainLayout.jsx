@@ -85,11 +85,11 @@ export default function MainLayout({ children }) {
 
 
                 <div className={`content position-relative ${isSidebarOpen ? 'open' : ''}`}>
-                    <div className={`${url.startsWith('/whatsapp') ? 'container-fluid p-0' : 'container-xxl pt-4 px-4'}`}>
+                    <div className={`${url.startsWith('/admin/whatsapp') ? 'container-fluid p-0' : 'container-xxl pt-4 px-4'}`}>
                         {children}
                     </div>
 
-                    {url === '/dashboard' && <Footer />}
+                    {url === '/admin/dashboard' && <Footer />}
                 </div>
             </div>
         </>
