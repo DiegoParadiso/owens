@@ -1,14 +1,57 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Head } from '@inertiajs/react';
 import '../../css/burger-selector.css';
 
+// Static Data
+const burgerNames = ["CHEESE BURGER", "BACON BURGER", "BACON CRISPY", "AMERICAN BURGER"];
+
+const extraItems = [
+    { id: 'extraPapas', label: '+ Extra Papas' },
+    { id: 'extraBacon', label: '+ Extra Bacon' },
+    { id: 'extraCheddar', label: '+ Extra Cheddar' },
+    { id: 'coke', label: '+ Lata de Coca Cola' },
+    { id: 'extraSalsaAjo', label: '+ Extra Salsa de Ajo' },
+];
+
+const combos = [
+    {
+        id: 1,
+        name: "COMBO 1",
+        desc: "X2 CHEESE SIMPLES + PAPAS + LATA DE COCA COLA",
+        price: "$17.500"
+    },
+    {
+        id: 3,
+        name: "COMBO 3",
+        desc: "X2 AMERICAN/BACON DOBLES + PAPAS + LATA DE COCA COLA",
+        price: "$19.500"
+    },
+    {
+        id: 2,
+        name: "COMBO 2",
+        desc: "X3 SIMPLES A ELECCIÓN + PAPAS + X3 LATAS DE COCA COLA",
+        price: "$29.500"
+    },
+    {
+        id: 4,
+        name: "COMBO 4",
+        desc: "AMERICAN/BACON DOBLE + PAPAS + LATA DE COCA COLA",
+        price: "$10.500"
+    },
+    {
+        id: 5,
+        name: "COMBO 5",
+        desc: "AMERICAN/BACON SIMPLE + PAPAS + LATA DE COCA COLA",
+        price: "$9.500"
+    }
+];
+
 export default function BurgerSelector() {
-    const [darkMode, setDarkMode] = React.useState(localStorage.getItem('darkMode') === 'true');
-    const [burgerSize, setBurgerSize] = React.useState(0); // 0: Simple, 1: Double, 2: Triple
+    const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
+    const [burgerSize, setBurgerSize] = useState(0); // 0: Simple, 1: Double, 2: Triple
     const [currentBurgerIndex, setCurrentBurgerIndex] = useState(0); // 0: Cheese, 1: Bacon, 2: American
     const [showCombos, setShowCombos] = useState(false);
     const [selectedCombo, setSelectedCombo] = useState(null);
-    const comboSectionRef = useRef(null);
 
     // Extras State
     const [extras, setExtras] = useState({
@@ -28,7 +71,6 @@ export default function BurgerSelector() {
     const [cart, setCart] = useState([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
 
-    const burgerNames = ["CHEESE BURGER", "BACON BURGER", "BACON CRISPY", "AMERICAN BURGER"];
 
     const addToCart = () => {
         const burgerName = burgerNames[currentBurgerIndex] || "CUSTOM BURGER";
@@ -113,13 +155,6 @@ export default function BurgerSelector() {
 
     const getTotalItems = () => cart.length;
 
-    const extraItems = [
-        { id: 'extraPapas', label: '+ Extra Papas' },
-        { id: 'extraBacon', label: '+ Extra Bacon' },
-        { id: 'extraCheddar', label: '+ Extra Cheddar' },
-        { id: 'coke', label: '+ Lata de Coca Cola' },
-        { id: 'extraSalsaAjo', label: '+ Extra Salsa de Ajo' },
-    ];
 
     const handleExtraClick = (id) => {
         setExtras(prev => ({
@@ -136,38 +171,6 @@ export default function BurgerSelector() {
         }));
     };
 
-    const combos = [
-        {
-            id: 1,
-            name: "COMBO 1",
-            desc: "X2 CHEESE SIMPLES + PAPAS + LATA DE COCA COLA",
-            price: "$17.500"
-        },
-        {
-            id: 3,
-            name: "COMBO 3",
-            desc: "X2 AMERICAN/BACON DOBLES + PAPAS + LATA DE COCA COLA",
-            price: "$19.500"
-        },
-        {
-            id: 2,
-            name: "COMBO 2",
-            desc: "X3 SIMPLES A ELECCIÓN + PAPAS + X3 LATAS DE COCA COLA",
-            price: "$29.500"
-        },
-        {
-            id: 4,
-            name: "COMBO 4",
-            desc: "AMERICAN/BACON DOBLE + PAPAS + LATA DE COCA COLA",
-            price: "$10.500"
-        },
-        {
-            id: 5,
-            name: "COMBO 5",
-            desc: "AMERICAN/BACON SIMPLE + PAPAS + LATA DE COCA COLA",
-            price: "$9.500"
-        }
-    ];
 
     useEffect(() => {
         document.body.classList.add('burger-selector-page');
@@ -610,7 +613,7 @@ export default function BurgerSelector() {
                 </div>
 
                 {/* Combos Section - Inline Minimalist */}
-                <div ref={comboSectionRef} className={`combo-container ${showCombos ? 'visible' : ''}`}>
+                <div className={`combo-container ${showCombos ? 'visible' : ''}`}>
                     <div className="combo-list">
                         {combos.map((combo) => (
                             <div
