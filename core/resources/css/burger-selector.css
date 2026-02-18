@@ -7,7 +7,6 @@ body.burger-selector-page {
     padding: 0;
     overflow-x: hidden;
     overflow-y: auto;
-    /* Enable vertical scrolling */
     text-align: center;
 }
 
@@ -71,7 +70,6 @@ html {
     font-family: 'Inter', 'Poppins', sans-serif;
     text-anchor: middle;
     font-size: 1.5em;
-    /* Decreased from 2em */
     fill: #333333;
     stroke: none;
     letter-spacing: 0.05em;
@@ -88,7 +86,6 @@ body.burger-selector-page.dark-mode .choose {
     stroke: none;
     text-anchor: middle;
     font-size: 1.2em;
-    /* Reduced from 1.8em */
     letter-spacing: 0.02em;
     font-weight: 600;
 }
@@ -117,9 +114,7 @@ text {
     margin-top: -240px;
     display: flex;
     flex-direction: column;
-    /* Stack children vertically */
     align-items: center;
-    /* Center children horizontally */
     justify-content: center;
     width: 100%;
 }
@@ -133,7 +128,6 @@ text {
     backdrop-filter: blur(10px);
     border: 1px solid rgba(0, 0, 0, 0.05);
     width: fit-content;
-    /* Only take necessary width */
 }
 
 body.burger-selector-page.dark-mode .size-selector {
@@ -467,6 +461,8 @@ body.burger-selector-page.dark-mode .combo-item.selected {
         margin-top: 5px;
         padding-left: 5px;
         padding-right: 5px;
+        opacity: 0.6;
+        /* Reduced contrast */
     }
 
     .extras-container {
@@ -486,8 +482,8 @@ body.burger-selector-page.dark-mode .combo-item.selected {
     }
 
     .combo-title {
-        font-size: 0.9rem;
-        /* Matched to section-title */
+        font-size: 0.8rem;
+        /* Reduced from 0.9rem */
     }
 
     /* SVG Text scaling overrides - Compensate for viewbox scaling */
@@ -545,12 +541,15 @@ body.burger-selector-page.dark-mode .combo-item.selected {
     /* SVG Text scaling overrides - Compensate for viewbox scaling */
     .choose,
     .choose2 {
-        font-size: 2.2rem;
-        /* Reduced to ensure it fits within screen width without cutoff */
+        font-size: 2rem;
+        /* Reduced from 2.2rem */
+        letter-spacing: 0;
+        /* Remove tracking */
     }
 
     .filling {
-        font-size: 1.2rem;
+        font-size: 1.5rem;
+        /* Increased from 1.2rem */
     }
 }
 
@@ -715,8 +714,10 @@ body.burger-selector-page.dark-mode .text-input:focus {
     }
 
     .section-title {
-        font-size: 0.9rem;
+        font-size: 0.75rem;
         /* Smaller title */
+        font-weight: 600;
+        /* Medium weight */
         margin-bottom: 2px;
     }
 
@@ -730,10 +731,9 @@ body.burger-selector-page.dark-mode .text-input:focus {
     }
 
     .text-input {
-        font-size: 0.9rem;
-        /* Restore slightly larger font */
+        font-size: 14px;
+        /* Reduced from 16px per user request */
         padding: 10px 14px;
-        /* More breathing room */
         border-radius: 10px;
     }
 
@@ -902,6 +902,87 @@ body.burger-selector-page.dark-mode .text-input:focus {
 .item-extra {
     font-size: 0.8rem;
     color: #444;
+}
+
+.item-extra-control {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    background: #f9f9f9;
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+body.burger-selector-page.dark-mode .item-extra-control {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.extra-label-row {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #555;
+}
+
+body.burger-selector-page.dark-mode .extra-label-row {
+    color: #bbb;
+}
+
+.extra-stepper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    padding: 3px;
+    border-radius: 20px;
+    border: 1px solid #eee;
+}
+
+body.burger-selector-page.dark-mode .extra-stepper {
+    background: rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.extra-stepper-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: none;
+    background: #f0f0f0;
+    color: #333;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    transition: background 0.2s;
+}
+
+.extra-stepper-btn:hover {
+    background: #e0e0e0;
+}
+
+body.burger-selector-page.dark-mode .extra-stepper-btn {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+body.burger-selector-page.dark-mode .extra-stepper-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.extra-stepper-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+    min-width: 15px;
+    text-align: center;
+    color: #333;
+}
+
+body.burger-selector-page.dark-mode .extra-stepper-value {
+    color: #fff;
 }
 
 .remove-item {

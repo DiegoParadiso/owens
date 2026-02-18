@@ -72,7 +72,7 @@ export default function Landing() {
 
     return (
         <div className="landing-frame">
-            <Head title="Welcome" />
+            <Head title="Owens Argentina" />
 
             {/* Dark Mode Toggle Button */}
             <button

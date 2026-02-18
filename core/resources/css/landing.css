@@ -1,9 +1,7 @@
 /* Scoped to body.landing-page to avoid conflicts with main app */
-/* Scoped to body.landing-page to avoid conflicts with main app */
 body.landing-page {
     font-family: 'Inter', 'Poppins', sans-serif;
     background-color: #fef9f6;
-    /* Light background */
     --black: #333333;
     --white: #FFFFFF;
     --red: #df0f13;
@@ -12,7 +10,6 @@ body.landing-page {
     --text-muted: #6f6f71;
     margin: 0;
     padding: 0;
-    /* Enhance reset */
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -23,7 +20,6 @@ body.landing-page {
 
 html {
     overflow-x: hidden;
-    /* Prevent horizontal scroll globally */
     width: 100%;
 }
 
@@ -274,7 +270,6 @@ body.landing-page.dark-mode .map-side {
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Responsive - Mobile Full Screen */
 /* Responsive - Mobile Full Screen - Fixed */
 @media (max-width: 768px) {
     body.landing-page {
@@ -302,12 +297,12 @@ body.landing-page.dark-mode .map-side {
     .landing-container {
         width: 100%;
         min-height: 100dvh;
-        padding: 40px 20px;
+        padding: 30px 24px;
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
         justify-content: center;
-        gap: 20px;
+        gap: 24px;
     }
 
     .header-section {
@@ -330,30 +325,30 @@ body.landing-page.dark-mode .map-side {
     }
 
     .single-service {
-        padding: 20px 30px;
+        padding: 16px 20px;
         border-radius: 16px;
     }
 
     .service-content i,
     .service-content .material-symbols-outlined,
     .service-content img {
-        font-size: 24px;
-        width: 24px;
-        height: 24px;
+        font-size: 22px;
+        width: 22px;
+        height: 22px;
     }
 
     .service-content .material-symbols-outlined {
-        font-size: 30px;
-        width: 30px;
-        height: 30px;
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
     }
 
     .text-content .title {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
     }
 
     .text-content .subtitle {
-        font-size: 0.8rem;
+        font-size: 0.75rem;
     }
 
     .action-arrow {
@@ -361,11 +356,11 @@ body.landing-page.dark-mode .map-side {
     }
 
     .action-arrow i {
-        font-size: 16px;
+        font-size: 14px;
     }
 
     .map-side {
-        height: 300px;
+        height: 220px;
         border-radius: 16px;
         margin-bottom: 20px;
     }

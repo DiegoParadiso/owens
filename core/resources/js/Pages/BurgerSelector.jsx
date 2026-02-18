@@ -695,7 +695,7 @@ export default function BurgerSelector() {
                                         {Object.entries(item.extras).map(([key, count]) => count > 0 && (
                                             <div key={key} className="item-extra-control">
                                                 <div className="extra-label-row">
-                                                    + {extraItems.find(e => e.id === key)?.label}
+                                                    {extraItems.find(e => e.id === key)?.label}
                                                 </div>
                                                 <div className="extra-stepper">
                                                     <button className="extra-stepper-btn" onClick={(e) => { e.stopPropagation(); updateCartItemExtra(item.id, key, -1); }}>-</button>
