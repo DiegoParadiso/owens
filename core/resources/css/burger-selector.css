@@ -362,13 +362,13 @@ body.burger-selector-page.dark-mode .combo-title {
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: center;
-    padding: 20px;
+    justify-content: flex-start;
+    padding: 20px 24px;
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s ease;
-    text-align: center;
-    gap: 12px;
+    text-align: left;
+    gap: 20px;
     border: 1px solid rgba(0, 0, 0, 0.08);
     /* Very subtle border */
     background: rgba(255, 255, 255, 0.4);
@@ -410,11 +410,11 @@ body.burger-selector-page.dark-mode .combo-item.selected {
     text-transform: uppercase;
     font-size: 1.1rem;
     white-space: nowrap;
+    min-width: 100px;
 }
 
 .combo-separator {
-    opacity: 0.5;
-    font-weight: 300;
+    display: none;
 }
 
 .combo-description {
@@ -423,6 +423,7 @@ body.burger-selector-page.dark-mode .combo-item.selected {
     font-size: 1rem;
     color: inherit;
     opacity: 0.9;
+    flex: 1;
 }
 
 
@@ -500,13 +501,15 @@ body.burger-selector-page.dark-mode .combo-item.selected {
 
     .combo-item {
         flex-direction: column;
-        gap: 2px;
-        padding: 10px;
+        align-items: flex-start;
+        text-align: left;
+        gap: 6px;
+        padding: 14px 18px;
         border-radius: 8px;
     }
 
     .combo-name {
-        font-size: 0.9rem;
+        font-size: 0.95rem;
     }
 
     .combo-separator {
@@ -514,8 +517,8 @@ body.burger-selector-page.dark-mode .combo-item.selected {
     }
 
     .combo-description {
-        font-size: 0.75rem;
-        line-height: 1.2;
+        font-size: 0.8rem;
+        line-height: 1.35;
     }
 }
 
