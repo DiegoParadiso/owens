@@ -483,8 +483,8 @@ body.burger-selector-page.dark-mode .combo-item.selected {
     }
 
     .combo-title {
-        font-size: 0.8rem;
-        /* Reduced from 0.9rem */
+        font-size: 0.75rem;
+        /* Reduced */
     }
 
     /* SVG Text scaling overrides - Compensate for viewbox scaling */
@@ -503,13 +503,15 @@ body.burger-selector-page.dark-mode .combo-item.selected {
         flex-direction: column;
         align-items: flex-start;
         text-align: left;
-        gap: 6px;
-        padding: 14px 18px;
+        gap: 4px;
+        padding: 12px 14px;
+        /* Reduced padding */
         border-radius: 8px;
     }
 
     .combo-name {
-        font-size: 0.95rem;
+        font-size: 0.7rem;
+        /* Reduced from 0.8rem */
     }
 
     .combo-separator {
@@ -517,8 +519,23 @@ body.burger-selector-page.dark-mode .combo-item.selected {
     }
 
     .combo-description {
-        font-size: 0.8rem;
+        font-size: 0.6rem;
+        /* Reduced from 0.8rem */
         line-height: 1.35;
+    }
+
+    .text-input,
+    .text-input.textarea {
+        font-size: 0.80rem !important;
+        /* Force same size for all inputs/textareas */
+        font-family: 'Inter', sans-serif;
+        padding: 12px;
+    }
+
+    .option-btn {
+        font-size: 0.85rem;
+        padding: 10px 12px;
+        /* Slight padding reduction for mobile fit */
     }
 }
 
@@ -751,31 +768,40 @@ body.burger-selector-page.dark-mode .text-input:focus {
     bottom: 30px;
     right: 30px;
     display: flex;
-    flex-direction: column;
+    flex-direction: row-reverse;
+    /* Puts Cart on the right, Add on its left */
+    justify-content: flex-start;
     gap: 15px;
-    align-items: flex-end;
+    align-items: center;
     z-index: 1000;
 }
 
 .fab-add {
-    background: #000;
+    background: #df1d1d;
+    /* Strong Red for Light Mode */
     color: #fff;
     border: none;
-    border-radius: 50px;
+    border-radius: 30px;
     padding: 15px 30px;
     font-family: 'Inter', sans-serif;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 1.1rem;
     display: flex;
     align-items: center;
-    gap: 10px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    gap: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    /* Standard shadow, no glow */
     cursor: pointer;
-    transition: transform 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
+}
+
+.fab-add:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
 }
 
 .fab-add:active {
-    transform: scale(0.95);
+    transform: scale(0.25);
 }
 
 .plus-icon {
@@ -1029,16 +1055,21 @@ body.burger-selector-page.dark-mode .extra-stepper-value {
 }
 
 /* Dark Mode Overrides for SVG Assets */
-#arrow {
+.arrow {
     stroke: #333;
-    transition: stroke 0.3s ease;
+    transition: stroke 0.3s ease, transform 0.2s ease;
 }
 
-body.burger-selector-page.dark-mode #arrow {
-    stroke: #e0e0e0;
+body.burger-selector-page.dark-mode .arrow {
+    stroke: #ffffff;
 }
 
-/* Dark Mode for FAB Cart */
+/* Dark Mode for FAB Buttons */
+body.burger-selector-page.dark-mode .fab-add {
+    background: #fc5a51;
+    /* Softer red for dark mode */
+}
+
 body.burger-selector-page.dark-mode .fab-cart {
     background: #2a2a2a;
     border-color: rgba(255, 255, 255, 0.1);

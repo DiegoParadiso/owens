@@ -48,6 +48,7 @@ const combos = [
 
 export default function BurgerSelector() {
     const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
+    const [isMobileView, setIsMobileView] = useState(false);
     const [burgerSize, setBurgerSize] = useState(0); // 0: Simple, 1: Double, 2: Triple
     const [currentBurgerIndex, setCurrentBurgerIndex] = useState(0); // 0: Cheese, 1: Bacon, 2: American
     const [showCombos, setShowCombos] = useState(false);
@@ -181,7 +182,8 @@ export default function BurgerSelector() {
             document.body.classList.remove('dark-mode');
         }
 
-        const setDiagonalBackground = () => {
+        const handleResize = () => {
+            setIsMobileView(window.innerWidth < 768);
             const isMobile = window.innerWidth < 768;
             const textColor = darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.025)';
 
@@ -208,8 +210,8 @@ export default function BurgerSelector() {
             document.body.style.backgroundImage = `url('data:image/svg+xml;base64,${window.btoa(svgString)}')`;
         };
 
-        setDiagonalBackground();
-        window.addEventListener('resize', setDiagonalBackground);
+        handleResize();
+        window.addEventListener('resize', handleResize);
 
         const gsapScript = document.createElement('script');
         gsapScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js';
@@ -230,7 +232,7 @@ export default function BurgerSelector() {
             document.body.classList.remove('burger-selector-page');
             document.body.classList.remove('dark-mode');
             document.body.style.backgroundImage = '';
-            window.removeEventListener('resize', setDiagonalBackground);
+            window.removeEventListener('resize', handleResize);
             if (window.burgerCleanup) window.burgerCleanup();
         };
     }, [darkMode]);
@@ -485,21 +487,37 @@ export default function BurgerSelector() {
                                     <stop offset="0.43" stopColor="#252121" />
                                     <stop offset="1" stopColor="#fc5a51" />
                                 </linearGradient>
-                                <path id="arrow" d="M15 0 L5 10 L15 20" stroke="black" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                                <path id="arrow" d="M15 0 L5 10 L15 20" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                                <path id="arrow-mobile" d="M20 0 L5 15 L20 30" stroke="currentColor" strokeWidth="3.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
                             </defs>
 
-                            <text x="50%" y="60" className="choose">
-                                ELEGÍ TU HAMBURGUESA
-                            </text>
+                            <g transform="translate(400, 60)">
+                                <text
+                                    x={isMobileView ? "-80" : "-70"}
+                                    y="0"
+                                    className="choose"
+                                    textAnchor={isMobileView ? "end" : "middle"}
+                                >
+                                    ELEGÍ TU HAMBURGUESA
+                                </text>
+                                <image
+                                    x={isMobileView ? "145" : "110"}
+                                    y="-35"
+                                    width={isMobileView ? "140" : "120"}
+                                    height={isMobileView ? "55" : "60"}
+                                    href={darkMode ? "/img/owens-darkmode.png" : "/img/owens.png"}
+                                    preserveAspectRatio={isMobileView ? "xMinYMid meet" : "xMidYMid meet"}
+                                />
+                            </g>
 
                             <g className="arrowL-group" style={{ cursor: 'pointer' }}>
                                 <rect x="50" y="150" width="120" height="120" fill="transparent" />
-                                <use className="arrowL arrow" xlinkHref="#arrow" x="100" y="200" style={{ pointerEvents: 'none' }} />
+                                <use className="arrowL arrow" xlinkHref={isMobileView ? "#arrow-mobile" : "#arrow"} x={isMobileView ? "95" : "100"} y={isMobileView ? "190" : "200"} style={{ pointerEvents: 'none' }} />
                             </g>
 
                             <g className="arrowR-group" transform="rotate(180 670 210)" style={{ cursor: 'pointer' }}>
                                 <rect x="610" y="150" width="120" height="120" fill="transparent" />
-                                <use className="arrowR arrow" xlinkHref="#arrow" x="660" y="200" style={{ pointerEvents: 'none' }} />
+                                <use className="arrowR arrow" xlinkHref={isMobileView ? "#arrow-mobile" : "#arrow"} x={isMobileView ? "655" : "660"} y={isMobileView ? "190" : "200"} style={{ pointerEvents: 'none' }} />
                             </g>
 
                             <g className="burgerGroup">
@@ -708,10 +726,10 @@ export default function BurgerSelector() {
                         />
                     </div>
                 </div>
-            </div>
+            </div >
 
             {/* Floating Action Buttons */}
-            <div className="fab-container">
+            < div className="fab-container" >
                 <button className="fab-cart" onClick={() => setIsCartOpen(true)}>
                     {cart.length > 0 && <span className="cart-count">{cart.length}</span>}
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -724,48 +742,50 @@ export default function BurgerSelector() {
                     <span className="plus-icon">+</span>
                     <span className="add-text">AGREGAR</span>
                 </button>
-            </div>
+            </div >
 
             {/* Cart Modal */}
-            {isCartOpen && (
-                <div className="cart-modal-overlay" onClick={() => setIsCartOpen(false)}>
-                    <div className="cart-modal" onClick={e => e.stopPropagation()}>
-                        <div className="cart-header">
-                            <h3>TU PEDIDO</h3>
-                            <button className="close-cart" onClick={() => setIsCartOpen(false)}>×</button>
-                        </div>
-                        <div className="cart-items">
-                            {cart.map((item, index) => (
-                                <div key={item.id} className="cart-item">
-                                    <div className="item-info">
-                                        <div className="item-name">{item.name}</div>
-                                        <div className="item-desc">{item.description}</div>
-                                        {Object.entries(item.extras).map(([key, count]) => count > 0 && (
-                                            <div key={key} className="item-extra-control">
-                                                <div className="extra-label-row">
-                                                    {extraItems.find(e => e.id === key)?.label}
+            {
+                isCartOpen && (
+                    <div className="cart-modal-overlay" onClick={() => setIsCartOpen(false)}>
+                        <div className="cart-modal" onClick={e => e.stopPropagation()}>
+                            <div className="cart-header">
+                                <h3>TU PEDIDO</h3>
+                                <button className="close-cart" onClick={() => setIsCartOpen(false)}>×</button>
+                            </div>
+                            <div className="cart-items">
+                                {cart.map((item, index) => (
+                                    <div key={item.id} className="cart-item">
+                                        <div className="item-info">
+                                            <div className="item-name">{item.name}</div>
+                                            <div className="item-desc">{item.description}</div>
+                                            {Object.entries(item.extras).map(([key, count]) => count > 0 && (
+                                                <div key={key} className="item-extra-control">
+                                                    <div className="extra-label-row">
+                                                        {extraItems.find(e => e.id === key)?.label}
+                                                    </div>
+                                                    <div className="extra-stepper">
+                                                        <button className="extra-stepper-btn" onClick={(e) => { e.stopPropagation(); updateCartItemExtra(item.id, key, -1); }}>-</button>
+                                                        <span className="extra-stepper-value">{count}</span>
+                                                        <button className="extra-stepper-btn" onClick={(e) => { e.stopPropagation(); updateCartItemExtra(item.id, key, 1); }}>+</button>
+                                                    </div>
                                                 </div>
-                                                <div className="extra-stepper">
-                                                    <button className="extra-stepper-btn" onClick={(e) => { e.stopPropagation(); updateCartItemExtra(item.id, key, -1); }}>-</button>
-                                                    <span className="extra-stepper-value">{count}</span>
-                                                    <button className="extra-stepper-btn" onClick={(e) => { e.stopPropagation(); updateCartItemExtra(item.id, key, 1); }}>+</button>
-                                                </div>
-                                            </div>
-                                        ))}
+                                            ))}
+                                        </div>
+                                        <button className="remove-item" onClick={() => removeFromCart(item.id)}>Eliminar</button>
                                     </div>
-                                    <button className="remove-item" onClick={() => removeFromCart(item.id)}>Eliminar</button>
-                                </div>
-                            ))}
-                            {cart.length === 0 && <div className="empty-cart">Tu carrito está vacío</div>}
-                        </div>
-                        <div className="cart-footer">
-                            <button className="place-order-btn" onClick={handlePlaceOrder}>
-                                HACER PEDIDO
-                            </button>
+                                ))}
+                                {cart.length === 0 && <div className="empty-cart">Tu carrito está vacío</div>}
+                            </div>
+                            <div className="cart-footer">
+                                <button className="place-order-btn" onClick={handlePlaceOrder}>
+                                    HACER PEDIDO
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
         </>
     );
 }
