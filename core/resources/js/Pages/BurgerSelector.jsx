@@ -298,8 +298,16 @@ export default function BurgerSelector() {
             const yOffset = -(size * offsetPerPatty);
 
             // Update extra patties
-            gsap.to(meatPatty2, { opacity: size >= 1 ? 1 : 0, duration, ease });
-            gsap.to(meatPatty3, { opacity: size >= 2 ? 1 : 0, duration, ease });
+            gsap.to(meatPatty2, {
+                opacity: size >= 1 ? 1 : 0,
+                y: size >= 1 ? 0 : 12,
+                duration, ease
+            });
+            gsap.to(meatPatty3, {
+                opacity: size >= 2 ? 1 : 0,
+                y: size >= 2 ? 0 : (size >= 1 ? 12 : 24),
+                duration, ease
+            });
 
             // Ingredients reset
             if (id !== 1 && id !== 2) { // 1 is Bacon, 2 is Bacon Crispy
