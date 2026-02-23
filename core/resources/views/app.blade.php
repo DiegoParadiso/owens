@@ -4,7 +4,19 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        <title inertia>{{ config('app.name', 'Owens Argentina') }}</title>
+
+        <!-- Open Graph Meta Tags that enable the logo to show on sharing -->
+        @if(request()->is('admin*') || request()->is('login*'))
+            <meta property="og:title" content="Owens Argentina - Sistema de Gestión">
+            <meta property="og:description" content="Owens Argentina - Sistema de Gestión">
+        @else
+            <meta property="og:title" content="Owens Argentina">
+            <meta property="og:description" content="Owens Argentina">
+        @endif
+        <meta property="og:image" content="{{ asset('img/owens.png') }}">
+        <meta property="og:url" content="{{ url()->current() }}">
+        <meta property="og:type" content="website">
 
         <link rel="icon" href="{{ asset('favicon.ico') }}">
         <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('img/favicon/favicon-32x32.png') }}">

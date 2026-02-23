@@ -18,8 +18,8 @@ class SupplierController extends Controller
         $query = Supplier::latest();
 
         if ($search) {
-             $query->where('name', 'LIKE', "%{$search}%")
-                   ->orWhere('contact_info', 'LIKE', "%{$search}%");
+             $query->where('name', 'ILIKE', "%{$search}%")
+                   ->orWhere('contact_info', 'ILIKE', "%{$search}%");
         }
         
         $suppliers = $query->paginate($perPage)
