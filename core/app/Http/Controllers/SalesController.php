@@ -106,12 +106,30 @@ class SalesController extends Controller
 
             $savedSale = Sale::create($sale_data);
 
+            $systemMode = \App\Models\Setting::where('key', 'system_mode')->value('value') ?? 'normal';
+
             foreach ($request->product_id as $key => $productId) {
                 $product = Product::with('components.childProduct')->find($productId);
                 $quantitySold = $request->quantity[$key];
 
                 try {
+                    $isMenu = in_array($product->category, ['burger', 'extra', 'combo']);
+                if ($systemMode === 'advanced') {
                     $this->stockService->processStock($product, $quantitySold, 'deduct');
+                } else if ($systemMode === 'normal') {
+                    if (!$isMenu && $product->type === 'single') {
+                        // Venta Directa
+                        $this->stockService->processStock($product, $quantitySold, 'deduct');
+                    } else if ($product->category === 'combo' && $product->components && $product->components->count() > 0) {
+                        // In normal mode, only deduct Venta Directa components inside a combo
+                        foreach ($product->components as $component) {
+                            $child = $component->childProduct;
+                            if ($child && !in_array($child->category, ['burger', 'extra', 'combo']) && $child->type === 'single') {
+                                $this->stockService->processStock($child, $component->quantity * $quantitySold, 'deduct');
+                            }
+                        }
+                    }
+                }
                 } catch (\Exception $e) {
                     DB::rollBack();
                     return redirect()->back()->with('error', $e->getMessage());
@@ -252,13 +270,28 @@ class SalesController extends Controller
                 return redirect()->route('sales.index')->with('error', 'Venta no encontrada.');
             }
 
-            // Restaurar stock y eliminar detalles
+            $systemMode = \App\Models\Setting::where('key', 'system_mode')->value('value') ?? 'normal';
+
             // Restaurar stock y eliminar detalles
             $saleDetails = SaleDetail::where('sale_id', $id)->get();
             foreach ($saleDetails as $detail) {
                 $product = Product::with('components.childProduct')->find($detail->product_id);
                 if ($product) {
+                    $isMenu = in_array($product->category, ['burger', 'extra', 'combo']);
+                if ($systemMode === 'advanced') {
                     $this->stockService->processStock($product, $detail->quantity, 'restore');
+                } else if ($systemMode === 'normal') {
+                    if (!$isMenu && $product->type === 'single') {
+                        $this->stockService->processStock($product, $detail->quantity, 'restore');
+                    } else if ($product->category === 'combo' && $product->components && $product->components->count() > 0) {
+                        foreach ($product->components as $component) {
+                            $child = $component->childProduct;
+                            if ($child && !in_array($child->category, ['burger', 'extra', 'combo']) && $child->type === 'single') {
+                                $this->stockService->processStock($child, $component->quantity * $detail->quantity, 'restore');
+                            }
+                        }
+                    }
+                }
                 }
                 $detail->delete();
             }

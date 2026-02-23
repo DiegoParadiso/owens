@@ -199,7 +199,7 @@ export default function Index({ openRegister, currentBalance, income, expense, m
                             <tbody>
                                 {movements && movements.length > 0 ? movements.map((movement) => (
                                     <tr key={movement.id}>
-                                        <td>{formatTime(movement.created_at)}</td>
+                                        <td className="text-nowrap">{formatTime(movement.created_at)}</td>
                                         <td className="fw-medium">
                                             <div className="d-flex align-items-center gap-2">
                                                 {/* Icon Indicator */}

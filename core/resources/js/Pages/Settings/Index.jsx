@@ -5,7 +5,7 @@ import { Head, useForm, router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
 
 
-export default function Index({ users }) {
+export default function Index({ users, system_mode }) {
     const [activeTab, setActiveTab] = useState('profiles');
     const [showDrawer, setShowDrawer] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
@@ -81,6 +81,18 @@ export default function Index({ users }) {
                         window.toast.error('Error', 'No se pudo eliminar el usuario.');
                     }
                 });
+            }
+        });
+    };
+
+    const handleModeChange = (mode) => {
+        router.post(route('settings.updateMode'), { mode: mode }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                window.toast.success('Modo Cambiado', `El sistema ahora está en modo ${mode === 'normal' ? 'Normal' : 'Avanzado'}.`);
+            },
+            onError: () => {
+                window.toast.error('Error', 'No se pudo cambiar el modo del sistema.');
             }
         });
     };
@@ -206,6 +218,29 @@ export default function Index({ users }) {
 
                 {activeTab === 'system' && (
                     <div className="py-2">
+                        <div className="d-flex flex-wrap align-items-center justify-content-between p-4 rounded-3 gap-3 mb-4 bg-light border">
+                            <div>
+                                <h6 className="fw-bold mb-1">Modo del Sistema</h6>
+                                <p className="small text-muted mb-0">Alterna entre el Modo Normal (simplificado, sin producción ni recetas) y el Modo Avanzado (completo).</p>
+                            </div>
+                            <div className="btn-group" role="group">
+                                <button
+                                    type="button"
+                                    className={`btn px-4 fw-medium ${system_mode === 'normal' ? 'btn-primary' : 'bg-white text-primary border-primary'}`}
+                                    onClick={() => handleModeChange('normal')}
+                                >
+                                    Modo Normal
+                                </button>
+                                <button
+                                    type="button"
+                                    className={`btn px-4 fw-medium ${system_mode === 'advanced' ? 'btn-danger' : 'bg-white text-danger border-danger'}`}
+                                    onClick={() => handleModeChange('advanced')}
+                                >
+                                    Modo Avanzado
+                                </button>
+                            </div>
+                        </div>
+
                         <div className="d-flex flex-wrap align-items-center justify-content-between p-4 rounded-3 gap-3" style={{ backgroundColor: 'rgba(220, 53, 69, 0.04)' }}>
                             <div>
                                 <h6 className="fw-bold text-danger mb-1">Zona de Peligro</h6>

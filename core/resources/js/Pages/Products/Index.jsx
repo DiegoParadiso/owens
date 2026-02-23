@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
 import CurrencyInput from '@/Components/CurrencyInput';
-import { Head, Link, useForm, router } from '@inertiajs/react';
+import { Head, Link, useForm, router, usePage } from '@inertiajs/react';
 import Swal from 'sweetalert2';
 
 import Pagination from '@/Components/Pagination';
 
 export default function Index({ products }) {
+    const { system_mode } = usePage().props;
     const [showDrawer, setShowDrawer] = useState(false);
     const [editingProduct, setEditingProduct] = useState(null);
     const [selectedProducts, setSelectedProducts] = useState([]);
@@ -246,12 +247,14 @@ export default function Index({ products }) {
                                             <div className="d-flex align-items-center gap-2">
                                                 {product.name}
                                                 {product.type === 'supply' && (
-                                                    <span className="badge bg-secondary-subtle text-secondary" style={{ fontSize: '0.65rem' }}>INSUMO</span>
+                                                    <span className="badge bg-secondary-subtle text-secondary" style={{ fontSize: '0.65rem' }}>
+                                                        {system_mode === 'normal' ? 'VENTA FIJA' : 'INSUMO'}
+                                                    </span>
                                                 )}
                                             </div>
                                         </td>
                                         <td className="font-tabular fw-semibold text-end">
-                                            {product.type === 'single' && product.price ? formatCurrency(product.price) : <span className="text-muted">-</span>}
+                                            {(product.type === 'single' || (product.type === 'supply' && system_mode === 'normal')) && product.price ? formatCurrency(product.price) : <span className="text-muted">-</span>}
                                         </td>
                                         <td className="font-tabular text-muted text-end">
                                             {product.cost > 0 ? (
@@ -266,32 +269,36 @@ export default function Index({ products }) {
                                             )}
                                         </td>
                                         <td className="text-end">
-                                            <div className="d-flex flex-column align-items-end">
-                                                <div className="d-flex align-items-center gap-2 justify-content-end">
-                                                    <span
-                                                        className={`rounded-circle ${product.stock > 10 ? 'bg-success' : product.stock > 0 ? 'bg-warning' : 'bg-danger'}`}
-                                                        style={{ width: '8px', height: '8px', display: 'inline-block' }}
-                                                    ></span>
-                                                    <span className="fw-medium">
-                                                        {Number(product.stock).toLocaleString()} {product.base_unit || product.usage_unit || 'Unidades'}
-                                                    </span>
-                                                </div>
-                                                {product.type === 'supply' && (
-                                                    <div className="d-flex flex-column align-items-end">
-                                                        {product.usage_unit && product.usage_factor > 0 ? (
-                                                            <small className="text-muted mt-1" style={{ fontSize: '0.75rem' }}>
-                                                                ≈ {Math.floor(product.stock / product.usage_factor)} {product.usage_unit}
-                                                            </small>
-                                                        ) : (
-                                                            product.purchase_unit && product.conversion_factor > 0 && (
-                                                                <small className="text-muted mt-1" style={{ fontSize: '0.75rem' }}>
-                                                                    ≈ {Math.floor(product.stock / product.conversion_factor)} {product.purchase_unit}
-                                                                </small>
-                                                            )
-                                                        )}
+                                            {product.type === 'supply' && system_mode === 'normal' ? (
+                                                <span className="text-muted fst-italic">-</span>
+                                            ) : (
+                                                <div className="d-flex flex-column align-items-end">
+                                                    <div className="d-flex align-items-center gap-2 justify-content-end">
+                                                        <span
+                                                            className={`rounded-circle ${product.stock > 10 ? 'bg-success' : product.stock > 0 ? 'bg-warning' : 'bg-danger'}`}
+                                                            style={{ width: '8px', height: '8px', display: 'inline-block' }}
+                                                        ></span>
+                                                        <span className="fw-medium">
+                                                            {Number(product.stock).toLocaleString()} {product.base_unit || product.usage_unit || 'Unidades'}
+                                                        </span>
                                                     </div>
-                                                )}
-                                            </div>
+                                                    {product.type === 'supply' && (
+                                                        <div className="d-flex flex-column align-items-end">
+                                                            {product.usage_unit && product.usage_factor > 0 ? (
+                                                                <small className="text-muted mt-1" style={{ fontSize: '0.75rem' }}>
+                                                                    ≈ {Math.floor(product.stock / product.usage_factor)} {product.usage_unit}
+                                                                </small>
+                                                            ) : (
+                                                                product.purchase_unit && product.conversion_factor > 0 && (
+                                                                    <small className="text-muted mt-1" style={{ fontSize: '0.75rem' }}>
+                                                                        ≈ {Math.floor(product.stock / product.conversion_factor)} {product.purchase_unit}
+                                                                    </small>
+                                                                )
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </td>
                                         <td className="text-center">
                                             <div className="d-flex justify-content-center gap-1">
@@ -359,17 +366,17 @@ export default function Index({ products }) {
                         <div className="d-flex gap-2">
                             <button
                                 type="button"
-                                className={`btn flex-fill py-2 ${data.type === 'single' ? 'btn-dark' : 'btn-outline-secondary'}`}
+                                className={`btn flex-fill py-2 fw-semibold ${data.type === 'single' ? 'btn-segmented-active' : 'btn-segmented-inactive'}`}
                                 onClick={() => setData('type', 'single')}
                             >
                                 VENTA DIRECTA
                             </button>
                             <button
                                 type="button"
-                                className={`btn flex-fill py-2 ${data.type === 'supply' ? 'btn-dark' : 'btn-outline-secondary'}`}
+                                className={`btn flex-fill py-2 fw-semibold ${data.type === 'supply' ? 'btn-segmented-active' : 'btn-segmented-inactive'}`}
                                 onClick={() => setData('type', 'supply')}
                             >
-                                INSUMO
+                                {system_mode === 'normal' ? 'VENTA FIJA' : 'INSUMO'}
                             </button>
                         </div>
                     </div>
@@ -387,7 +394,7 @@ export default function Index({ products }) {
                         />
                     </div>
 
-                    {data.type === 'single' && (
+                    {(data.type === 'single' || (data.type === 'supply' && system_mode === 'normal')) && (
                         <div className="mb-3">
                             <label htmlFor="price" className="form-label">Precio de Venta</label>
                             <CurrencyInput
@@ -401,7 +408,7 @@ export default function Index({ products }) {
                         </div>
                     )}
 
-                    {data.type === 'supply' && (
+                    {data.type === 'supply' && system_mode !== 'normal' && (
                         <div className="p-3 bg-light rounded mb-3 border">
                             <h6 className="text-uppercase small fw-bold text-muted mb-3 d-flex align-items-center gap-2">
                                 <i className="bi bi-sliders"></i> Configuración de Unidades
@@ -607,56 +614,58 @@ export default function Index({ products }) {
                         </div>
                     )}
 
-                    <div className="mb-3">
-                        <label htmlFor="stock" className="form-label">
-                            {data.type === 'supply' && data.purchase_unit
-                                ? `Stock Inicial (en ${data.purchase_unit}s)`
-                                : 'Stock Inicial'}
-                        </label>
-                        <input
-                            type="number"
-                            className="form-control input-clean input-natural"
-                            id="stock"
-                            min="0"
-                            step="1"
-                            required
-                            value={data.type === 'supply' && data.conversion_factor && data.conversion_factor > 0
-                                ? (data.stock === '' ? '' : Math.floor(data.stock / data.conversion_factor)) // Display in Purchase Units, integer only
-                                : data.stock}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                if (val === '') {
-                                    setData('stock', '');
-                                } else if (data.type === 'supply' && data.conversion_factor && data.conversion_factor > 0) {
-                                    // Save as Usage Units
-                                    setData('stock', parseInt(val) * data.conversion_factor);
-                                } else {
-                                    setData('stock', parseInt(val));
-                                }
-                            }}
-                        />
-                        {data.type === 'supply' && data.conversion_factor && (
-                            <div className="mt-2 p-2 bg-light border rounded small">
-                                <div className="d-flex justify-content-between align-items-center mb-1">
-                                    <span className="text-muted">Stock Técnico (Interno):</span>
-                                    <span className="fw-bold font-monospace">
-                                        {data.stock ? parseFloat(Number(data.stock).toFixed(2)) : 0} {data.base_unit || 'g/ml'}
-                                    </span>
-                                </div>
-                                {data.usage_factor > 0 && data.usage_unit && (
-                                    <div className="d-flex justify-content-between align-items-center text-primary border-top pt-1 mt-1 border-secondary-subtle">
-                                        <span>
-                                            <i className="bi bi-calculator me-1"></i>
-                                            Equivalencia ({data.usage_unit}):
-                                        </span>
-                                        <span className="fw-bold">
-                                            ≈ {data.stock ? Math.floor(Number(data.stock) / Number(data.usage_factor)) : 0}
+                    {(data.type === 'single' || (data.type === 'supply' && system_mode !== 'normal')) && (
+                        <div className="mb-3">
+                            <label htmlFor="stock" className="form-label">
+                                {data.type === 'supply' && data.purchase_unit
+                                    ? `Stock Inicial (en ${data.purchase_unit}s)`
+                                    : 'Stock Inicial'}
+                            </label>
+                            <input
+                                type="number"
+                                className="form-control input-clean input-natural"
+                                id="stock"
+                                min="0"
+                                step="1"
+                                required
+                                value={data.type === 'supply' && data.conversion_factor && data.conversion_factor > 0
+                                    ? (data.stock === '' ? '' : Math.floor(data.stock / data.conversion_factor)) // Display in Purchase Units, integer only
+                                    : data.stock}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val === '') {
+                                        setData('stock', '');
+                                    } else if (data.type === 'supply' && data.conversion_factor && data.conversion_factor > 0) {
+                                        // Save as Usage Units
+                                        setData('stock', parseInt(val) * data.conversion_factor);
+                                    } else {
+                                        setData('stock', parseInt(val));
+                                    }
+                                }}
+                            />
+                            {data.type === 'supply' && data.conversion_factor && (
+                                <div className="mt-2 p-2 bg-light border rounded small">
+                                    <div className="d-flex justify-content-between align-items-center mb-1">
+                                        <span className="text-muted">Stock Técnico (Interno):</span>
+                                        <span className="fw-bold font-monospace">
+                                            {data.stock ? parseFloat(Number(data.stock).toFixed(2)) : 0} {data.base_unit || 'g/ml'}
                                         </span>
                                     </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
+                                    {data.usage_factor > 0 && data.usage_unit && (
+                                        <div className="d-flex justify-content-between align-items-center text-primary border-top pt-1 mt-1 border-secondary-subtle">
+                                            <span>
+                                                <i className="bi bi-calculator me-1"></i>
+                                                Equivalencia ({data.usage_unit}):
+                                            </span>
+                                            <span className="fw-bold">
+                                                ≈ {data.stock ? Math.floor(Number(data.stock) / Number(data.usage_factor)) : 0}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
 
 
                 </form>

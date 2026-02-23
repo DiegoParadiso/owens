@@ -575,6 +575,13 @@ h6,
     padding: 0.5rem 1.5rem;
 }
 
+.btn:focus,
+.btn:active,
+.btn.active {
+    box-shadow: none !important;
+    outline: none !important;
+}
+
 .btn-sm {
     padding: 0.25rem 0.75rem;
     font-size: 0.75rem;
@@ -624,16 +631,19 @@ body.dark-mode {
 
 /* Hide Input Steppers (Spin Buttons) */
 /* Chrome, Safari, Edge, Opera */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button,
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+    -webkit-appearance: none !important;
+    margin: 0 !important;
 }
 
 /* Firefox */
+input[type="number"],
 input[type=number] {
-    -moz-appearance: textfield;
-    appearance: textfield;
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
 }
 
 /* Global Standardized Input Classes */
@@ -726,6 +736,39 @@ body.dark-mode .table-minimal tbody tr:hover {
 .input-natural {
     /* No specific styling, just behavior */
     box-sizing: border-box;
+}
+
+/* --- Segmented Control Toggle Buttons --- */
+.btn-segmented-active {
+    background-color: #212529;
+    color: #ffffff;
+    border: 1px solid #212529;
+}
+
+.btn-segmented-inactive {
+    background-color: transparent;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+}
+
+.btn-segmented-inactive:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+body.dark-mode .btn-segmented-active {
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #ffffff;
+}
+
+body.dark-mode .btn-segmented-inactive {
+    background-color: transparent;
+    color: #adb5bd;
+    border: 1px solid #495057;
+}
+
+body.dark-mode .btn-segmented-inactive:hover {
+    background-color: rgba(255, 255, 255, 0.05);
 }
 
 /* --- Dashboard Redesign Semantic Classes --- */

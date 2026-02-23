@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
-import { Head, Link, useForm, router } from '@inertiajs/react';
+import { Head, Link, useForm, router, usePage } from '@inertiajs/react';
 import Swal from 'sweetalert2';
 import Pagination from '@/Components/Pagination';
 
 export default function Index({ products = [], supplies = [], category = 'burger' }) {
-
+    const { system_mode } = usePage().props;
     const [showDrawer, setShowDrawer] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
     const [rows, setRows] = useState([{ id: Date.now(), child_product_id: '', quantity: 1 }]);
@@ -228,7 +228,7 @@ export default function Index({ products = [], supplies = [], category = 'burger
                                 <tr>
                                     <th scope="col">Nombre</th>
                                     <th scope="col" className="text-end">Precio</th>
-                                    <th scope="col">Receta / Componentes</th>
+                                    {(system_mode === 'advanced' || category === 'combo') && <th scope="col">Receta / Componentes</th>}
                                     <th scope="col" className="text-center" style={{ width: '100px' }}>Acciones</th>
                                 </tr>
                             </thead>
@@ -237,21 +237,23 @@ export default function Index({ products = [], supplies = [], category = 'burger
                                     <tr key={item.id}>
                                         <td className="fw-medium">{item.name}</td>
                                         <td className="font-tabular fw-bold text-end" style={{ fontSize: '1.05rem' }}>{formatCurrency(item.price)}</td>
-                                        <td>
-                                            <ul className="list-unstyled mb-0 small">
-                                                {item.components && item.components.length > 0 ? (
-                                                    item.components.map((component, idx) => (
-                                                        component.child_product ? (
-                                                            <li key={idx} className="mb-1">
-                                                                <span className="text-muted">{parseFloat(component.quantity)}x</span> {component.child_product.name}
-                                                            </li>
-                                                        ) : null
-                                                    ))
-                                                ) : (
-                                                    <li className="text-muted fst-italic">Sin componentes</li>
-                                                )}
-                                            </ul>
-                                        </td>
+                                        {(system_mode === 'advanced' || category === 'combo') && (
+                                            <td>
+                                                <ul className="list-unstyled mb-0 small">
+                                                    {item.components && item.components.length > 0 ? (
+                                                        item.components.map((component, idx) => (
+                                                            component.child_product ? (
+                                                                <li key={idx} className="mb-1">
+                                                                    <span className="text-muted">{parseFloat(component.quantity)}x</span> {component.child_product.name}
+                                                                </li>
+                                                            ) : null
+                                                        ))
+                                                    ) : (
+                                                        <li className="text-muted fst-italic">Sin componentes</li>
+                                                    )}
+                                                </ul>
+                                            </td>
+                                        )}
                                         <td className="text-center">
                                             <div className="d-flex justify-content-center gap-1">
                                                 <button
@@ -339,160 +341,194 @@ export default function Index({ products = [], supplies = [], category = 'burger
 
 
 
-                    <h6 className="text-uppercase small fw-bold text-muted mb-3">
-                        {category === 'combo' ? 'Contenido del Combo' : 'Receta / Ingredientes'}
-                    </h6>
-                    <p className="small text-muted mb-3">
-                        {category === 'combo'
-                            ? 'Selecciona los productos que incluye este combo.'
-                            : 'Selecciona los insumos o productos base necesarios para preparar este ítem.'}
-                    </p>
+                    {(system_mode === 'advanced' || category === 'combo') && (
+                        <>
+                            <h6 className="text-uppercase small fw-bold text-muted mb-3">
+                                {category === 'combo' ? 'Contenido del Combo' : 'Receta / Ingredientes'}
+                            </h6>
+                            <p className="small text-muted mb-3">
+                                {category === 'combo'
+                                    ? 'Selecciona los productos que incluye este combo.'
+                                    : 'Selecciona los insumos o productos base necesarios para preparar este ítem.'}
+                            </p>
 
-                    <div className="table-responsive mb-2">
-                        <table className="table table-sm table-borderless align-middle mb-0">
-                            <thead className="text-muted small text-uppercase">
-                                <tr>
-                                    <th style={{ width: '55%' }}>Producto</th>
-                                    <th style={{ width: '20%' }} className="text-center">Cant.</th>
-                                    <th style={{ width: '15%' }}>Unidad</th>
-                                    <th style={{ width: '10%' }}></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {rows.map((row, index) => (
-                                    <tr key={row.id}>
-                                        <td>
-                                            <select
-                                                className="form-select form-select-sm input-clean"
-                                                value={row.child_product_id}
-                                                onChange={(e) => {
-                                                    updateRow(row.id, {
-                                                        child_product_id: e.target.value,
-                                                        use_usage_unit: false
-                                                    });
-                                                }}
-                                                required={category === 'combo'}
-                                            >
-                                                <option value="">Seleccionar...</option>
-                                                {(() => {
-                                                    const filtered = supplies.filter(s => {
-                                                        if (category === 'combo') {
-                                                            return ['burger', 'extra'].includes(s.category);
-                                                        } else {
-                                                            return !['burger', 'extra', 'combo'].includes(s.category);
+                            <div className="table-responsive mb-2">
+                                <table className="table table-sm table-borderless align-middle mb-0">
+                                    <thead className="text-muted small text-uppercase">
+                                        <tr>
+                                            <th style={{ width: '55%' }}>Producto</th>
+                                            <th style={{ width: '20%' }} className="text-center">Cant.</th>
+                                            <th style={{ width: '15%' }}>Unidad</th>
+                                            <th style={{ width: '10%' }}></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {rows.map((row, index) => (
+                                            <tr key={row.id}>
+                                                <td>
+                                                    <select
+                                                        className="form-select form-select-sm input-clean"
+                                                        value={row.child_product_id}
+                                                        onChange={(e) => {
+                                                            updateRow(row.id, {
+                                                                child_product_id: e.target.value,
+                                                                use_usage_unit: false
+                                                            });
+                                                        }}
+                                                        required={category === 'combo'}
+                                                    >
+                                                        <option value="">Seleccionar...</option>
+                                                        {(() => {
+                                                            const filtered = supplies.filter(s => {
+                                                                if (category === 'combo') {
+                                                                    return true; // Allow all items (burgers, extras, and inventory)
+                                                                } else {
+                                                                    return !['burger', 'extra', 'combo'].includes(s.category);
+                                                                }
+                                                            });
+
+                                                            const grouped = {
+                                                                'burger': [],
+                                                                'extra': [],
+                                                                'ingredient': [],
+                                                                'other': []
+                                                            };
+
+                                                            filtered.forEach(s => {
+                                                                if (s.category === 'burger') grouped.burger.push(s);
+                                                                else if (s.category === 'extra') grouped.extra.push(s);
+                                                                else if (s.type === 'supply') grouped.ingredient.push(s);
+                                                                else grouped.other.push(s);
+                                                            });
+
+                                                            return (
+                                                                <>
+                                                                    {grouped.burger.length > 0 && (
+                                                                        <optgroup label="Hamburguesas">
+                                                                            {grouped.burger.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                                                        </optgroup>
+                                                                    )}
+                                                                    {grouped.extra.length > 0 && (
+                                                                        <optgroup label="Extras / Acompañamientos">
+                                                                            {grouped.extra.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                                                        </optgroup>
+                                                                    )}
+                                                                    {grouped.ingredient.length > 0 && (
+                                                                        <optgroup label="Insumos / Ingredientes">
+                                                                            {grouped.ingredient.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                                                        </optgroup>
+                                                                    )}
+                                                                    {grouped.other.length > 0 && (
+                                                                        <optgroup label="Otros">
+                                                                            {grouped.other.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                                                        </optgroup>
+                                                                    )}
+                                                                </>
+                                                            );
+                                                        })()}
+                                                    </select>
+                                                    {(() => {
+                                                        const selectedSupply = supplies.find(s => s.id == row.child_product_id);
+                                                        if (selectedSupply && selectedSupply.usage_unit && row.use_usage_unit) {
+                                                            const baseUnitName = selectedSupply.base_unit || 'Base';
+                                                            const usageFactor = parseFloat(selectedSupply.usage_factor) || 1;
+                                                            const qty = parseFloat(row.quantity) || 0;
+                                                            return (
+                                                                <div className="small text-muted mt-1">
+                                                                    <i className="bi bi-arrow-return-right me-1"></i>
+                                                                    = {qty * usageFactor} {baseUnitName}
+                                                                </div>
+                                                            );
                                                         }
-                                                    });
-
-                                                    const grouped = {
-                                                        'burger': [],
-                                                        'extra': [],
-                                                        'ingredient': [],
-                                                        'other': []
-                                                    };
-
-                                                    filtered.forEach(s => {
-                                                        if (s.category === 'burger') grouped.burger.push(s);
-                                                        else if (s.category === 'extra') grouped.extra.push(s);
-                                                        else if (s.type === 'supply') grouped.ingredient.push(s);
-                                                        else grouped.other.push(s);
-                                                    });
-
-                                                    return (
-                                                        <>
-                                                            {grouped.burger.length > 0 && (
-                                                                <optgroup label="Hamburguesas">
-                                                                    {grouped.burger.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                                                </optgroup>
-                                                            )}
-                                                            {grouped.extra.length > 0 && (
-                                                                <optgroup label="Extras / Acompañamientos">
-                                                                    {grouped.extra.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                                                </optgroup>
-                                                            )}
-                                                            {grouped.ingredient.length > 0 && (
-                                                                <optgroup label="Insumos / Ingredientes">
-                                                                    {grouped.ingredient.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                                                </optgroup>
-                                                            )}
-                                                            {grouped.other.length > 0 && (
-                                                                <optgroup label="Otros">
-                                                                    {grouped.other.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                                                </optgroup>
-                                                            )}
-                                                        </>
-                                                    );
-                                                })()}
-                                            </select>
-                                            {(() => {
-                                                const selectedSupply = supplies.find(s => s.id == row.child_product_id);
-                                                if (selectedSupply && selectedSupply.usage_unit && row.use_usage_unit) {
-                                                    const baseUnitName = selectedSupply.base_unit || 'Base';
-                                                    const usageFactor = parseFloat(selectedSupply.usage_factor) || 1;
-                                                    const qty = parseFloat(row.quantity) || 0;
-                                                    return (
-                                                        <div className="small text-muted mt-1">
-                                                            <i className="bi bi-arrow-return-right me-1"></i>
-                                                            = {qty * usageFactor} {baseUnitName}
-                                                        </div>
-                                                    );
-                                                }
-                                                return null;
-                                            })()}
-                                        </td>
-                                        <td>
-                                            <input
-                                                type="number"
-                                                className="form-control form-control-sm text-center input-clean"
-                                                value={row.quantity}
-                                                min="0.01"
-                                                step="0.001"
-                                                onChange={(e) => updateRow(row.id, 'quantity', e.target.value === '' ? '' : parseFloat(e.target.value))}
-                                                required={category === 'combo'}
-                                            />
-                                        </td>
-                                        <td className="small text-muted">
-                                            {(() => {
-                                                const selectedSupply = supplies.find(s => s.id == row.child_product_id);
-                                                const hasUsageUnit = selectedSupply && selectedSupply.usage_unit;
-                                                const baseUnitName = selectedSupply?.base_unit || selectedSupply?.purchase_unit || '-';
-
-                                                if (hasUsageUnit) {
-                                                    return (
-                                                        <select
-                                                            className="form-select form-select-sm input-clean p-0 ps-1"
-                                                            style={{ border: 'none', background: 'transparent', fontWeight: '500' }}
-                                                            value={row.use_usage_unit ? 'true' : 'false'}
-                                                            onChange={(e) => updateRow(row.id, 'use_usage_unit', e.target.value === 'true')}
+                                                        return null;
+                                                    })()}
+                                                </td>
+                                                <td>
+                                                    <div className="d-flex align-items-center justify-content-center gap-2">
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-sm text-muted p-0"
+                                                            onClick={() => {
+                                                                let qty = parseFloat(row.quantity) || 0;
+                                                                updateRow(row.id, 'quantity', Math.max(0, qty - 1));
+                                                            }}
+                                                            style={{ width: '24px', height: '24px', fontSize: '1rem' }}
                                                         >
-                                                            <option value="false">{baseUnitName}</option>
-                                                            <option value="true">{selectedSupply.usage_unit}</option>
-                                                        </select>
-                                                    );
-                                                }
+                                                            <i className="bi bi-dash"></i>
+                                                        </button>
+                                                        <input
+                                                            type="number"
+                                                            className="form-control form-control-sm text-center p-0 input-clean"
+                                                            style={{ width: '50px', height: '28px' }}
+                                                            value={row.quantity}
+                                                            step="any"
+                                                            onChange={(e) => {
+                                                                let val = e.target.value.replace(/-/g, '');
+                                                                updateRow(row.id, 'quantity', val);
+                                                            }}
+                                                            onBlur={(e) => {
+                                                                let val = parseFloat(e.target.value);
+                                                                if (isNaN(val) || val < 0) {
+                                                                    updateRow(row.id, 'quantity', 0);
+                                                                }
+                                                            }}
+                                                            required={category === 'combo'}
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-sm text-muted p-0"
+                                                            onClick={() => updateRow(row.id, 'quantity', (parseFloat(row.quantity) || 0) + 1)}
+                                                            style={{ width: '24px', height: '24px', fontSize: '1rem' }}
+                                                        >
+                                                            <i className="bi bi-plus"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                                <td className="small text-muted">
+                                                    {(() => {
+                                                        const selectedSupply = supplies.find(s => s.id == row.child_product_id);
+                                                        const hasUsageUnit = selectedSupply && selectedSupply.usage_unit;
+                                                        const baseUnitName = selectedSupply?.base_unit || selectedSupply?.purchase_unit || '-';
 
-                                                return baseUnitName;
-                                            })()}
-                                        </td>
-                                        <td className="text-end">
-                                            <button
-                                                type="button"
-                                                className="btn btn-icon-only text-danger"
-                                                onClick={() => removeRow(row.id)}
-                                                disabled={rows.length === 1 && category === 'combo'}
-                                                style={{ width: '31px', height: '31px' }}
-                                            >
-                                                <span className="material-symbols-outlined">delete</span>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                                        if (hasUsageUnit) {
+                                                            return (
+                                                                <select
+                                                                    className="form-select form-select-sm input-clean p-0 ps-1"
+                                                                    style={{ border: 'none', background: 'transparent', fontWeight: '500' }}
+                                                                    value={row.use_usage_unit ? 'true' : 'false'}
+                                                                    onChange={(e) => updateRow(row.id, 'use_usage_unit', e.target.value === 'true')}
+                                                                >
+                                                                    <option value="false">{baseUnitName}</option>
+                                                                    <option value="true">{selectedSupply.usage_unit}</option>
+                                                                </select>
+                                                            );
+                                                        }
 
-                    <button type="button" className="btn btn-sm btn-outline-secondary mt-2 w-100" onClick={addRow}>
-                        <i className="bi bi-plus-lg me-1"></i> Agregar Componente
-                    </button>
+                                                        return baseUnitName;
+                                                    })()}
+                                                </td>
+                                                <td className="text-end">
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-icon-only text-danger"
+                                                        onClick={() => removeRow(row.id)}
+                                                        disabled={rows.length === 1 && category === 'combo'}
+                                                        style={{ width: '31px', height: '31px' }}
+                                                    >
+                                                        <span className="material-symbols-outlined">delete</span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <button type="button" className="btn btn-sm btn-outline-secondary mt-2 w-100" onClick={addRow}>
+                                <i className="bi bi-plus-lg me-1"></i> Agregar Componente
+                            </button>
+                        </>
+                    )}
                 </form>
             </Drawer>
         </MainLayout>

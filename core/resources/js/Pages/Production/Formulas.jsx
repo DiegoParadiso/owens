@@ -322,15 +322,46 @@ export default function Formulas({ formulas, supplies }) {
                                                 )}
                                             </td>
                                             <td className="py-3">
-                                                <input
-                                                    type="number"
-                                                    className="form-control form-control-sm input-clean text-center"
-                                                    placeholder="0"
-                                                    value={ing.quantity}
-                                                    onChange={e => updateIngredient(index, 'quantity', e.target.value)}
-                                                    step="0.001"
-                                                    required
-                                                />
+                                                <div className="d-flex align-items-center justify-content-center gap-2">
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-sm text-muted p-0"
+                                                        onClick={() => {
+                                                            let qty = parseFloat(ing.quantity) || 0;
+                                                            updateIngredient(index, 'quantity', Math.max(0, qty - 1));
+                                                        }}
+                                                        style={{ width: '24px', height: '24px', fontSize: '1rem' }}
+                                                    >
+                                                        <i className="bi bi-dash"></i>
+                                                    </button>
+                                                    <input
+                                                        type="number"
+                                                        className="form-control form-control-sm text-center p-0 input-clean"
+                                                        style={{ width: '50px', height: '28px' }}
+                                                        placeholder="0"
+                                                        value={ing.quantity}
+                                                        onChange={(e) => {
+                                                            let val = e.target.value.replace(/-/g, '');
+                                                            updateIngredient(index, 'quantity', val);
+                                                        }}
+                                                        onBlur={(e) => {
+                                                            let val = parseFloat(e.target.value);
+                                                            if (isNaN(val) || val < 0) {
+                                                                updateIngredient(index, 'quantity', 0);
+                                                            }
+                                                        }}
+                                                        step="any"
+                                                        required
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-sm text-muted p-0"
+                                                        onClick={() => updateIngredient(index, 'quantity', (parseFloat(ing.quantity) || 0) + 1)}
+                                                        style={{ width: '24px', height: '24px', fontSize: '1rem' }}
+                                                    >
+                                                        <i className="bi bi-plus"></i>
+                                                    </button>
+                                                </div>
                                             </td>
                                             <td className="py-3">
                                                 {hasUsageUnit ? (

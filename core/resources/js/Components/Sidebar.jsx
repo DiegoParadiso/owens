@@ -72,7 +72,7 @@ export default function Sidebar({ isOpen, toggleSidebar, darkMode }) {
                                     <i className="bi bi-whatsapp me-3" style={{ width: '24px', textAlign: 'center' }}></i>WhatsApp
                                 </Link>
                             )}
-                            {moduleConfig.production && (
+                            {moduleConfig.production && props.system_mode === 'advanced' && (
                                 <Link href="/admin/production" className={`nav-item nav-link d-flex align-items-center ${isActive('/admin/production')}`}>
                                     <i className="fa fa-blender me-3" style={{ width: '24px', textAlign: 'center' }}></i>Producción
                                 </Link>

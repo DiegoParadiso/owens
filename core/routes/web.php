@@ -101,6 +101,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::put('/settings/users/{user}', [SettingsController::class, 'updateUser'])->name('settings.updateUser');
     Route::delete('/settings/users/{user}', [SettingsController::class, 'destroyUser'])->name('settings.destroyUser');
     Route::post('/settings/reset-database', [SettingsController::class, 'resetDatabase'])->name('settings.resetDatabase');
+    Route::post('/settings/mode', [SettingsController::class, 'updateSystemMode'])->name('settings.updateMode');
     // Production
     Route::get('/production/formulas', [ProductionController::class, 'formulas'])->name('production.formulas');
     Route::post('/production/formulas', [ProductionController::class, 'storeFormula'])->name('production.storeFormula');

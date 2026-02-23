@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
 import CurrencyInput from '@/Components/CurrencyInput';
-import { Head, Link, useForm, router } from '@inertiajs/react';
+import { Head, Link, useForm, router, usePage } from '@inertiajs/react';
 import Swal from 'sweetalert2';
 
 import Pagination from '@/Components/Pagination';
 import FinanceNavbar from '@/Components/FinanceNavbar';
 
 export default function Index({ purchases = [], suppliers = [], products = [] }) {
+    const { system_mode } = usePage().props;
     const [showDrawer, setShowDrawer] = useState(false);
     const [rows, setRows] = useState([]);
     const [grandTotal, setGrandTotal] = useState(0);
@@ -675,7 +676,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                                                     </button>
                                                 </div>
 
-                                                {(row.isNew || row.product_id) && (
+                                                {system_mode === 'advanced' && (row.isNew || row.product_id) && (
                                                     <div className="mt-2 p-2 rounded" >
                                                         {/* 
                                                             Simplificación: La compra no define si es Insumo o Venta, ni el precio de venta.
@@ -705,7 +706,10 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                                                 <button
                                                     type="button"
                                                     className="btn btn-sm text-muted p-0"
-                                                    onClick={() => updateRow(row.id, 'quantity', Math.max(1, (parseInt(row.quantity) || 0) - 1))}
+                                                    onClick={() => {
+                                                        let qty = parseFloat(row.quantity) || 0;
+                                                        updateRow(row.id, 'quantity', qty > 1 ? qty - 1 : 1);
+                                                    }}
                                                     style={{ width: '24px', height: '24px', fontSize: '1rem' }}
                                                 >
                                                     <i className="bi bi-dash"></i>
@@ -715,9 +719,13 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                                                     className="form-control form-control-sm text-center p-0 input-clean"
                                                     style={{ width: '50px', height: '28px' }}
                                                     value={row.quantity}
-                                                    onChange={(e) => updateRow(row.id, 'quantity', e.target.value === '' ? '' : parseInt(e.target.value))}
+                                                    onChange={(e) => {
+                                                        let val = e.target.value.replace(/-/g, '');
+                                                        updateRow(row.id, 'quantity', val);
+                                                    }}
                                                     onBlur={(e) => {
-                                                        if (e.target.value === '' || parseInt(e.target.value) < 1) {
+                                                        let val = parseFloat(e.target.value);
+                                                        if (isNaN(val) || val <= 0) {
                                                             updateRow(row.id, 'quantity', 1);
                                                         }
                                                     }}
@@ -725,7 +733,7 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
                                                 <button
                                                     type="button"
                                                     className="btn btn-sm text-muted p-0"
-                                                    onClick={() => updateRow(row.id, 'quantity', (parseInt(row.quantity) || 0) + 1)}
+                                                    onClick={() => updateRow(row.id, 'quantity', (parseFloat(row.quantity) || 0) + 1)}
                                                     style={{ width: '24px', height: '24px', fontSize: '1rem' }}
                                                 >
                                                     <i className="bi bi-plus"></i>

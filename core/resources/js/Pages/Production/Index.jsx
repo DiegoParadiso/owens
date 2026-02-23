@@ -283,7 +283,7 @@ export default function Index({ products: initialProducts, history }) {
                                     <button
                                         key={num}
                                         type="button"
-                                        className={`btn btn-sm rounded-pill px-3 ${data.quantity === num ? 'btn-dark' : 'btn-outline-secondary'}`}
+                                        className={`btn btn-sm rounded-pill px-3 ${data.quantity === num ? 'btn-segmented-active' : 'btn-segmented-inactive'}`}
                                         onClick={() => setData('quantity', num)}
                                     >
                                         {num} Lote{num > 1 ? 's' : ''}

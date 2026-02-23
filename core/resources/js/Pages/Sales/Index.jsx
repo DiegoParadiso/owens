@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
-import { Head, Link, useForm, router } from '@inertiajs/react';
+import { Head, Link, useForm, router, usePage } from '@inertiajs/react';
 import Swal from 'sweetalert2';
 
 import Pagination from '@/Components/Pagination';
@@ -10,6 +10,8 @@ export default function Index({ sales = [], products = [] }) {
     const [showDrawer, setShowDrawer] = useState(false);
     const [rows, setRows] = useState([]);
     const [grandTotal, setGrandTotal] = useState(0);
+
+    const { system_mode } = usePage().props;
 
     const { data, setData, post, processing, errors, reset } = useForm({
         items: [],
@@ -31,7 +33,7 @@ export default function Index({ sales = [], products = [] }) {
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+        return date.toLocaleString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
     };
 
     const formatPaymentMethod = (method) => {
@@ -101,9 +103,13 @@ export default function Index({ sales = [], products = [] }) {
 
         const missingComponents = [];
 
-        // Recursive function to gather required vs available leaf components
         const gatherRequirements = (prod, requiredQty) => {
             const requirements = [];
+
+            // In Normal mode, Burgers and Extras act as direct sales with infinite implicit stock
+            if (system_mode === 'normal' && (prod.category === 'burger' || prod.category === 'extra')) {
+                return requirements;
+            }
 
             if (prod.type === 'combo' || (prod.components && prod.components.length > 0)) {
                 // console.log(`Checking components for ${prod.name}`, prod.components);
@@ -322,7 +328,7 @@ export default function Index({ sales = [], products = [] }) {
                             <tbody>
                                 {sales.data.map((sale, index) => (
                                     <tr key={sale.id}>
-                                        <td>{formatDate(sale.sale_date)}</td>
+                                        <td>{formatDate(sale.created_at)}</td>
                                         <td>
                                             <ul className="list-unstyled mb-0 small">
                                                 {sale.sale_details && sale.sale_details.length > 0 ? (
@@ -484,7 +490,10 @@ export default function Index({ sales = [], products = [] }) {
                                                     <button
                                                         type="button"
                                                         className="btn btn-sm text-muted p-0"
-                                                        onClick={() => updateRow(row.id, 'quantity', Math.max(1, (parseInt(row.quantity) || 0) - 1))}
+                                                        onClick={() => {
+                                                            let qty = parseInt(row.quantity, 10) || 0;
+                                                            updateRow(row.id, 'quantity', qty > 1 ? qty - 1 : 1);
+                                                        }}
                                                         style={{ width: '24px', height: '24px', fontSize: '1rem' }}
                                                     >
                                                         <i className="bi bi-dash"></i>
@@ -494,17 +503,23 @@ export default function Index({ sales = [], products = [] }) {
                                                         className="form-control form-control-sm text-center p-0 input-clean"
                                                         style={{ width: '50px', height: '28px' }}
                                                         value={row.quantity}
-                                                        onChange={(e) => updateRow(row.id, 'quantity', e.target.value === '' ? '' : parseInt(e.target.value))}
+                                                        onChange={(e) => {
+                                                            let val = e.target.value.replace(/[-.,]/g, '');
+                                                            updateRow(row.id, 'quantity', val);
+                                                        }}
                                                         onBlur={(e) => {
-                                                            if (e.target.value === '' || parseInt(e.target.value) < 1) {
+                                                            let val = parseInt(e.target.value, 10);
+                                                            if (isNaN(val) || val <= 0) {
                                                                 updateRow(row.id, 'quantity', 1);
+                                                            } else {
+                                                                updateRow(row.id, 'quantity', val);
                                                             }
                                                         }}
                                                     />
                                                     <button
                                                         type="button"
                                                         className="btn btn-sm text-muted p-0"
-                                                        onClick={() => updateRow(row.id, 'quantity', (parseInt(row.quantity) || 0) + 1)}
+                                                        onClick={() => updateRow(row.id, 'quantity', (parseInt(row.quantity, 10) || 0) + 1)}
                                                         style={{ width: '24px', height: '24px', fontSize: '1rem' }}
                                                     >
                                                         <i className="bi bi-plus"></i>

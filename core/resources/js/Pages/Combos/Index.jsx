@@ -314,21 +314,46 @@ export default function Index({ combos = [], products = [] }) {
                                             </select>
                                         </td>
                                         <td>
-                                            <input
-                                                type="number"
-                                                className="form-control form-control-sm text-center input-clean input-natural"
-                                                value={row.quantity}
-                                                min="1"
-                                                step="1"
-                                                onKeyDown={(e) => {
-                                                    if (e.key === '.' || e.key === ',' || e.key === 'e') {
-                                                        e.preventDefault();
-                                                    }
-                                                }}
-                                                onChange={(e) => updateRow(row.id, 'quantity', parseInt(e.target.value) || 0)}
-                                                required
-                                                placeholder="0"
-                                            />
+                                            <div className="d-flex align-items-center justify-content-center gap-2">
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-sm text-muted p-0"
+                                                    onClick={() => {
+                                                        let qty = parseFloat(row.quantity) || 0;
+                                                        updateRow(row.id, 'quantity', Math.max(0, qty - 1));
+                                                    }}
+                                                    style={{ width: '24px', height: '24px', fontSize: '1rem' }}
+                                                >
+                                                    <i className="bi bi-dash"></i>
+                                                </button>
+                                                <input
+                                                    type="number"
+                                                    className="form-control form-control-sm text-center p-0 input-clean"
+                                                    style={{ width: '50px', height: '28px' }}
+                                                    value={row.quantity}
+                                                    step="any"
+                                                    onChange={(e) => {
+                                                        let val = e.target.value.replace(/-/g, '');
+                                                        updateRow(row.id, 'quantity', val);
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        let val = parseFloat(e.target.value);
+                                                        if (isNaN(val) || val < 0) {
+                                                            updateRow(row.id, 'quantity', 0);
+                                                        }
+                                                    }}
+                                                    required
+                                                    placeholder="0"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-sm text-muted p-0"
+                                                    onClick={() => updateRow(row.id, 'quantity', (parseFloat(row.quantity) || 0) + 1)}
+                                                    style={{ width: '24px', height: '24px', fontSize: '1rem' }}
+                                                >
+                                                    <i className="bi bi-plus"></i>
+                                                </button>
+                                            </div>
                                         </td>
                                         <td className="text-end">
                                             <button

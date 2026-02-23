@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Artisan;
@@ -13,8 +14,11 @@ class SettingsController extends Controller
 {
     public function index()
     {
+        $systemMode = Setting::where('key', 'system_mode')->value('value') ?? 'normal';
+
         return Inertia::render('Settings/Index', [
             'users' => User::all(),
+            'system_mode' => $systemMode,
         ]);
     }
 
@@ -113,5 +117,23 @@ class SettingsController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error al reiniciar la base de datos: ' . $e->getMessage());
         }
+    }
+
+    public function updateSystemMode(Request $request)
+    {
+        if (!in_array(auth()->user()->role, ['admin', 'owner'])) {
+             return redirect()->back()->with('error', 'No tienes permisos para realizar esta acción.');
+        }
+
+        $request->validate([
+            'mode' => 'required|in:normal,advanced'
+        ]);
+
+        Setting::updateOrCreate(
+            ['key' => 'system_mode'],
+            ['value' => $request->mode]
+        );
+
+        return redirect()->back()->with('success', 'Modo del sistema actualizado correctamente.');
     }
 }
