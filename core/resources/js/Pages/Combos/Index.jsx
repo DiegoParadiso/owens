@@ -327,11 +327,10 @@ export default function Index({ combos = [], products = [] }) {
                                                     <i className="bi bi-dash"></i>
                                                 </button>
                                                 <input
-                                                    type="number"
+                                                    type="text"
                                                     className="form-control form-control-sm text-center p-0 input-clean"
-                                                    style={{ width: '50px', height: '28px' }}
+                                                    style={{ width: '60px', height: '28px' }}
                                                     value={row.quantity}
-                                                    step="any"
                                                     onChange={(e) => {
                                                         let val = e.target.value.replace(/-/g, '');
                                                         updateRow(row.id, 'quantity', val);

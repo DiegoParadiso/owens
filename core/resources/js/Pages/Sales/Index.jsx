@@ -499,7 +499,7 @@ export default function Index({ sales = [], products = [] }) {
                                                         <i className="bi bi-dash"></i>
                                                     </button>
                                                     <input
-                                                        type="number"
+                                                        type="text"
                                                         className="form-control form-control-sm text-center p-0 input-clean"
                                                         style={{ width: '50px', height: '28px' }}
                                                         value={row.quantity}

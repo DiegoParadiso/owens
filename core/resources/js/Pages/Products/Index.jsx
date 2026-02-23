@@ -622,17 +622,16 @@ export default function Index({ products }) {
                                     : 'Stock Inicial'}
                             </label>
                             <input
-                                type="number"
+                                type="text"
                                 className="form-control input-clean input-natural"
                                 id="stock"
                                 min="0"
-                                step="1"
                                 required
                                 value={data.type === 'supply' && data.conversion_factor && data.conversion_factor > 0
                                     ? (data.stock === '' ? '' : Math.floor(data.stock / data.conversion_factor)) // Display in Purchase Units, integer only
                                     : data.stock}
                                 onChange={(e) => {
-                                    const val = e.target.value;
+                                    const val = e.target.value.replace(/[^0-9]/g, '');
                                     if (val === '') {
                                         setData('stock', '');
                                     } else if (data.type === 'supply' && data.conversion_factor && data.conversion_factor > 0) {
