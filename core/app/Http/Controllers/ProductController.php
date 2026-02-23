@@ -59,7 +59,7 @@ class ProductController extends Controller
         
         $products = Product::where('category', $category)
             ->with('components.childProduct')
-            ->latest()
+            ->orderBy('name')
             ->paginate($perPage)
             ->withQueryString();
 

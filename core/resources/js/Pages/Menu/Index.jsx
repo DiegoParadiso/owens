@@ -358,7 +358,7 @@ export default function Index({ products = [], supplies = [], category = 'burger
                                         <tr>
                                             <th style={{ width: '55%' }}>Producto</th>
                                             <th style={{ width: '20%' }} className="text-center">Cant.</th>
-                                            <th style={{ width: '15%' }}>Unidad</th>
+                                            {system_mode !== 'normal' && <th style={{ width: '15%' }}>Unidad</th>}
                                             <th style={{ width: '10%' }}></th>
                                         </tr>
                                     </thead>
@@ -484,29 +484,31 @@ export default function Index({ products = [], supplies = [], category = 'burger
                                                         </button>
                                                     </div>
                                                 </td>
-                                                <td className="small text-muted">
-                                                    {(() => {
-                                                        const selectedSupply = supplies.find(s => s.id == row.child_product_id);
-                                                        const hasUsageUnit = selectedSupply && selectedSupply.usage_unit;
-                                                        const baseUnitName = selectedSupply?.base_unit || selectedSupply?.purchase_unit || '-';
+                                                {system_mode !== 'normal' && (
+                                                    <td className="small text-muted">
+                                                        {(() => {
+                                                            const selectedSupply = supplies.find(s => s.id == row.child_product_id);
+                                                            const hasUsageUnit = selectedSupply && selectedSupply.usage_unit;
+                                                            const baseUnitName = selectedSupply?.base_unit || selectedSupply?.purchase_unit || '-';
 
-                                                        if (hasUsageUnit) {
-                                                            return (
-                                                                <select
-                                                                    className="form-select form-select-sm input-clean p-0 ps-1"
-                                                                    style={{ border: 'none', background: 'transparent', fontWeight: '500' }}
-                                                                    value={row.use_usage_unit ? 'true' : 'false'}
-                                                                    onChange={(e) => updateRow(row.id, 'use_usage_unit', e.target.value === 'true')}
-                                                                >
-                                                                    <option value="false">{baseUnitName}</option>
-                                                                    <option value="true">{selectedSupply.usage_unit}</option>
-                                                                </select>
-                                                            );
-                                                        }
+                                                            if (hasUsageUnit) {
+                                                                return (
+                                                                    <select
+                                                                        className="form-select form-select-sm input-clean p-0 ps-1"
+                                                                        style={{ border: 'none', background: 'transparent', fontWeight: '500' }}
+                                                                        value={row.use_usage_unit ? 'true' : 'false'}
+                                                                        onChange={(e) => updateRow(row.id, 'use_usage_unit', e.target.value === 'true')}
+                                                                    >
+                                                                        <option value="false">{baseUnitName}</option>
+                                                                        <option value="true">{selectedSupply.usage_unit}</option>
+                                                                    </select>
+                                                                );
+                                                            }
 
-                                                        return baseUnitName;
-                                                    })()}
-                                                </td>
+                                                            return baseUnitName;
+                                                        })()}
+                                                    </td>
+                                                )}
                                                 <td className="text-end">
                                                     <button
                                                         type="button"

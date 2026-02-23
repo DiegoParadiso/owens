@@ -437,6 +437,14 @@ export default function Index({ sales = [], products = [] }) {
                                                             else grouped.other.push(p);
                                                         });
 
+                                                        // Ensure frontend alphabetical sort logic handles case and locales
+                                                        const sortFn = (a, b) => a.name.localeCompare(b.name);
+                                                        grouped.combo.sort(sortFn);
+                                                        grouped.burger.sort(sortFn);
+                                                        grouped.extra.sort(sortFn);
+                                                        grouped.other.sort(sortFn);
+
+
                                                         return (
                                                             <>
                                                                 {grouped.combo.length > 0 && (

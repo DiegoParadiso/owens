@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
-import { Head, useForm, Link } from '@inertiajs/react';
+import { Head, useForm, Link, usePage } from '@inertiajs/react';
 import Swal from 'sweetalert2';
 
 export default function Formulas({ formulas, supplies }) {
+    const { system_mode } = usePage().props;
     const [editingFormula, setEditingFormula] = useState(null);
     const [showDrawer, setShowDrawer] = useState(false);
 
@@ -287,7 +288,7 @@ export default function Formulas({ formulas, supplies }) {
                                 <tr>
                                     <th style={{ width: '40%' }}>Insumo</th>
                                     <th style={{ width: '25%' }}>Cantidad</th>
-                                    <th style={{ width: '25%' }}>Unidad</th>
+                                    {system_mode !== 'normal' && <th style={{ width: '25%' }}>Unidad</th>}
                                     <th style={{ width: '10%' }}></th>
                                 </tr>
                             </thead>
@@ -363,20 +364,22 @@ export default function Formulas({ formulas, supplies }) {
                                                     </button>
                                                 </div>
                                             </td>
-                                            <td className="py-3">
-                                                {hasUsageUnit ? (
-                                                    <select
-                                                        className="form-select form-select-sm input-clean"
-                                                        value={ing.use_usage_unit ? 'true' : 'false'}
-                                                        onChange={(e) => updateIngredient(index, 'use_usage_unit', e.target.value === 'true')}
-                                                    >
-                                                        <option value="false">{baseUnitName}</option>
-                                                        <option value="true">{supply.usage_unit}</option>
-                                                    </select>
-                                                ) : (
-                                                    <span className="small text-muted">{baseUnitName}</span>
-                                                )}
-                                            </td>
+                                            {system_mode !== 'normal' && (
+                                                <td className="py-3">
+                                                    {hasUsageUnit ? (
+                                                        <select
+                                                            className="form-select form-select-sm input-clean"
+                                                            value={ing.use_usage_unit ? 'true' : 'false'}
+                                                            onChange={(e) => updateIngredient(index, 'use_usage_unit', e.target.value === 'true')}
+                                                        >
+                                                            <option value="false">{baseUnitName}</option>
+                                                            <option value="true">{supply.usage_unit}</option>
+                                                        </select>
+                                                    ) : (
+                                                        <span className="small text-muted">{baseUnitName}</span>
+                                                    )}
+                                                </td>
+                                            )}
                                             <td className="py-3 text-end">
                                                 <button
                                                     type="button"
