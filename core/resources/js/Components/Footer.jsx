@@ -8,8 +8,6 @@ export default function Footer() {
                     <div className="col-12 col-sm-6 text-center text-sm-start">
                         <small className="text-muted">&copy; <a href="https://www.instagram.com/owens.arg/" target="_blank" rel="noopener noreferrer" className="text-decoration-none">OWEN'S Argentina</a> Todos los derechos reservados.</small>
                     </div>
-                    <div className="col-12 col-sm-6 text-center text-sm-end">
-                    </div>
                 </div>
             </div>
         </div>

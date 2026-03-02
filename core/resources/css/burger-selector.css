@@ -801,7 +801,11 @@ body.burger-selector-page.dark-mode .text-input:focus {
 }
 
 .fab-add:active {
-    transform: scale(0.25);
+    transform: scale(0.95);
+}
+
+.fab-cart:active {
+    transform: scale(0.95);
 }
 
 .plus-icon {
