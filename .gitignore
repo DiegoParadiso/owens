@@ -63,3 +63,6 @@ core/database/*.sqlite
 *ENV_SETUP.md
 *setup-neondb.sh
 # DEPLOYMENT.md is allowed (clean version without credentials)
+
+# Agentes de IA Locales
+.agents/

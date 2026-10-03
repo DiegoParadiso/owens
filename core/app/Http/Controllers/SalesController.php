@@ -299,6 +299,9 @@ class SalesController extends Controller
             // Eliminar movimiento de caja si existe
             $this->cashRegisterService->deleteRelatedMovements('sale', $id);
             
+            // Eliminar pagos si existen
+            $sale->payments()->delete();
+            
             // Eliminar la venta
             $sale->delete();
             

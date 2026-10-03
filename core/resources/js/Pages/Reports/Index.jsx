@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, router } from '@inertiajs/react';
 
 export default function Index({ date: initialDate, sales = 0, expenses = 0, purchases = 0, cogs = 0, grossProfit = 0, netProfit = 0, closures = [] }) {
     const [date, setDate] = useState(initialDate || new Date().toISOString().split('T')[0]);
@@ -23,7 +23,7 @@ export default function Index({ date: initialDate, sales = 0, expenses = 0, purc
 
     const handleFilter = (e) => {
         e.preventDefault();
-        window.location.href = `/reports?date=${date}`;
+        router.get('/admin/reports', { date: date }, { preserveState: true });
     };
 
     return (

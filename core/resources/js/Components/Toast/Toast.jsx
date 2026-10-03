@@ -1,15 +1,9 @@
 import React, { useEffect, useState } from 'react';
 
 const Toast = ({ id, type, title, message, duration, onClose }) => {
-    const [isVisible, setIsVisible] = useState(false);
+    const [isClosing, setIsClosing] = useState(false);
 
     useEffect(() => {
-
-        const enterTimer = setTimeout(() => {
-            setIsVisible(true);
-        }, 100);
-
-
         let dismissTimer;
         if (duration) {
             dismissTimer = setTimeout(() => {
@@ -18,17 +12,16 @@ const Toast = ({ id, type, title, message, duration, onClose }) => {
         }
 
         return () => {
-            clearTimeout(enterTimer);
             if (dismissTimer) clearTimeout(dismissTimer);
         };
     }, [duration]);
 
     const handleClose = () => {
-        setIsVisible(false);
+        setIsClosing(true);
 
         setTimeout(() => {
             onClose(id);
-        }, 500);
+        }, 400); // 400ms is the duration of toastSlideOut
     };
 
     const styles = {
@@ -57,6 +50,17 @@ const Toast = ({ id, type, title, message, duration, onClose }) => {
     const currentStyle = styles[type] || styles.info;
 
     return (
+        <>
+        <style dangerouslySetInnerHTML={{ __html: `
+            @keyframes toastSlideIn {
+                0% { transform: translateX(120%) scale(0.8); opacity: 0; }
+                100% { transform: translateX(0) scale(1); opacity: 1; }
+            }
+            @keyframes toastSlideOut {
+                0% { transform: translateX(0) scale(1); opacity: 1; }
+                100% { transform: translateX(120%) scale(0.8); opacity: 0; }
+            }
+        `}} />
         <div
             style={{
                 position: 'relative',
@@ -68,9 +72,9 @@ const Toast = ({ id, type, title, message, duration, onClose }) => {
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                 color: '#FFFFFF',
                 overflow: 'hidden',
-                transition: 'all 0.5s ease-in-out',
-                transform: isVisible ? 'translateX(0)' : 'translateX(20px)',
-                opacity: isVisible ? 1 : 0,
+                animation: isClosing 
+                    ? 'toastSlideOut 0.4s ease-in forwards' 
+                    : 'toastSlideIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
                 backgroundColor: type === 'success' ? '#27ae60' : type === 'error' ? '#EF4444' : type === 'info' ? '#3B82F6' : '#F59E0B',
                 marginBottom: '12px',
                 fontFamily: 'system-ui, -apple-system, sans-serif'
@@ -144,6 +148,7 @@ const Toast = ({ id, type, title, message, duration, onClose }) => {
 
 
         </div>
+        </>
     );
 };
 

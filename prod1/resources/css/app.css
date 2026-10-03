@@ -1,0 +1,1462 @@
+/********** Template CSS **********/
+:root {
+    --primary: #df0f13;
+    --light: #F3F6F9;
+    --dark: #191C24;
+
+    /* Theme Variables (Light Mode Default) */
+    --bg-body: #F3F6F9;
+    --bg-card: #FFFFFF;
+    --text-main: #191C24;
+    --text-muted: #6c757d;
+    --border-color: #dee2e6;
+    --table-header-bg: #F3F6F9;
+    --input-bg: transparent;
+    --input-border: #e9ecef;
+    --wp-sent-bg: #d9fdd3;
+    --chat-bg-image: url("/img/fondo-chat-light.png");
+}
+
+body.dark-mode {
+    --bg-body: #111318;
+    --bg-card: #191C24;
+    --text-main: #ffffff;
+    --text-muted: #adb5bd;
+    --border-color: #33363d;
+    --table-header-bg: #2c3038;
+    --input-bg: #191C24;
+    --input-bg: #191C24;
+    --input-border: #2c3038;
+    --light: #111318;
+    --wp-sent-bg: #005c4b;
+    --chat-bg-image: url("/img/fondo-chat-dark.png");
+    /* Override bootstrap light var if needed */
+}
+
+/* Apply Theme Variables */
+body {
+    color: var(--text-main);
+    background-color: var(--bg-body);
+    font-family: 'Inter', sans-serif;
+    /* Added font family */
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6 {
+    color: var(--text-main);
+}
+
+/* Minimalist Theme Overrides */
+.text-primary {
+    color: var(--primary) !important;
+}
+
+.btn-primary {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+}
+
+.btn-primary:hover {
+    background-color: #b90c10 !important;
+    border-color: #b90c10 !important;
+}
+
+.bg-primary {
+    background-color: var(--primary) !important;
+}
+
+.border-primary {
+    border-color: var(--primary) !important;
+}
+
+/* Secondary/Success/Warning/Info -> Standard Colors */
+.btn-success,
+.bg-success {
+    background-color: #198754 !important;
+    border-color: #198754 !important;
+    color: #fff !important;
+}
+
+.btn-warning,
+.bg-warning {
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+    color: #000 !important;
+}
+
+.btn-info,
+.bg-info {
+    background-color: #0dcaf0 !important;
+    border-color: #0dcaf0 !important;
+    color: #000 !important;
+}
+
+.text-success {
+    color: var(--text-main) !important;
+}
+
+.text-warning {
+    color: var(--text-muted) !important;
+}
+
+.text-info {
+    color: #adb5bd !important;
+}
+
+/* Keep Danger Red (or align with Primary) */
+.btn-danger,
+.bg-danger {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+}
+
+
+
+
+/*** Spinner ***/
+#spinner {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .5s ease-out, visibility 0s linear .5s;
+    z-index: 99999;
+}
+
+#spinner.show {
+    transition: opacity .5s ease-out, visibility 0s linear 0s;
+    visibility: visible;
+    opacity: 1;
+}
+
+
+/*** Button ***/
+.btn {
+    transition: .5s;
+}
+
+.btn.btn-primary {
+    color: #FFFFFF;
+}
+
+.btn-square {
+    width: 38px;
+    height: 38px;
+}
+
+.btn-sm-square {
+    width: 32px;
+    height: 32px;
+}
+
+.btn-lg-square {
+    width: 48px;
+    height: 48px;
+}
+
+.btn-square,
+.btn-sm-square,
+.btn-lg-square {
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: normal;
+    border-radius: 50px;
+}
+
+
+/*** Layout ***/
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 250px;
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--bg-card) !important;
+    transition: 0.5s;
+    z-index: 999;
+}
+
+.content {
+    margin-left: 250px;
+    min-height: 100vh;
+    background: var(--bg-body);
+    transition: 0.5s;
+}
+
+@media (min-width: 992px) {
+    .sidebar {
+        margin-left: 0;
+    }
+
+    .sidebar.open {
+        margin-left: -250px;
+    }
+
+    .content {
+        width: calc(100% - 250px);
+    }
+
+    .content.open {
+        width: 100%;
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .sidebar {
+        margin-left: -250px;
+        box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+        /* Add shadow for floating effect */
+    }
+
+    .sidebar.open {
+        margin-left: 0;
+    }
+
+    .content {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .content.open {
+        /* Prevent content shifting on mobile when sidebar opens */
+        margin-left: 0;
+        width: 100%;
+    }
+}
+
+
+/*** Navbar ***/
+/* Minimalist Sidebar Links */
+.sidebar .navbar .navbar-nav .nav-link {
+    padding: 10px 25px;
+    color: var(--text-muted);
+    /* Muted text by default */
+    font-weight: 500;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    border: none;
+    /* Remove border-left */
+    border-radius: 0;
+    /* Remove rounded corners */
+    outline: none;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.sidebar .navbar .navbar-nav .nav-link:hover,
+.sidebar .navbar .navbar-nav .nav-link.active {
+    color: var(--primary);
+    background: transparent;
+    /* No background change, just text */
+    border: none;
+}
+
+/* Minimalist Sidebar Icons */
+.sidebar .navbar .navbar-nav .nav-link i {
+    width: 30px;
+    /* Smaller width */
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent !important;
+    /* Remove white background */
+    border-radius: 0;
+    margin-right: 10px;
+    font-size: 1rem;
+    color: inherit;
+    /* Inherit color from link (muted or primary) */
+    transition: none;
+}
+
+.sidebar .navbar .navbar-nav .nav-link:hover i,
+.sidebar .navbar .navbar-nav .nav-link.active i {
+    background: transparent;
+    color: var(--primary);
+}
+
+.sidebar .navbar .dropdown-toggle::after {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    border: none;
+    content: "\f107";
+    font-weight: 900;
+    font-weight: 900;
+    transition: none;
+}
+
+.sidebar .navbar .dropdown-toggle[aria-expanded=true]::after {
+    transform: rotate(-180deg);
+}
+
+.sidebar .navbar .dropdown-item {
+    padding-left: 55px;
+    /* Align with text of parent link */
+    padding-top: 8px;
+    padding-bottom: 8px;
+    border-radius: 0;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+.sidebar .navbar .dropdown-item:hover,
+.sidebar .navbar .dropdown-item.active {
+    background-color: transparent !important;
+    color: var(--primary) !important;
+}
+
+.content .navbar .navbar-nav .nav-link {
+    margin-left: 25px;
+    padding: 12px 0;
+    color: var(--text-main);
+    outline: none;
+}
+
+.content .navbar .navbar-nav .nav-link:hover,
+.content .navbar .navbar-nav .nav-link.active {
+    color: var(--primary);
+}
+
+.content .navbar .sidebar-toggler,
+.content .navbar .navbar-nav .nav-link i {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-card);
+    border-radius: 40px;
+}
+
+.content .navbar .dropdown-toggle[aria-expanded=true]::after {
+    transform: rotate(-180deg);
+}
+
+@media (max-width: 575.98px) {
+    .content .navbar .navbar-nav .nav-link {
+        margin-left: 15px;
+    }
+}
+
+
+/*** Date Picker ***/
+.bootstrap-datetimepicker-widget.bottom {
+    top: auto !important;
+}
+
+.bootstrap-datetimepicker-widget .table * {
+    border-bottom-width: 0px;
+}
+
+.bootstrap-datetimepicker-widget .table th {
+    font-weight: 500;
+}
+
+.bootstrap-datetimepicker-widget.dropdown-menu {
+    padding: 10px;
+    border-radius: 2px;
+}
+
+.bootstrap-datetimepicker-widget table td.active,
+.bootstrap-datetimepicker-widget table td.active:hover {
+    background: var(--primary);
+}
+
+.bootstrap-datetimepicker-widget table td.today::before {
+    border-bottom-color: var(--primary);
+}
+
+
+/*** Testimonial ***/
+.progress .progress-bar {
+    width: 0px;
+    transition: 2s;
+}
+
+
+/*** Testimonial ***/
+.testimonial-carousel .owl-dots {
+    margin-top: 24px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.testimonial-carousel .owl-dot {
+    position: relative;
+    display: inline-block;
+    margin: 0 5px;
+    width: 15px;
+    height: 15px;
+    border: 5px solid var(--primary);
+    border-radius: 15px;
+    transition: .5s;
+}
+
+.testimonial-carousel .owl-dot.active {
+    background: var(--dark);
+    border-color: var(--primary);
+}
+
+/* Sidebar Toggler Arrow Animation */
+.sidebar-toggler-container {
+    position: fixed;
+    bottom: 20px;
+    /* Move to top */
+    left: 200px;
+    /* Default position (Sidebar Visible) */
+    width: 40px;
+    /* Smaller size */
+    height: 40px;
+    transition: left 0.5s ease;
+    z-index: 1000;
+}
+
+.sidebar-toggler-container.open {
+    left: 20px;
+    /* Position when Sidebar is Hidden */
+}
+
+.transition-transform {
+    transition: none;
+}
+
+.sidebar-toggler-container.open #sidebar-arrow {
+    transform: rotate(180deg);
+}
+
+/* Breadcrumb Fixes */
+.breadcrumb-item a {
+    color: var(--primary) !important;
+    text-decoration: none;
+}
+
+.breadcrumb-item.active {
+    color: var(--text-muted);
+    /* Gray for active item */
+}
+
+/* Ensure items are aligned */
+.breadcrumb-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Fix Dropdown Item Active Color */
+.dropdown-item.active,
+.dropdown-item:active {
+    background-color: #e9ecef !important;
+    color: var(--text-main) !important;
+}
+
+/* Row Highlight Animation */
+@keyframes highlightFade {
+    0% {
+        background-color: rgba(223, 15, 19, 0.5);
+        /* Increased opacity for visibility */
+    }
+
+    /* Primary color with low opacity */
+    100% {
+        background-color: transparent;
+    }
+}
+
+.highlight-row {
+    animation: highlightFade 3s ease-out forwards;
+}
+
+/* --- GLOBAL MINIMALIST DESIGN --- */
+
+/* Form Controls */
+.form-control,
+.form-select {
+    background-color: var(--input-bg);
+    border: 0;
+    border-bottom: 1px solid var(--input-border);
+    /* Lighter border */
+    border-radius: 0;
+    padding: 0.5rem 0;
+    box-shadow: none !important;
+    color: var(--text-main);
+}
+
+.form-control:focus,
+.form-select:focus {
+    background-color: var(--input-bg);
+    border-color: var(--primary);
+    box-shadow: none !important;
+    color: var(--text-main);
+}
+
+/* Labels */
+.form-label {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    /* text-muted */
+    margin-bottom: 0.5rem;
+}
+
+/* Tables */
+.table {
+    border-color: var(--border-color);
+    color: var(--text-main);
+}
+
+.table thead th {
+    border-bottom: 1px solid var(--border-color) !important;
+    border-top: 1px solid var(--border-color) !important;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    color: var(--text-main);
+    background-color: var(--table-header-bg) !important;
+    /* Classic Grey Header */
+}
+
+.table td,
+.table th {
+    vertical-align: middle;
+    padding: 1rem 0.75rem;
+    border: 1px solid var(--border-color) !important;
+    /* Restore borders */
+}
+
+/* Ensure borders are visible */
+.table-bordered {
+    border: 1px solid var(--border-color) !important;
+}
+
+.table-bordered td,
+.table-bordered th {
+    border: 1px solid var(--border-color) !important;
+}
+
+.table-bordered thead th {
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+/* Table Hover Override */
+.table-hover>tbody>tr:hover>* {
+    --bs-table-accent-bg: var(--table-header-bg) !important;
+    background-color: var(--table-header-bg) !important;
+    color: var(--text-main) !important;
+}
+
+/* Buttons */
+.btn {
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 2px;
+    /* Slight radius or 0 */
+    padding: 0.5rem 1.5rem;
+}
+
+.btn:focus,
+.btn:active,
+.btn.active {
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+/* Card/Container Overrides */
+.bg-white {
+    background-color: var(--bg-card) !important;
+    box-shadow: none !important;
+    border: 1px solid var(--border-color);
+    /* Extremely subtle border instead of shadow */
+    color: var(--text-main);
+}
+
+/* Dark Mode Specific Overrides */
+body.dark-mode .text-dark {
+    color: var(--text-main) !important;
+}
+
+body.dark-mode .text-secondary {
+    color: var(--text-muted) !important;
+}
+
+body.dark-mode .text-danger {
+    color: #FF5A5F !important;
+}
+
+body.dark-mode .btn-danger {
+    background-color: #FF5A5F !important;
+    border-color: #FF5A5F !important;
+    color: #FFFFFF !important;
+}
+
+body.dark-mode .bg-danger {
+    background-color: #FF5A5F !important;
+}
+
+/* Disable transitions globally as requested */
+* {
+    transition: none !important;
+}
+
+body.dark-mode {
+    --primary: #FF5A5F;
+    /* Vibrant Red */
+}
+
+/* Hide Input Steppers (Spin Buttons) */
+/* Chrome, Safari, Edge, Opera */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button,
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+
+/* Firefox */
+input[type="number"],
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+
+/* Global Standardized Input Classes */
+.input-clean,
+select.input-clean,
+input.input-clean,
+.table .input-clean,
+.table select.input-clean,
+.table input.input-clean {
+    border: 0 !important;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.2) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    padding: 0.5rem 0 !important;
+    outline: none !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+}
+
+.input-clean:focus,
+select.input-clean:focus,
+input.input-clean:focus,
+.table .input-clean:focus,
+.table select.input-clean:focus,
+.table input.input-clean:focus {
+    border-bottom: 1px solid rgba(128, 128, 128, 0.5) !important;
+    box-shadow: none !important;
+    outline: none !important;
+    background: transparent !important;
+}
+
+/* Table Minimal Styles (Restored from style.css but cleaner) */
+.table-minimal {
+    width: 100%;
+    margin-bottom: 1rem;
+    color: var(--text-main);
+    border-collapse: collapse;
+}
+
+.table-minimal thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.7rem;
+    /* Smaller font */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    /* Wider spacing */
+    color: var(--text-muted);
+    background-color: var(--bg-card);
+    /* Ensure solid background for sticky */
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    border-left: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+    /* No box shadow */
+}
+
+.table-minimal tbody td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    border-left: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+    color: var(--text-main);
+    word-break: break-word;
+    /* Ensure long words break */
+    white-space: normal;
+    /* Allow wrapping */
+}
+
+.table-minimal.align-top tbody td {
+    vertical-align: top !important;
+}
+
+.table-minimal tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+body.dark-mode .table-minimal tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* Marker class for natural numbers (integers only) - Logic in app.jsx */
+.input-natural {
+    /* No specific styling, just behavior */
+    box-sizing: border-box;
+}
+
+/* --- Segmented Control Toggle Buttons --- */
+.btn-segmented-active {
+    background-color: #212529;
+    color: #ffffff;
+    border: 1px solid #212529;
+}
+
+.btn-segmented-inactive {
+    background-color: transparent;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+}
+
+.btn-segmented-inactive:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+body.dark-mode .btn-segmented-active {
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #ffffff;
+}
+
+body.dark-mode .btn-segmented-inactive {
+    background-color: transparent;
+    color: #adb5bd;
+    border: 1px solid #495057;
+}
+
+body.dark-mode .btn-segmented-inactive:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* --- Dashboard Redesign Semantic Classes --- */
+
+/* Revenue Color */
+.text-revenue {
+    color: var(--text-main) !important;
+    /* Keep it neutral in Light Mode */
+}
+
+/* Neutral Icons */
+.icon-neutral {
+    color: var(--text-muted) !important;
+    opacity: 0.5;
+}
+
+/* Rounded Outline Button */
+.btn-outline-primary {
+    color: var(--primary);
+    border-color: var(--primary);
+    background-color: transparent;
+    /* border-radius: 50px; Removed to match app aesthetic */
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+    color: #fff;
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+/* Card Hover Effect */
+.hover-card {
+    transition: border-color 0.3s ease !important;
+}
+
+.hover-card:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    border-color: var(--text-muted) !important;
+    /* Subtle border highlight */
+}
+
+/* Loading Screen */
+/* Loading Screen */
+#loading-screen {
+    position: fixed;
+    /* Fixed to viewport to ensure centering */
+    top: 0;
+    left: 250px;
+    /* Start after sidebar */
+    width: calc(100% - 250px);
+    /* Fill remaining width */
+    height: 100vh;
+    /* Full viewport height */
+    background-color: color-mix(in srgb, var(--bg-body), transparent 15%);
+    backdrop-filter: blur(10px);
+    z-index: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+    border-radius: inherit;
+}
+
+@media (max-width: 991.98px) {
+    #loading-screen {
+        left: 0;
+        width: 100%;
+    }
+}
+
+/* Full Screen Override (for Login/Auth pages) */
+#loading-screen.loader-full-screen {
+    left: 0 !important;
+    width: 100% !important;
+    z-index: 9999999 !important;
+    /* Top of everything */
+}
+
+#loading-screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Toast Notification Styling */
+.swal2-popup.swal2-toast {
+    box-shadow: none !important;
+    border: 1px solid var(--border-color) !important;
+    border-left: 4px solid #28a745 !important;
+    background-color: var(--bg-card) !important;
+    color: var(--text-main) !important;
+    padding: 0.75rem 1rem !important;
+    border-radius: 4px !important;
+    min-width: 280px !important;
+    max-width: 400px !important;
+}
+
+.swal2-popup.swal2-toast .swal2-title,
+.swal2-popup.swal2-toast .swal2-html-container {
+    margin: 0 !important;
+    padding: 0 0.5rem 0 0 !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    color: var(--text-main) !important;
+    text-align: left !important;
+}
+
+.swal2-popup.swal2-toast .swal2-icon {
+    margin: 0 0.75rem 0 0 !important;
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    font-size: 0.75rem !important;
+}
+
+.swal2-popup.swal2-toast .swal2-icon.swal2-success {
+    border-color: #28a745 !important;
+}
+
+.swal2-popup.swal2-toast .swal2-icon.swal2-success [class^='swal2-success-line'] {
+    background-color: #28a745 !important;
+}
+
+.swal2-popup.swal2-toast .swal2-icon.swal2-success .swal2-success-ring {
+    border-color: rgba(40, 167, 69, 0.3) !important;
+}
+
+/* Close button styling */
+.swal2-popup.swal2-toast .swal2-close {
+    position: absolute !important;
+    top: 0.5rem !important;
+    right: 0.5rem !important;
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    font-size: 1.25rem !important;
+    line-height: 1rem !important;
+    color: var(--text-muted) !important;
+    opacity: 0.6 !important;
+    transition: opacity 0.2s !important;
+}
+
+.swal2-popup.swal2-toast .swal2-close:hover {
+    opacity: 1 !important;
+    color: var(--text-main) !important;
+}
+
+/* Container layout */
+.swal2-popup.swal2-toast .swal2-content {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Adaptive Contrast Text (Black in Light Mode, White in Dark Mode) */
+.text-adaptive-contrast {
+    color: #000000 !important;
+}
+
+body.dark-mode .text-adaptive-contrast {
+    color: #ffffff !important;
+}
+
+/* Custom Alert Styles for Stock Warning */
+.alert-stock-warning {
+    background-color: #f8d7da !important;
+    color: #842029 !important;
+    border: 1px solid #f5c2c7 !important;
+}
+
+.alert-stock-warning .material-symbols-outlined {
+    color: #842029 !important;
+}
+
+/* --- Responsive Tables --- */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+}
+
+@media (max-width: 991.98px) {
+    .table-responsive table {
+        min-width: 800px;
+        /* Ensure table keeps its structure and scrolls */
+    }
+}
+
+/* Dark Mode Alert Overrides */
+body.dark-mode .alert-stock-warning {
+    background-color: rgba(220, 53, 69, 0.15) !important;
+    border: 1px solid rgba(220, 53, 69, 0.2) !important;
+    color: #ff8a8f !important;
+}
+
+body.dark-mode .alert-stock-warning .material-symbols-outlined {
+    color: #ff8a8f !important;
+}
+
+/* Dark Mode Fixes for Bootstrap Utilities */
+body.dark-mode .bg-light {
+    background-color: transparent !important;
+    /* Blend with container */
+    color: var(--text-main) !important;
+}
+
+body.dark-mode .input-group-text {
+    background-color: transparent !important;
+    color: var(--text-muted) !important;
+    border-color: var(--border-color) !important;
+}
+
+body.dark-mode .border.bg-light {
+    border-color: var(--border-color) !important;
+}
+
+/* Ensure border-secondary-subtle is visible/appropriate in dark mode */
+body.dark-mode .border-secondary-subtle {
+    border-color: var(--border-color) !important;
+}
+
+/* Global Border Override for Dark Mode */
+body.dark-mode .border,
+body.dark-mode .border-top,
+body.dark-mode .border-bottom,
+body.dark-mode .border-start,
+body.dark-mode .border-end,
+body.dark-mode .list-group-item,
+body.dark-mode .table td,
+body.dark-mode .table th {
+    border-color: var(--border-color) !important;
+}
+
+/* Forms Checks & Switches - Use Theme Primary */
+.form-check-input:checked {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+}
+
+.form-check-input:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 0.25rem rgba(223, 15, 19, 0.25) !important;
+    /* Primary RGB with opacity */
+}
+
+/* Action Buttons Hover Effect */
+.btn-action-icon {
+    color: var(--text-muted);
+    transition: color 0.2s ease;
+}
+
+.btn-action-icon:hover {
+    color: var(--primary) !important;
+}
+
+.btn-action-icon:hover .material-symbols-outlined {
+    color: var(--primary) !important;
+}
+
+/* --- Drawer Styles (Migrated from style.css) --- */
+.bg-minimal-success {
+    background-color: #2ecc71 !important;
+}
+
+.drawer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+}
+
+.drawer-overlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.drawer-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 800px;
+    height: 100%;
+    background-color: var(--bg-card);
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+    z-index: 1050;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+}
+
+.drawer-panel.open {
+    transform: translateX(0);
+}
+
+@media (max-width: 576px) {
+    .drawer-panel {
+        width: 100%;
+    }
+}
+
+.drawer-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.drawer-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.drawer-footer {
+    padding: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.drawer-footer .btn {
+    flex: 1;
+    min-width: 120px;
+}
+
+/* --- SweetAlert Minimal (Migrated from style.css) --- */
+.swal-minimal {
+    width: 600px !important;
+    max-width: 90vw !important;
+    padding: 1.5rem !important;
+}
+
+.swal-minimal .swal2-html-container {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 0.95rem !important;
+}
+
+.swal-minimal .swal2-actions {
+    margin-top: 1.5rem !important;
+}
+
+.swal-minimal .swal2-confirm {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.swal-minimal .swal2-cancel {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* --- New Medium Modal (Cache busting) --- */
+.swal-medium {
+    width: 380px !important;
+    /* Balanced width */
+    max-width: 90vw !important;
+    padding: 2.5rem 2rem !important;
+    /* Visual balance: Top/Bottom 2.5rem, Sides 2rem */
+}
+
+.swal-medium .swal2-input-label {
+    margin-top: 0 !important;
+}
+
+.swal-medium .swal2-html-container {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 0.95rem !important;
+    /* Restored font size */
+    line-height: 1.5 !important;
+}
+
+.swal-medium .swal2-actions {
+    margin-top: 1.5rem !important;
+}
+
+.swal-medium .swal2-confirm {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.swal-medium .swal2-cancel {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* --- FINAL MERGE: Drawer Styles --- */
+.bg-minimal-success {
+    background-color: #2ecc71 !important;
+}
+
+.drawer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+}
+
+.drawer-overlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.drawer-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 800px;
+    height: 100%;
+    background-color: var(--bg-card);
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+    z-index: 1050;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+}
+
+.drawer-panel.open {
+    transform: translateX(0);
+}
+
+@media (max-width: 576px) {
+    .drawer-panel {
+        width: 100%;
+    }
+}
+
+.drawer-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.drawer-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.drawer-footer {
+    padding: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.drawer-footer .btn {
+    flex: 1;
+    min-width: 120px;
+}
+
+/* --- FINAL MERGE: SweetAlert Minimal --- */
+.swal-minimal {
+    width: 320px !important;
+    padding: 1.5rem !important;
+}
+
+.swal-minimal .swal2-html-container {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 0.95rem !important;
+}
+
+.swal-minimal .swal2-actions {
+    margin-top: 1.5rem !important;
+}
+
+.swal-minimal .swal2-confirm {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.swal-minimal .swal2-cancel {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* --- Print Styles for Reports --- */
+@media print {
+
+    /* Hide everything by default */
+    body * {
+        visibility: hidden;
+    }
+
+    /* Only show the printable area */
+    #printable-area,
+    #printable-area * {
+        visibility: visible;
+    }
+
+    /* Position the printable area absolute to top-left */
+    #printable-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        background: white;
+        color: black !important;
+        font-family: 'Inter', sans-serif;
+        /* Clean font */
+    }
+
+    /* Reset background colors for printing */
+    #printable-area {
+        background-color: white !important;
+    }
+
+    /* Force black text */
+    #printable-area h1,
+    #printable-area h2,
+    #printable-area h3,
+    #printable-area h4,
+    #printable-area h5,
+    #printable-area h6,
+    #printable-area p,
+    #printable-area span,
+    #printable-area div,
+    #printable-area td,
+    #printable-area th {
+        color: black !important;
+    }
+
+    /* Professional Table Styling for Print */
+    #printable-area .table-report {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        font-size: 12px;
+        /* Compact for print */
+    }
+
+    #printable-area .table-report th {
+        border-bottom: 2px solid #000;
+        padding: 8px 4px;
+        text-align: left;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    #printable-area .table-report td {
+        border-bottom: 1px solid #ddd;
+        padding: 6px 4px;
+    }
+
+    #printable-area .table-report tr:last-child td {
+        border-bottom: 0;
+    }
+
+    /* Text Utils */
+    #printable-area .text-end {
+        text-align: right !important;
+    }
+
+    #printable-area .text-center {
+        text-align: center !important;
+    }
+
+    #printable-area .fw-bold {
+        font-weight: 700 !important;
+    }
+
+    #printable-area .report-header {
+        text-align: center;
+        margin-bottom: 30px;
+        border-bottom: 1px solid #000;
+        padding-bottom: 20px;
+    }
+
+    #printable-area .report-footer {
+        margin-top: 50px;
+        border-top: 1px solid #ccc;
+        padding-top: 10px;
+        font-size: 10px;
+        text-align: center;
+    }
+
+    /* Summary Card look in print */
+    #printable-area .summary-box {
+        border: 1px solid #000;
+        padding: 10px;
+        margin-bottom: 20px;
+    }
+}
+
+/* --- Global Minimal Date Input (Overlay Method) --- */
+.minimal-date-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.minimal-date-display {
+    font-size: 1.1rem;
+    /* Adjust as needed */
+    font-weight: 500;
+    color: var(--text-color);
+    border-bottom: none;
+    /* Explicitly ensure no underline */
+}
+
+.minimal-date-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 10;
+}
+
+/* --- SweetAlert2 Dark Mode Overrides --- */
+body.dark-mode .swal2-popup {
+    background-color: var(--bg-card) !important;
+    color: var(--text-main) !important;
+    border: 1px solid var(--border-color);
+}
+
+body.dark-mode .swal2-title,
+body.dark-mode .swal2-html-container,
+body.dark-mode .swal2-content {
+    color: var(--text-main) !important;
+}
+
+body.dark-mode .swal2-close {
+    color: var(--text-muted) !important;
+}
+
+body.dark-mode .swal2-timer-progress-bar {
+    background-color: var(--border-color) !important;
+}
+
+/* --- Delete Button for Tables (Theme Adaptive) --- */
+.btn-delete-table {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    cursor: pointer;
+    z-index: 100;
+    transition: transform 0.2s;
+
+    /* Light Mode: Primary Red (matches table), White Icon */
+    background-color: var(--primary);
+    color: #ffffff;
+    border: 2px solid var(--bg-card);
+    /* Cutout effect matches grid */
+}
+
+.btn-delete-table:hover {
+    transform: translate(-50%, -50%) scale(1.1) !important;
+}
+
+/* Dark Mode Override: Red BG, White Icon */
+body.dark-mode .btn-delete-table {
+    background-color: #ff4d4f;
+    color: #ffffff;
+    border: 2px solid var(--bg-card);
+    /* Cutout effect matches dark grid */
+}

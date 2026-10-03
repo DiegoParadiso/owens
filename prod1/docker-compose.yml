@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: owens_prod1_app
+    restart: unless-stopped
+    ports:
+      - "8001:80"
+    volumes:
+      - .:/var/www/html
+      - /var/www/html/vendor
+      - /var/www/html/node_modules
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html/public
+
+  afip-cron:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: owens_prod1_afip_cron
+    restart: unless-stopped
+    volumes:
+      - .:/var/www/html
+    entrypoint: ["/bin/bash", "-c", "while true; do bash /var/www/html/afip/authenticate.sh; sleep 43200; done"]

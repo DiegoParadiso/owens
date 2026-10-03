@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Product extends Model // Changed class name from Produk to Product
 {
-    use HasFactory; // Added this line
+    use HasFactory, LogsActivity; // Added this line
 
     protected $table = 'products'; // Added this line
 
@@ -16,6 +18,7 @@ class Product extends Model // Changed class name from Produk to Product
         'icon', // Icon for display
         'price', // Changed from 'Harga' to 'price'
         'stock', // Changed from 'Stok' to 'stock'
+        'min_stock_alert', // Added min_stock_alert
         'cost', // Changed from 'cost_price' to 'cost'
         'type',
         'category',
@@ -27,6 +30,13 @@ class Product extends Model // Changed class name from Produk to Product
         'batch_yield', // Added batch_yield
         'user_id' // Changed from 'Users_id' to 'user_id'
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnlyDirty()
+            ->logFillable();
+    }
 
     public function saleDetails() // Changed method name from detailPenjualans to saleDetails
     {

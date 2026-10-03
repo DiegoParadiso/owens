@@ -398,6 +398,7 @@ class PurchaseController extends Controller
             // Delete cash movement
             $this->cashRegisterService->deleteRelatedMovements('purchase', $purchase->id);
 
+            $purchase->payments()->delete();
             $purchase->details()->delete();
             $purchase->delete();
 
