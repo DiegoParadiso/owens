@@ -8,8 +8,10 @@ import Swal from 'sweetalert2';
 import Pagination from '@/Components/Pagination';
 import FinanceNavbar from '@/Components/FinanceNavbar';
 
-export default function Index({ expenses = [], categories = [] }) {
+import ComingSoon from '@/Pages/ComingSoon';
 
+export default function Index({ expenses = [], categories = [] }) {
+    return <ComingSoon title="Sección en Construcción" />;
     const [showDrawer, setShowDrawer] = useState(false);
     const [editingExpense, setEditingExpense] = useState(null);
     const now = new Date();

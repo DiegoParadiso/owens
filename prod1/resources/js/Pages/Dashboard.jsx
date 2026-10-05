@@ -28,7 +28,11 @@ ChartJS.register(
     Filler
 );
 
+import ComingSoon from '@/Pages/ComingSoon';
+
 export default function Dashboard({ stats, recentSales, chartData, cashRegister }) {
+    return <ComingSoon title="Sección en Construcción" />;
+
     const chartLabels = chartData.labels;
 
     const salesChartData = {

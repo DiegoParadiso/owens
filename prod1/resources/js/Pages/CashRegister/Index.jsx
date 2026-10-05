@@ -21,13 +21,14 @@ export default function Index({ openRegister, currentBalance, income, expense, m
     const cleanCurrency = (val) => {
         if (!val) return 0;
         if (typeof val === 'number') return val;
-        return parseFloat(String(val).replace(/[$,]/g, '')) || 0;
+        // Strip '$' and '.' (thousands), then replace ',' with '.' for JS parsing
+        return parseFloat(String(val).replace(/[$.]/g, '').replace(',', '.')) || 0;
     };
 
     const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', {
+        return new Intl.NumberFormat('es-AR', {
             style: 'currency',
-            currency: 'USD',
+            currency: 'ARS',
             minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
             maximumFractionDigits: 2
         }).format(amount);

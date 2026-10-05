@@ -7,7 +7,10 @@ import Swal from 'sweetalert2';
 
 import Pagination from '@/Components/Pagination';
 
+import ComingSoon from '@/Pages/ComingSoon';
+
 export default function Index({ products }) {
+    return <ComingSoon title="Sección en Construcción" />;
     const { system_mode, manage_stock } = usePage().props;
     const isManageStock = String(manage_stock) !== 'false';
     const [showDrawer, setShowDrawer] = useState(false);

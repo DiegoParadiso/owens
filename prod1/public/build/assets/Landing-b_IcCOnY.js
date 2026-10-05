@@ -1,4 +1,4 @@
-import{r as l,j as e,H as c}from"./app-7x4MfQTP.js";function g(){const[s,i]=l.useState(localStorage.getItem("darkMode")==="true");l.useEffect(()=>{document.body.classList.add("landing-page"),s?document.body.classList.add("dark-mode"):document.body.classList.remove("dark-mode"),localStorage.setItem("darkMode",s),(()=>{const o=`<svg id="diagtext" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%">
+import{r as l,j as e,H as c}from"./app-BDTiTzOw.js";function g(){const[s,i]=l.useState(localStorage.getItem("darkMode")==="true");l.useEffect(()=>{document.body.classList.add("landing-page"),s?document.body.classList.add("dark-mode"):document.body.classList.remove("dark-mode"),localStorage.setItem("darkMode",s),(()=>{const o=`<svg id="diagtext" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%">
                 <style type="text/css">
                     text { fill: ${s?"rgba(255, 255, 255, 0.03)":"rgba(0, 0, 0, 0.025)"}; font-family: Inter, Poppins, Arial, sans-serif; font-weight: 600; }
                 </style>

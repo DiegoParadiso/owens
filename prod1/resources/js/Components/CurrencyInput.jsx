@@ -4,9 +4,9 @@ export default function CurrencyInput({ value, onChange, className, placeholder 
     const inputRef = useRef(null);
     const cursorRef = useRef(null);
 
-    // Helper to format number string with commas
+    // Helper to format number string with dots
     const formatNumber = (n) => {
-        return n.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return n.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     };
 
     const formatCurrency = (val, blur = false) => {
@@ -16,27 +16,28 @@ export default function CurrencyInput({ value, onChange, className, placeholder 
 
         // Ensure input_val is a string
         input_val = String(input_val);
+        input_val = input_val.replace('.', ','); // Allow typing dot but convert to comma
 
-        if (input_val.indexOf(".") >= 0) {
-            const decimal_pos = input_val.indexOf(".");
+        if (input_val.indexOf(",") >= 0) {
+            const decimal_pos = input_val.indexOf(",");
             let left_side = input_val.substring(0, decimal_pos);
             let right_side = input_val.substring(decimal_pos);
 
             left_side = formatNumber(left_side);
-            right_side = formatNumber(right_side);
+            right_side = right_side.replace(/\D/g, "");
 
             if (blur) {
                 right_side += "00";
             }
 
             right_side = right_side.substring(0, 2);
-            input_val = "$" + left_side + "." + right_side;
+            input_val = "$" + left_side + "," + right_side;
         } else {
             input_val = formatNumber(input_val);
             input_val = "$" + input_val;
 
             if (blur) {
-                input_val += ".00";
+                input_val += ",00";
             }
         }
         return input_val;
@@ -63,16 +64,17 @@ export default function CurrencyInput({ value, onChange, className, placeholder 
         const caret_pos = input.selectionStart;
 
         // 2. Checking for decimal placement
-        if (input_val.indexOf(".") >= 0) {
-            const decimal_pos = input_val.indexOf(".");
+        input_val = input_val.replace('.', ','); // Convert typed dot to comma
+        if (input_val.indexOf(",") >= 0) {
+            const decimal_pos = input_val.indexOf(",");
             let left_side = input_val.substring(0, decimal_pos);
             let right_side = input_val.substring(decimal_pos);
 
             left_side = formatNumber(left_side);
-            right_side = formatNumber(right_side);
+            right_side = right_side.replace(/\D/g, "");
             right_side = right_side.substring(0, 2);
 
-            input_val = "$" + left_side + "." + right_side;
+            input_val = "$" + left_side + "," + right_side;
         } else {
             input_val = formatNumber(input_val);
             input_val = "$" + input_val;

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 
+import ComingSoon from '@/Pages/ComingSoon';
+
 export default function Index({ 
     date: initialDate, 
     sales = 0, 
@@ -13,6 +15,7 @@ export default function Index({
     netProfit = 0, 
     closures = [] 
 }) {
+    return <ComingSoon title="Sección en Construcción" />;
     const [date, setDate] = useState(initialDate || new Date().toISOString().split('T')[0]);
 
     const formatCurrency = (amount, decimals = 2) => {

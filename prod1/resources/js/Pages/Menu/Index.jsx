@@ -5,7 +5,11 @@ import { Head, Link, useForm, router, usePage } from '@inertiajs/react';
 import Swal from 'sweetalert2';
 import Pagination from '@/Components/Pagination';
 
+import ComingSoon from '@/Pages/ComingSoon';
+
 export default function Index({ products = [], supplies = [], category = 'burger' }) {
+    return <ComingSoon title="Sección en Construcción" />;
+
     const { system_mode } = usePage().props;
     const [showDrawer, setShowDrawer] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
