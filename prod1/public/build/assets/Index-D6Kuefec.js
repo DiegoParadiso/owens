@@ -1,1 +1,0 @@
-import{j as o}from"./app-BDTiTzOw.js";import"./lottie-react.esm-BDtp8Zo9.js";import"./sweetalert2.esm.all-B3GDCxSY.js";import t from"./ComingSoon-B2d_VYAO.js";import"./MainLayout-RZdxVznD.js";function c({expenses:e=[],categories:r=[]}){return o.jsx(t,{title:"Sección en Construcción"})}export{c as default};

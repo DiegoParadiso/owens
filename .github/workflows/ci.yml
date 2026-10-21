@@ -1,0 +1,46 @@
+name: Owens System CI (Pruebas Automatizadas)
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  laravel-backend-tests:
+    runs-on: ubuntu-latest
+    
+    # Aquí le decimos a GitHub Actions qué hacer paso a paso
+    steps:
+    # 1. Clonar el repositorio
+    - name: Clonar código
+      uses: actions/checkout@v3
+
+    # 2. Configurar PHP
+    - name: Configurar Entorno PHP 8.2
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, dom, fileinfo, pdo_sqlite
+        
+    # 3. Instalar dependencias del backend (usando la carpeta core)
+    - name: Instalar Dependencias de Composer
+      run: |
+        cd core
+        composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+        
+    # 4. Configurar .env y BD de prueba
+    - name: Preparar Entorno Laravel
+      run: |
+        cd core
+        cp .env.example .env
+        touch database/database.sqlite
+        sed -i 's/DB_CONNECTION=mysql/DB_CONNECTION=sqlite/' .env
+        php artisan key:generate
+        php artisan migrate --force
+        
+    # 5. Ejecutar Pruebas Unitarias de Laravel
+    - name: Ejecutar Pruebas PHPUnit (Caja y Negocio)
+      run: |
+        cd core
+        php artisan test --parallel

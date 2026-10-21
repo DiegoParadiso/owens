@@ -52,11 +52,56 @@ Cuando el tribunal analiza el DER (Diagrama Entidad-Relación) o Modelo de Datos
 *   **Pregunta del tribunal:** *"¿Por qué no hay una tabla de 'Facturas'?"*
 *   **Defensa:** A nivel de datos, la facturación es simplemente la confirmación fiscal de una venta. Por eso, se agregaron los campos `afip_cae` y `afip_vencimiento` directamente a la tabla `ventas`. La comunicación con AFIP es un servicio externo (Web Service); no necesitamos replicar su modelo de datos localmente, solo necesitamos almacenar el comprobante legal (CAE) que certifica que la transacción fue autorizada e informada con éxito.
 
+### 5.5. Explicación Estratégica de las Relaciones (DER)
+Si el tribunal te pide explicar cómo están conectadas las entidades, enfocate en estos 3 ejes estructurales que diseñaste en el modelo:
+
+1.  **Centralidad de la Autoría y Seguridad (Tabla `usuarios`):**
+    *   La tabla `usuarios` es el eje de control. Si te fijás, casi todas las tablas transaccionales u operativas (`ventas`, `compras`, `gastos`, `sesiones_caja`, `auditoria_stock`) tienen una relación de pertenencia (1:N) con ella.
+    *   **¿Por qué?** Porque ninguna operación que mueva dinero o modifique inventario puede ser anónima. Cada ingreso, retiro, venta o gasto debe quedar "firmado" por el ID del usuario responsable. Es un requisito innegociable de auditoría.
+
+2.  **El Núcleo Operativo (Caja y Ventas):**
+    *   Una **Venta** está correctamente normalizada en Cabecera (`ventas`) y Detalle (`detalle_ventas`).
+    *   Los pagos se desacoplaron en `pago_ventas` para permitir **pagos múltiples** (ej. cobrar una parte en efectivo y otra con QR), apoyándose en la tabla maestra `metodos_pago`.
+    *   El efectivo físico se encapsula en las `sesiones_caja` (turnos). Una sesión abierta agrupa `transacciones_caja` (retiros para pagar proveedores o ingresos manuales) asegurando el control del flujo de caja.
+
+3.  **La Composición de Menú e Inventario (Patrón Estructural BOM):**
+    *   A diferencia de modelos simplistas, separamos la lógica de negocio en dos tablas fundamentales: `productos` (menú de venta final, con precio) e `insumos` (materia prima acopiada, con lote, vencimiento, costo y stock).
+    *   La tabla `recetas` actúa como puente de una relación de Muchos a Muchos (M:N) resolviendo la lista de materiales (BOM - Bill of Materials).
+    *   **¿Qué significa?** La tabla `recetas` vincula un `id_producto` (el producto terminado) con múltiples `id_insumo` (sus ingredientes). Esta estructura estricta evita catálogos "híbridos" confusos y permite la famosa *explosión de materiales* al vender, deduciendo el stock de la materia prima real que compone al menú sin mezclar la naturaleza de las entidades.
+
+### 5.6. ¿Cómo leer las líneas del diagrama (Notación "Pata de Gallo")?
+El tribunal puede señalar una línea específica del diagrama ER y preguntarte *"¿Qué significa esta relación?"*. El diagrama utiliza la notación **Crow's Foot (Pata de Gallo)**. Así es como debés leer los símbolos en los extremos de cada línea:
+
+*   **Dos rayitas verticales (`||`):** Significa **"Uno y solo uno"** (Obligatorio).
+    *   *Ejemplo (`ventas` a `usuarios`):* Del lado de Usuarios hay `||`. Se lee: *"Toda venta obligatoriamente tiene que haber sido registrada por un, y solo un, usuario"*.
+*   **Pata de gallo con una rayita (`|<`):** Significa **"Uno a Muchos"** (Obligatorio).
+    *   *Ejemplo (`ventas` a `detalle_ventas`):* Del lado del Detalle hay `|<`. Se lee: *"Una venta tiene que tener al menos un detalle de producto, o puede tener muchos"*.
+*   **Pata de gallo con un círculo (`O<`):** Significa **"Cero a Muchos"** (Opcional).
+    *   *Ejemplo (`usuarios` a `ventas`):* Del lado de Ventas hay `O<`. Se lee: *"Un usuario en el sistema puede no haber registrado ninguna venta (cero), o puede haber registrado muchísimas (muchas)"*.
+*   **Círculo con una rayita (`O|`):** Significa **"Cero o Uno"** (Opcional).
+
+**Regla de oro para la lectura verbal:** Siempre leé la relación en ambas direcciones. Por ejemplo, la relación entre **Categorías de Gastos** y **Gastos** se lee así:
+> *"Una categoría puede agrupar a **cero o muchos** gastos (`O<`), pero un gasto pertenece a **una y solo una** categoría (`||`)."*
+
+### 5.7. Registro Temporal y Arqueo en Turnos de Caja (`sesiones_caja`) y Compras (`compras`)
+*   **Pregunta del tribunal:** *"¿Dónde queda registrado el dinero con el que el cajero cerró el turno y en qué momento se produjo la apertura y el cierre? ¿Y cómo calculan los balances temporales de compras?"*
+*   **Defensa:**
+    1.  **Arqueo y Cierre de Turno (UC-03 / UC-29):** La entidad `sesiones_caja` no solo almacena el `monto_apertura` y `estado`, sino que incorpora `monto_cierre`, `fecha_apertura` y `fecha_cierre` (coincidiendo exactamente con la implementación en código en `cash_sessions`: `opening_amount`, `closing_amount`, `opened_at`, `closed_at`). Esto permite que al ejecutar el arqueo de caja (UC-29), el sistema calcule la diferencia matemática entre el dinero esperado (apertura + ventas en efectivo + ingresos manuales - egresos) y el efectivo real declarado por el cajero al cerrar el turno.
+    2.  **Simetría Contable y Balances (UC-30 / UC-31):** Al igual que `ventas` posee su `fecha_venta`, la tabla `compras` cuenta con `fecha_compra TIMESTAMP`. Sin este atributo temporal en la cabecera, sería imposible contrastar los ingresos devengados contra los egresos por compras de insumos dentro de un rango de fechas en los reportes de balance y rentabilidad del negocio.
+
+### 5.8. Depuración de "Líneas Fantasma" o Conexiones Espurias en el Diagrama
+En un modelo físico de base de datos relacional (DER), **toda línea representa una clave foránea (Foreign Key) explícita**. Cualquier conector que no corresponda a una columna FK es una "conexión espuria" que confunde la semántica del sistema:
+
+*   **Línea `clientes` — `usuarios` (Eliminada):** 
+    *   *Por qué no debe estar:* Ni `clientes` tiene `id_usuario`, ni `usuarios` tiene `id_cliente`. Vincularlos con una línea implicaría erróneamente una relación de dependencia existencial o herencia. La interacción entre un usuario (ej. cajero) y un cliente ocurre exclusivamente **en el contexto de una transacción** (`ventas`), donde coinciden `id_usuario` e `id_cliente`. La autoría de creación de un cliente se audita de forma no invasiva a través de `logs_auditoria_sistema`.
+*   **Línea `movimientos_inventario` — `productos` (Eliminada):**
+    *   *Por qué no debe estar:* En gastronomía bajo el patrón BOM, el inventario real y los movimientos de stock (Kardex) se gestionan **a nivel de materias primas e insumos** (`insumos`). La tabla `movimientos_inventario` solo posee la FK `id_insumo`. La deducción de stock por la venta de un producto terminado se realiza mediante la **explosión de materiales** definida en la tabla intermedia `recetas`. Conectar directamente `movimientos_inventario` con `productos` sin una clave foránea violaría la normalización y duplicaría erróneamente la lógica de recetas.
+
 ## 6. Speech de Defensa (El "Elevator Pitch")
 Si el tribunal te pide que resumas o justifiques tu arquitectura de software y el modelado, podés usar este speech como guía:
 
 > *"El diseño del sistema Owens prioriza la escalabilidad y la mantenibilidad sin caer en la sobre-ingeniería. En los **diagramas de Casos de Uso**, definimos actores basados en **roles**, lo que nos permite escalar desde un dueño único hasta una plantilla completa de empleados usando exactamente el mismo sistema de permisos, sin tocar una línea de código.*
 > 
-> *A nivel de **Modelo de Datos**, aplicamos la Tercera Forma Normal, pero tomamos decisiones pragmáticas justificadas. Por ejemplo, en lugar de crear un entramado de tablas de permisos dinámicos, gestionamos los roles en la capa de aplicación. Implementamos **Borrado Lógico** en las tablas maestras para mantener la integridad histórica sin duplicar datos en tablas de log, y diseñamos las transacciones (como las ventas) como entidades inmutables.* 
+> *A nivel de **Modelo de Datos**, aplicamos la Tercera Forma Normal, pero tomamos decisiones pragmáticas justificadas. Por ejemplo, gestionamos los roles en la capa de aplicación en lugar de crear un entramado de tablas de permisos dinámicos. Para la seguridad y trazabilidad, combinamos **Borrado Lógico** con una tabla centralizada de **Auditoría (Audit Trail) Polimórfica**, capaz de registrar de forma inmutable quién, cuándo y qué modificó (valores viejos y nuevos) en cualquier tabla del dominio.*
 > 
-> *La recursividad de las recetas (materias primas vs productos elaborados) y el control atómico del stock (con su respectiva tabla de auditoría) son el núcleo duro de la base de datos, garantizando que el costeo y el inventario sean precisos. Todo lo que es externo, como AFIP o el bot de mensajería, se maneja como interfaces o servicios periféricos, impactando mínimamente en nuestro modelo de dominio central."*
+> *La composición estricta de las recetas (separando físicamente insumos de productos) y el control atómico del stock mediante un Kardex propio (`movimientos_inventario`) son nuestro núcleo duro, garantizando costeo e inventario precisos. Todo lo externo, como AFIP o el bot de mensajería, se maneja como interfaces o servicios periféricos, impactando mínimamente en el core."* 

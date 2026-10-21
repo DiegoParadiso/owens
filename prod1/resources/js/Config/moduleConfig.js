@@ -10,4 +10,7 @@ export const moduleConfig = {
     finances: true,
     reports: true,
     settings: true,
+    kitchen: true,
+    staff: true,
+    customers: true,
 };

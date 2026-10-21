@@ -36,6 +36,11 @@ Route::post('/admin/login', [UserController::class, 'loginCheck'])
 Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/logout', [UserController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // Vista en Construcción para módulos futuros
+    Route::get('/coming-soon', function () {
+        return Inertia::render('ComingSoon');
+    })->name('coming.soon');
 
     // Menu (formerly Combos)
     Route::get('/menu', [ProductController::class, 'indexMenu'])->name('product.indexMenu');

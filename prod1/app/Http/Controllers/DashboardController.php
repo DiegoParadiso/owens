@@ -10,6 +10,15 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        // Protección de Ruta (RBAC): Bloquear acceso a roles operativos
+        $user = auth()->user();
+        if ($user->role !== 'admin' && $user->role !== 'owner') {
+            if ($user->role === 'cajero') {
+                return redirect()->route('cash_register.index')->with('error', 'No tienes permisos para ver el Dashboard financiero.');
+            }
+            return redirect()->route('coming.soon');
+        }
+
         try {
             // Ventas de hoy
             $today = Carbon::today();

@@ -91,7 +91,7 @@ export default function Login() {
                                         id="email"
                                         value={data.email}
                                         onChange={(e) => setData('email', e.target.value)}
-                                        style={{ background: 'transparent' }}
+                                        sty le={{ background: 'transparent' }}
                                     />
                                     {errors.email && <div className="invalid-feedback">{errors.email}</div>}
                                 </div>

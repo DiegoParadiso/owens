@@ -20,6 +20,14 @@ class UserController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
+            $user = Auth::user();
+
+            if ($user->role === 'cajero') {
+                return redirect()->intended('/admin/cash-register');
+            } elseif ($user->role === 'cocinero') {
+                return redirect()->intended('/admin/coming-soon');
+            }
+
             return redirect()->intended('/admin/dashboard');
         }
 

@@ -76,9 +76,12 @@ Cajero --> UC11
 ' SUBSISTEMA 2: LOGÍSTICA E INVENTARIO
 ' ==========================================
 package "Logística e Inventario" {
-    usecase "UC-12: Alta Producto" as UC12
-    usecase "UC-13: Baja Producto" as UC13
-    usecase "UC-14: Modificar Producto" as UC14
+    usecase "UC-12: Alta Insumo" as UC12
+    usecase "UC-13: Baja Insumo" as UC13
+    usecase "UC-14: Modificar Insumo" as UC14
+    usecase "UC-60: Alta Producto (Menú)" as UC60
+    usecase "UC-61: Baja Producto" as UC61
+    usecase "UC-62: Modificar Producto" as UC62
     usecase "UC-15: Asignar Receta" as UC15
     usecase "UC-16: Registrar Producción" as UC16
     usecase "UC-17: Ajustar Inventario" as UC17
@@ -100,6 +103,9 @@ package "Logística e Inventario" {
 Encargado --> UC12
 Encargado --> UC13
 Encargado --> UC14
+Encargado --> UC60
+Encargado --> UC61
+Encargado --> UC62
 Encargado --> UC15
 Encargado --> UC16
 Encargado --> UC17
@@ -201,26 +207,28 @@ Cliente --> UC49 : "Arma carrito web"
 UC49 --> Mensajeria : "Envía Notificación"
 
 UC51 .left.> UC02 : <<extend>>
-UC51 .left.> UC07 : <<extend>>
-UC51 .left.> UC09 : <<extend>>
-UC52 .left.> UC05 : <<extend>>
-UC52 .left.> UC11 : <<extend>>
+UC07 ..> UC51 : <<include>>
+UC09 ..> UC51 : <<include>>
+UC05 ..> UC52 : <<include>>
+UC11 ..> UC52 : <<include>>
 UC53 .left.> UC02 : <<extend>>
-UC53 .left.> UC14 : <<extend>>
-UC53 .left.> UC13 : <<extend>>
-UC53 .left.> UC15 : <<extend>>
-UC54 .left.> UC19 : <<extend>>
-UC54 .left.> UC20 : <<extend>>
-UC54 .left.> UC21 : <<extend>>
-UC55 .left.> UC24 : <<extend>>
-UC55 .left.> UC25 : <<extend>>
-UC56 .left.> UC22 : <<extend>>
-UC56 .left.> UC23 : <<extend>>
-UC57 .left.> UC30 : <<extend>>
-UC58 .left.> UC34 : <<extend>>
-UC58 .left.> UC35 : <<extend>>
-UC59 .left.> UC38 : <<extend>>
-UC59 .left.> UC45 : <<extend>>
+UC14 ..> UC53 : <<include>>
+UC13 ..> UC53 : <<include>>
+UC62 ..> UC53 : <<include>>
+UC61 ..> UC53 : <<include>>
+UC15 ..> UC53 : <<include>>
+UC19 ..> UC54 : <<include>>
+UC20 ..> UC54 : <<include>>
+UC21 ..> UC54 : <<include>>
+UC24 ..> UC55 : <<include>>
+UC25 ..> UC55 : <<include>>
+UC22 ..> UC56 : <<include>>
+UC23 ..> UC56 : <<include>>
+UC30 ..> UC57 : <<include>>
+UC34 ..> UC58 : <<include>>
+UC35 ..> UC58 : <<include>>
+UC38 ..> UC59 : <<include>>
+UC45 ..> UC59 : <<include>>
 
 @enduml
 ```
@@ -290,10 +298,10 @@ UC02 ..> UC47 : <<include>>
 UC05 ..> UC47 : <<include>>
 UC47 --> AFIP
 UC51 .left.> UC02 : <<extend>>
-UC51 .left.> UC07 : <<extend>>
-UC51 .left.> UC09 : <<extend>>
-UC52 .left.> UC05 : <<extend>>
-UC52 .left.> UC11 : <<extend>>
+UC07 ..> UC51 : <<include>>
+UC09 ..> UC51 : <<include>>
+UC05 ..> UC52 : <<include>>
+UC11 ..> UC52 : <<include>>
 UC53 .left.> UC02 : <<extend>>
 @enduml
 ```
@@ -312,9 +320,12 @@ actor "Administrador" as Administrador
 Encargado <|-- Administrador
 
 package "Logística e Inventario" {
-    usecase "UC-12: Alta Producto" as UC12
-    usecase "UC-13: Baja Producto" as UC13
-    usecase "UC-14: Modificar Producto" as UC14
+    usecase "UC-12: Alta Insumo" as UC12
+    usecase "UC-13: Baja Insumo" as UC13
+    usecase "UC-14: Modificar Insumo" as UC14
+    usecase "UC-60: Alta Producto (Menú)" as UC60
+    usecase "UC-61: Baja Producto" as UC61
+    usecase "UC-62: Modificar Producto" as UC62
     usecase "UC-15: Asignar Receta" as UC15
     usecase "UC-16: Registrar Producción" as UC16
     usecase "UC-17: Ajustar Inventario" as UC17
@@ -336,6 +347,9 @@ package "Logística e Inventario" {
 Encargado --> UC12
 Encargado --> UC13
 Encargado --> UC14
+Encargado --> UC60
+Encargado --> UC61
+Encargado --> UC62
 Encargado --> UC15
 Encargado --> UC16
 Encargado --> UC17
@@ -347,16 +361,18 @@ Encargado --> UC22
 Encargado --> UC23
 Encargado --> UC24
 Encargado --> UC25
-UC53 .left.> UC14 : <<extend>>
-UC53 .left.> UC13 : <<extend>>
-UC53 .left.> UC15 : <<extend>>
-UC54 .left.> UC19 : <<extend>>
-UC54 .left.> UC20 : <<extend>>
-UC54 .left.> UC21 : <<extend>>
-UC55 .left.> UC24 : <<extend>>
-UC55 .left.> UC25 : <<extend>>
-UC56 .left.> UC22 : <<extend>>
-UC56 .left.> UC23 : <<extend>>
+UC14 ..> UC53 : <<include>>
+UC13 ..> UC53 : <<include>>
+UC62 ..> UC53 : <<include>>
+UC61 ..> UC53 : <<include>>
+UC15 ..> UC53 : <<include>>
+UC19 ..> UC54 : <<include>>
+UC20 ..> UC54 : <<include>>
+UC21 ..> UC54 : <<include>>
+UC24 ..> UC55 : <<include>>
+UC25 ..> UC55 : <<include>>
+UC22 ..> UC56 : <<include>>
+UC23 ..> UC56 : <<include>>
 Administrador --> UC50
 @enduml
 ```
@@ -396,9 +412,9 @@ Administrador --> UC32
 Administrador --> UC33
 Administrador --> UC34
 Administrador --> UC35
-UC57 .left.> UC30 : <<extend>>
-UC58 .left.> UC34 : <<extend>>
-UC58 .left.> UC35 : <<extend>>
+UC30 ..> UC57 : <<include>>
+UC34 ..> UC58 : <<include>>
+UC35 ..> UC58 : <<include>>
 @enduml
 ```
 
@@ -449,8 +465,8 @@ Encargado --> UC36
 Cajero --> UC36
 Cocinero --> UC36
 Auditor --> UC36
-UC59 .left.> UC38 : <<extend>>
-UC59 .left.> UC45 : <<extend>>
+UC38 ..> UC59 : <<include>>
+UC45 ..> UC59 : <<include>>
 @enduml
 ```
 
