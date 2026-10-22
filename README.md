@@ -1,10 +1,8 @@
 # Sistema de Gestión - Hamburguesería "Owens"
 
-Sistema integral de gestión de inventario, producción gastronómica y punto de venta (POS) bajo metodología Proceso Unificado Ágil (AUP).
+Sistema integral de gestión de inventario, producción gastronómica y POS bajo AUP.
 
-## Estructura del Repositorio (Arquitectura Modular)
-
-El repositorio sigue un esquema monorepo modular inspirado en estándares de la industria:
+## Estr. del Repositorio
 
 ```text
 owens-system/
@@ -31,7 +29,7 @@ owens-system/
 - Persistencia: PostgreSQL 16 (Neon Serverless)
 - Aseguramiento de Calidad: Cypress (BDD / E2E) & PHPUnit
 
-## Módulos del Sistema
+## Módulos
 
 - **Dashboard:** Métricas claves, facturación diaria y alertas.
 - **Punto de Venta (POS):** Atención en mostrador, arqueo con cierre ciego y venta offline.
@@ -77,11 +75,11 @@ npm run dev
 php artisan serve
 ```
 
-## Estrategia de Ramas
+## Ramas
 
 - `main`: Rama estable de entrega final y producción.
 - `dev`: Rama activa de integración y desarrollo.
-- `docs`: Rama dedicada a la memoria técnica y artefactos metodológicos.
+- `docs`: Memoria técnica y artefactos metodológicos.
 
 ## Licencia
 
