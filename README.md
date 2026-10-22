@@ -7,13 +7,8 @@ Sistema integral de gestión de inventario, producción gastronómica y POS bajo
 ```text
 owens-system/
 ├── apps/
-│   └── web/                 # Aplicación principal (Laravel 11 + React 19 + Inertia.js)
-├── docs/                    # Documentación y memoria técnica formal (Capítulos 1 a 4)
-│   ├── 0_Metodologia_y_Reglas/
-│   ├── 1_Planificacion/
-│   ├── 2_Requisitos_y_Arquitectura/
-│   ├── 3_Especificacion_y_Diseno/
-│   └── 4_Implementacion_y_Calidad/
+│   └── web/                 # Aplicación principal 
+├── docs/                    # Documentación y memoria técnica formal 
 ├── tools/                   # Scripts de mantenimiento, formateo y utilitarios
 ├── cypress/                 # Suites de pruebas E2E automatizadas (BDD)
 ├── archive/                 # Código legado archivado (core-legacy)
