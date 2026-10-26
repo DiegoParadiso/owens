@@ -1,7 +1,6 @@
 ### Matriz de Rastreabilidad (Objetivos vs. Casos de Uso)
 
-La Matriz de Rastreabilidad es una herramienta fundamental en el Proceso Unificado que permite trazar de manera bidireccional los Objetivos Específicos del negocio (OBJ) contra los Casos de Uso (UC) que se encargarán de cumplirlos. 
-Esta tabla garantiza que no exista código escrito que no responda a una necesidad de negocio, y que ningún objetivo de la empresa haya quedado sin informatizar.
+Trazabilidad bidireccional entre los Objetivos Específicos del negocio (OBJ) y los Casos de Uso (UC) encargados de su resolución funcional:
 
 **Tabla 11 - Matriz de Rastreabilidad de Objetivos**
 
@@ -15,5 +14,3 @@ Esta tabla garantiza que no exista código escrito que no responda a una necesid
 | **OBJ-06** | Facilitar la toma de decisiones gerenciales | UC-26, UC-27, UC-29, UC-31, UC-32, UC-49, UC-52, UC-57, UC-58 |
 | **OBJ-07** | Garantizar la seguridad, integridad y auditoría de los datos | UC-01, UC-03, UC-08, UC-09, UC-17, UC-22, UC-23, UC-28, UC-30, UC-33, UC-34, UC-35, UC-36, UC-37, UC-38, UC-39, UC-40, UC-41, UC-42, UC-43, UC-44, UC-45, UC-52, UC-56, UC-57, UC-58, UC-59 |
 | **OBJ-08** | Fidelización automatizada de clientes | UC-32, UC-48, UC-51 |
-
-> **Nota para la defensa:** *Esta matriz demuestra que los 62 Casos de Uso del sistema tienen una razón de ser fundamentada en el Capítulo 1 (Planificación). Es una prueba de fuego de que el software fue modelado respondiendo a necesidades reales.*
