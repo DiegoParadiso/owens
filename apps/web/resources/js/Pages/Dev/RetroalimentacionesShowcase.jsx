@@ -177,6 +177,10 @@ export default function RetroalimentacionesShowcase() {
                     Modal de baja
                 </button>
             </div>
+
+            <p style={{ margin: '20px 0 0 0', color: '#555' }}>
+                Ejecutar capturas en terminal: <code>npm run capture:toasts</code>
+            </p>
         </div>
     );
 }

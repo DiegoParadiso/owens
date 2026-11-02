@@ -1,42 +1,42 @@
 {
-  "_CurrencyInput-DXIQ7g7M.js": {
-    "file": "assets/CurrencyInput-DXIQ7g7M.js",
+  "_CurrencyInput-CEbmCK6f.js": {
+    "file": "assets/CurrencyInput-CEbmCK6f.js",
     "name": "CurrencyInput",
     "imports": [
       "resources/js/app.jsx"
     ]
   },
-  "_Drawer-uYNXqSx-.js": {
-    "file": "assets/Drawer-uYNXqSx-.js",
+  "_Drawer-DMq3CGn3.js": {
+    "file": "assets/Drawer-DMq3CGn3.js",
     "name": "Drawer",
     "imports": [
       "resources/js/app.jsx"
     ]
   },
-  "_FinanceNavbar-CP6zTb83.js": {
-    "file": "assets/FinanceNavbar-CP6zTb83.js",
+  "_FinanceNavbar-BXHUUDYW.js": {
+    "file": "assets/FinanceNavbar-BXHUUDYW.js",
     "name": "FinanceNavbar",
     "imports": [
       "resources/js/app.jsx"
     ]
   },
-  "_MainLayout-CDL1Ko9S.js": {
-    "file": "assets/MainLayout-CDL1Ko9S.js",
+  "_MainLayout-DQpF9WkW.js": {
+    "file": "assets/MainLayout-DQpF9WkW.js",
     "name": "MainLayout",
     "imports": [
       "resources/js/app.jsx",
-      "_lottie-react.esm-u5PxktJG.js"
+      "_lottie-react.esm-CR2WGiCf.js"
     ]
   },
-  "_Pagination-QPOBtQB6.js": {
-    "file": "assets/Pagination-QPOBtQB6.js",
+  "_Pagination-BvmsRhcD.js": {
+    "file": "assets/Pagination-BvmsRhcD.js",
     "name": "Pagination",
     "imports": [
       "resources/js/app.jsx"
     ]
   },
-  "_lottie-react.esm-u5PxktJG.js": {
-    "file": "assets/lottie-react.esm-u5PxktJG.js",
+  "_lottie-react.esm-CR2WGiCf.js": {
+    "file": "assets/lottie-react.esm-CR2WGiCf.js",
     "name": "lottie-react.esm",
     "imports": [
       "resources/js/app.jsx"
@@ -52,17 +52,17 @@
     "isEntry": true
   },
   "resources/js/Pages/Auth/Login.jsx": {
-    "file": "assets/Login-QF3v2o3L.js",
+    "file": "assets/Login-DVy0gCYt.js",
     "name": "Login",
     "src": "resources/js/Pages/Auth/Login.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_lottie-react.esm-u5PxktJG.js"
+      "_lottie-react.esm-CR2WGiCf.js"
     ]
   },
   "resources/js/Pages/BurgerSelector.jsx": {
-    "file": "assets/BurgerSelector-DIN8fk42.js",
+    "file": "assets/BurgerSelector-CRrC32I5.js",
     "name": "BurgerSelector",
     "src": "resources/js/Pages/BurgerSelector.jsx",
     "isDynamicEntry": true,
@@ -74,60 +74,60 @@
     ]
   },
   "resources/js/Pages/CashRegister/Index.jsx": {
-    "file": "assets/Index-yYLQWSot.js",
+    "file": "assets/Index-CyX6yu4W.js",
     "name": "Index",
     "src": "resources/js/Pages/CashRegister/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_MainLayout-CDL1Ko9S.js",
-      "_Drawer-uYNXqSx-.js",
-      "_CurrencyInput-DXIQ7g7M.js",
+      "_MainLayout-DQpF9WkW.js",
+      "_Drawer-DMq3CGn3.js",
+      "_CurrencyInput-CEbmCK6f.js",
       "_sweetalert2.esm.all-B3GDCxSY.js",
-      "_lottie-react.esm-u5PxktJG.js"
+      "_lottie-react.esm-CR2WGiCf.js"
     ]
   },
   "resources/js/Pages/Combos/Index.jsx": {
-    "file": "assets/Index-D9UyBhcO.js",
+    "file": "assets/Index-BSZ4XAm4.js",
     "name": "Index",
     "src": "resources/js/Pages/Combos/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_MainLayout-CDL1Ko9S.js",
-      "_Drawer-uYNXqSx-.js",
-      "_CurrencyInput-DXIQ7g7M.js",
+      "_MainLayout-DQpF9WkW.js",
+      "_Drawer-DMq3CGn3.js",
+      "_CurrencyInput-CEbmCK6f.js",
       "_sweetalert2.esm.all-B3GDCxSY.js",
-      "_Pagination-QPOBtQB6.js",
-      "_lottie-react.esm-u5PxktJG.js"
+      "_Pagination-BvmsRhcD.js",
+      "_lottie-react.esm-CR2WGiCf.js"
     ]
   },
   "resources/js/Pages/ComingSoon.jsx": {
-    "file": "assets/ComingSoon-9Qjmrtbf.js",
+    "file": "assets/ComingSoon-zTFWbKPR.js",
     "name": "ComingSoon",
     "src": "resources/js/Pages/ComingSoon.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_MainLayout-CDL1Ko9S.js",
-      "_lottie-react.esm-u5PxktJG.js"
+      "_MainLayout-DQpF9WkW.js",
+      "_lottie-react.esm-CR2WGiCf.js"
     ]
   },
   "resources/js/Pages/Dashboard.jsx": {
-    "file": "assets/Dashboard-CBkmwnGy.js",
+    "file": "assets/Dashboard-DQ9Rou3M.js",
     "name": "Dashboard",
     "src": "resources/js/Pages/Dashboard.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_lottie-react.esm-u5PxktJG.js",
+      "_lottie-react.esm-CR2WGiCf.js",
       "_sweetalert2.esm.all-B3GDCxSY.js",
       "resources/js/Pages/ComingSoon.jsx",
-      "_MainLayout-CDL1Ko9S.js"
+      "_MainLayout-DQpF9WkW.js"
     ]
   },
   "resources/js/Pages/Dev/RetroalimentacionesShowcase.jsx": {
-    "file": "assets/RetroalimentacionesShowcase-Va90Bi5l.js",
+    "file": "assets/RetroalimentacionesShowcase-L1sL16ac.js",
     "name": "RetroalimentacionesShowcase",
     "src": "resources/js/Pages/Dev/RetroalimentacionesShowcase.jsx",
     "isDynamicEntry": true,
@@ -137,33 +137,33 @@
     ]
   },
   "resources/js/Pages/ExpenseCategories/Index.jsx": {
-    "file": "assets/Index-DpG2I1Y2.js",
+    "file": "assets/Index-DW9nGUuO.js",
     "name": "Index",
     "src": "resources/js/Pages/ExpenseCategories/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_MainLayout-CDL1Ko9S.js",
-      "_Drawer-uYNXqSx-.js",
+      "_MainLayout-DQpF9WkW.js",
+      "_Drawer-DMq3CGn3.js",
       "_sweetalert2.esm.all-B3GDCxSY.js",
-      "_lottie-react.esm-u5PxktJG.js"
+      "_lottie-react.esm-CR2WGiCf.js"
     ]
   },
   "resources/js/Pages/Expenses/Index.jsx": {
-    "file": "assets/Index-cthydRhN.js",
+    "file": "assets/Index-CqSh_MQ9.js",
     "name": "Index",
     "src": "resources/js/Pages/Expenses/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_lottie-react.esm-u5PxktJG.js",
+      "_lottie-react.esm-CR2WGiCf.js",
       "_sweetalert2.esm.all-B3GDCxSY.js",
       "resources/js/Pages/ComingSoon.jsx",
-      "_MainLayout-CDL1Ko9S.js"
+      "_MainLayout-DQpF9WkW.js"
     ]
   },
   "resources/js/Pages/Landing.jsx": {
-    "file": "assets/Landing-BU6zKr1S.js",
+    "file": "assets/Landing-CHrmXxCI.js",
     "name": "Landing",
     "src": "resources/js/Pages/Landing.jsx",
     "isDynamicEntry": true,
@@ -175,114 +175,114 @@
     ]
   },
   "resources/js/Pages/Menu/Index.jsx": {
-    "file": "assets/Index-BI8NcEeO.js",
+    "file": "assets/Index-gkByOeeJ.js",
     "name": "Index",
     "src": "resources/js/Pages/Menu/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_lottie-react.esm-u5PxktJG.js",
+      "_lottie-react.esm-CR2WGiCf.js",
       "_sweetalert2.esm.all-B3GDCxSY.js",
       "resources/js/Pages/ComingSoon.jsx",
-      "_MainLayout-CDL1Ko9S.js"
+      "_MainLayout-DQpF9WkW.js"
     ]
   },
   "resources/js/Pages/Products/Index.jsx": {
-    "file": "assets/Index-eOFOAQhU.js",
+    "file": "assets/Index-CO7RM_gD.js",
     "name": "Index",
     "src": "resources/js/Pages/Products/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_lottie-react.esm-u5PxktJG.js",
+      "_lottie-react.esm-CR2WGiCf.js",
       "_sweetalert2.esm.all-B3GDCxSY.js",
       "resources/js/Pages/ComingSoon.jsx",
-      "_MainLayout-CDL1Ko9S.js"
+      "_MainLayout-DQpF9WkW.js"
     ]
   },
   "resources/js/Pages/Purchases/Index.jsx": {
-    "file": "assets/Index-8yyUHsRg.js",
+    "file": "assets/Index-BV6dhnzo.js",
     "name": "Index",
     "src": "resources/js/Pages/Purchases/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_MainLayout-CDL1Ko9S.js",
-      "_Drawer-uYNXqSx-.js",
-      "_CurrencyInput-DXIQ7g7M.js",
+      "_MainLayout-DQpF9WkW.js",
+      "_Drawer-DMq3CGn3.js",
+      "_CurrencyInput-CEbmCK6f.js",
       "_sweetalert2.esm.all-B3GDCxSY.js",
-      "_Pagination-QPOBtQB6.js",
-      "_FinanceNavbar-CP6zTb83.js",
-      "_lottie-react.esm-u5PxktJG.js"
+      "_Pagination-BvmsRhcD.js",
+      "_FinanceNavbar-BXHUUDYW.js",
+      "_lottie-react.esm-CR2WGiCf.js"
     ]
   },
   "resources/js/Pages/Reports/Index.jsx": {
-    "file": "assets/Index-6h2PkvlT.js",
+    "file": "assets/Index-BOLQbnZy.js",
     "name": "Index",
     "src": "resources/js/Pages/Reports/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_lottie-react.esm-u5PxktJG.js",
+      "_lottie-react.esm-CR2WGiCf.js",
       "resources/js/Pages/ComingSoon.jsx",
-      "_MainLayout-CDL1Ko9S.js"
+      "_MainLayout-DQpF9WkW.js"
     ]
   },
   "resources/js/Pages/Sales/Index.jsx": {
-    "file": "assets/Index-Bqv-xI-U.js",
+    "file": "assets/Index-CaWJU7yg.js",
     "name": "Index",
     "src": "resources/js/Pages/Sales/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_MainLayout-CDL1Ko9S.js",
-      "_Drawer-uYNXqSx-.js",
+      "_MainLayout-DQpF9WkW.js",
+      "_Drawer-DMq3CGn3.js",
       "_sweetalert2.esm.all-B3GDCxSY.js",
-      "_Pagination-QPOBtQB6.js",
-      "_lottie-react.esm-u5PxktJG.js"
+      "_Pagination-BvmsRhcD.js",
+      "_lottie-react.esm-CR2WGiCf.js"
     ]
   },
   "resources/js/Pages/Settings/Index.jsx": {
-    "file": "assets/Index-lBH3XS0E.js",
+    "file": "assets/Index-DAA6GaJ9.js",
     "name": "Index",
     "src": "resources/js/Pages/Settings/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_MainLayout-CDL1Ko9S.js",
-      "_Drawer-uYNXqSx-.js",
+      "_MainLayout-DQpF9WkW.js",
+      "_Drawer-DMq3CGn3.js",
       "_sweetalert2.esm.all-B3GDCxSY.js",
-      "_lottie-react.esm-u5PxktJG.js"
+      "_lottie-react.esm-CR2WGiCf.js"
     ]
   },
   "resources/js/Pages/Suppliers/Edit.jsx": {
-    "file": "assets/Edit-hMfBIYBL.js",
+    "file": "assets/Edit-BaeiKlXs.js",
     "name": "Edit",
     "src": "resources/js/Pages/Suppliers/Edit.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_MainLayout-CDL1Ko9S.js",
-      "_lottie-react.esm-u5PxktJG.js"
+      "_MainLayout-DQpF9WkW.js",
+      "_lottie-react.esm-CR2WGiCf.js"
     ]
   },
   "resources/js/Pages/Suppliers/Index.jsx": {
-    "file": "assets/Index-Bc4BVFy5.js",
+    "file": "assets/Index-xEBkp2Hy.js",
     "name": "Index",
     "src": "resources/js/Pages/Suppliers/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_MainLayout-CDL1Ko9S.js",
-      "_Drawer-uYNXqSx-.js",
+      "_MainLayout-DQpF9WkW.js",
+      "_Drawer-DMq3CGn3.js",
       "_sweetalert2.esm.all-B3GDCxSY.js",
-      "_Pagination-QPOBtQB6.js",
-      "_FinanceNavbar-CP6zTb83.js",
-      "_lottie-react.esm-u5PxktJG.js"
+      "_Pagination-BvmsRhcD.js",
+      "_FinanceNavbar-BXHUUDYW.js",
+      "_lottie-react.esm-CR2WGiCf.js"
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-A2zMi8LX.js",
+    "file": "assets/app-D17Y1aQK.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
