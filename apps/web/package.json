@@ -4,7 +4,8 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "start": "concurrently \"php artisan serve\" \"npm run dev\""
+        "start": "concurrently \"php artisan serve\" \"npm run dev\"",
+        "capture:toasts": "node ../../tools/capture_toasts.cjs"
     },
     "devDependencies": {
         "autoprefixer": "^10.4.20",
