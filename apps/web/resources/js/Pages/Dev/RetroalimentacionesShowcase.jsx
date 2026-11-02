@@ -31,10 +31,11 @@ export default function RetroalimentacionesShowcase() {
     const openModalConfirm = () => {
         if (window.confirmAction) {
             window.confirmAction({
-                title: 'Confirmación de Registro de Receta',
-                message: '¿Está seguro de que desea registrar y publicar la receta comercial de Bacon Burger Doble en el catálogo activo?',
+                title: 'Confirmar Registro de Receta',
+                category: 'Catálogo de Recetas BOM',
+                message: '¿Confirma la publicación de la receta comercial de Bacon Burger Doble? Se actualizarán los costos de insumos en el menú activo.',
                 variant: 'info',
-                confirmText: 'ACEPTAR',
+                confirmText: 'PUBLICAR RECETA',
                 cancelText: 'CANCELAR'
             });
         }
@@ -44,9 +45,10 @@ export default function RetroalimentacionesShowcase() {
         if (window.confirmAction) {
             window.confirmAction({
                 title: 'Inactivar Producto del Menú',
-                message: '¿Está seguro de que desea dar de baja lógica el producto Cheese Burger Simple? Esta acción impedirá su venta en caja y web.',
+                category: 'Baja Lógica',
+                message: '¿Está seguro de que desea dar de baja Cheese Burger Simple? Esta acción impedirá su venta en mostrador y pausará su receta en cocina.',
                 variant: 'danger',
-                confirmText: 'ELIMINAR',
+                confirmText: 'INACTIVAR PRODUCTO',
                 cancelText: 'CANCELAR'
             });
         }
@@ -110,9 +112,10 @@ export default function RetroalimentacionesShowcase() {
                     <ConfirmDialog
                         isOpen={true}
                         variant="info"
-                        title="Confirmación de Registro de Receta"
-                        message="¿Está seguro de que desea registrar y publicar la receta comercial de Bacon Burger Doble en el catálogo activo?"
-                        confirmText="ACEPTAR"
+                        category="Catálogo de Recetas BOM"
+                        title="Confirmar Registro de Receta"
+                        message="¿Confirma la publicación de la receta comercial de Bacon Burger Doble? Se actualizarán los costos de insumos en el menú activo."
+                        confirmText="PUBLICAR RECETA"
                         cancelText="CANCELAR"
                         freeze={true}
                     />
@@ -121,9 +124,10 @@ export default function RetroalimentacionesShowcase() {
                     <ConfirmDialog
                         isOpen={true}
                         variant="danger"
+                        category="Baja Lógica"
                         title="Inactivar Producto del Menú"
-                        message="¿Está seguro de que desea dar de baja lógica el producto Cheese Burger Simple? Esta acción impedirá su venta en caja y web."
-                        confirmText="ELIMINAR"
+                        message="¿Está seguro de que desea dar de baja Cheese Burger Simple? Esta acción impedirá su venta en mostrador y pausará su receta en cocina."
+                        confirmText="INACTIVAR PRODUCTO"
                         cancelText="CANCELAR"
                         freeze={true}
                     />

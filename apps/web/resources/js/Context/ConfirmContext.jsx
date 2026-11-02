@@ -32,9 +32,11 @@ export const ConfirmProvider = ({ children }) => {
         title: '',
         message: '',
         variant: 'danger',
+        category: '',
         confirmText: '',
         cancelText: 'Cancelar',
         freeze: false,
+        icon: null,
         resolve: null
     });
 
@@ -43,14 +45,16 @@ export const ConfirmProvider = ({ children }) => {
             // Normalización de opciones (compatible con SweetAlert y nativo)
             const title = options.title || (options.text ? '' : '¿Está seguro?');
             const message = options.message || options.text || '¿Confirma que desea realizar esta acción?';
-            const icon = options.icon || options.variant || 'danger';
+            const iconVariant = options.iconVariant || options.icon || options.variant || 'danger';
             
             // Mapeo de variantes
             let variant = 'danger';
-            if (icon === 'warning') variant = 'warning';
-            else if (icon === 'question' || icon === 'info') variant = 'info';
-            else if (icon === 'danger' || icon === 'error') variant = 'danger';
+            if (iconVariant === 'warning') variant = 'warning';
+            else if (iconVariant === 'question' || iconVariant === 'info') variant = 'info';
+            else if (iconVariant === 'danger' || iconVariant === 'error') variant = 'danger';
 
+            const category = options.category || '';
+            const customIcon = (typeof options.icon === 'object' && React.isValidElement(options.icon)) ? options.icon : null;
             const confirmText = options.confirmButtonText || options.confirmText;
             const cancelText = options.cancelButtonText || options.cancelText || 'Cancelar';
             const freeze = options.freeze || options.backdrop === false;
@@ -60,9 +64,11 @@ export const ConfirmProvider = ({ children }) => {
                 title,
                 message,
                 variant,
+                category,
                 confirmText,
                 cancelText,
                 freeze,
+                icon: customIcon,
                 resolve
             });
         });
@@ -101,9 +107,11 @@ export const ConfirmProvider = ({ children }) => {
                     title={dialogState.title}
                     message={dialogState.message}
                     variant={dialogState.variant}
+                    category={dialogState.category}
                     confirmText={dialogState.confirmText}
                     cancelText={dialogState.cancelText}
                     freeze={dialogState.freeze}
+                    icon={dialogState.icon}
                     onConfirm={handleConfirm}
                     onCancel={handleCancel}
                 />,
