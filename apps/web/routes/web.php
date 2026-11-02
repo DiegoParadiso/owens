@@ -32,10 +32,14 @@ Route::post('/admin/login', [UserController::class, 'loginCheck'])
     ->middleware(['throttle:5,1'])
     ->name('login.check');
 
-// Ruta técnica de desarrollo para captura de interfaces y pruebas de feedback visual
-Route::get('/dev/retroalimentaciones', function () {
-    return Inertia::render('Dev/RetroalimentacionesShowcase');
-})->name('dev.retroalimentaciones');
+// Rutas técnicas de desarrollo (aisladas exclusivamente para local/testing)
+if (app()->environment('local', 'testing')) {
+    Route::prefix('dev')->name('dev.')->group(function () {
+        Route::get('/retroalimentaciones', function () {
+            return Inertia::render('Dev/RetroalimentacionesShowcase');
+        })->name('retroalimentaciones');
+    });
+}
 
 // Rutas protegidas con autenticación
 Route::middleware(['auth'])->prefix('admin')->group(function () {

@@ -21,7 +21,7 @@ const components = [
     { id: 'modal_delete', name: 'pantalla_f_inactivacion.png', width: 620, height: 440 }
 ];
 
-// 1. Snapshot estatico determinista (con static=1 para deshabilitar animaciones a nivel CSS)
+// 1. Snapshot estático determinista (con static=1 para deshabilitar animaciones a nivel CSS)
 components.forEach(c => {
     const outPath = path.join(OUTPUT_DIR, c.name);
     const cmd = `${CHROME_PATH} --headless=new --disable-gpu --virtual-time-budget=1000 --screenshot="${outPath}" --window-size=${c.width},${c.height} "${BASE_URL}?component=${c.id}&static=1"`;
@@ -33,49 +33,6 @@ components.forEach(c => {
     }
 });
 
-// 2. Muestreo secuencial de animaciones (con static=0 y animate=1)
-console.log('[ANIMATION] Sampling transition keyframes...');
-const framesDir = path.join(__dirname, '../scratch/frames');
-if (!fs.existsSync(framesDir)) {
-    fs.mkdirSync(framesDir, { recursive: true });
-}
-
-const frameBudgets = [80, 160, 240, 320, 420, 550, 700];
-frameBudgets.forEach((budget, idx) => {
-    const framePath = path.join(framesDir, `frame_${String(idx).padStart(2, '0')}.png`);
-    const cmd = `${CHROME_PATH} --headless=new --disable-gpu --virtual-time-budget=${budget} --screenshot="${framePath}" --window-size=850,160 "${BASE_URL}?component=toast_success&animate=1"`;
-    try {
-        execSync(cmd, { stdio: 'pipe' });
-    } catch (err) {}
-});
-
-// 3. Compilacion de animacion a WebP y GIF
-try {
-    const animWebp = path.join(OUTPUT_DIR, 'toast_animacion.webp');
-    const animGif = path.join(OUTPUT_DIR, 'toast_animacion.gif');
-    const magickCmdWebp = `/opt/homebrew/bin/magick -delay 20 -loop 0 "${framesDir}/frame_*.png" "${animWebp}"`;
-    const magickCmdGif = `/opt/homebrew/bin/magick -delay 20 -loop 0 "${framesDir}/frame_*.png" "${animGif}"`;
-    execSync(magickCmdWebp, { stdio: 'pipe' });
-    execSync(magickCmdGif, { stdio: 'pipe' });
-    console.log(`[ANIMATION] Success: toast_animacion.webp (libwebp animated format)`);
-    console.log(`[ANIMATION] Success: toast_animacion.gif (standard legacy gif format)`);
-} catch (e) {
-    console.warn('[ANIMATION] Warning: ImageMagick execution failed:', e.message);
-}
-
-// 4. Compilacion de lamina compuesta para memoria tecnica (Figura 4.2.0.1)
-try {
-    const compositePath = path.resolve(OUTPUT_DIR, '../retroalimentaciones.png');
-    const montageCmd = `/opt/homebrew/bin/magick montage +label "${path.join(OUTPUT_DIR, 'pantalla_a_exito.png')}" "${path.join(OUTPUT_DIR, 'pantalla_b_validacion.png')}" "${path.join(OUTPUT_DIR, 'pantalla_c_inconsistencia.png')}" "${path.join(OUTPUT_DIR, 'pantalla_d_duplicado.png')}" "${path.join(OUTPUT_DIR, 'pantalla_e_confirmacion.png')}" "${path.join(OUTPUT_DIR, 'pantalla_f_inactivacion.png')}" -tile 2x3 -geometry +20+20 -background "#ffffff" -font /System/Library/Fonts/Helvetica.ttc "${compositePath}"`;
-    execSync(montageCmd, { stdio: 'pipe' });
-    console.log('[COMPOSITE] Success: retroalimentaciones.png (Figura 4.2.0.1)');
-} catch (e) {
-    console.warn('[COMPOSITE] Warning: Montage composite generation failed:', e.message);
-}
-
-try {
-    fs.rmSync(framesDir, { recursive: true, force: true });
-} catch (e) {}
-
 console.log('[COMPLETED] Snapshot pipeline completed successfully.');
+
 
