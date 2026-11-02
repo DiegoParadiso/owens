@@ -1,1 +1,0 @@
-import{j as e}from"./app-CB9iryTk.js";import"./lottie-react.esm-yRZYJJFU.js";import s from"./ComingSoon-C3AqQrT-.js";import"./MainLayout-X_ZuO0d1.js";function f({date:n,sales:o=0,salesBreakdown:r={},expenses:t=0,expensesBreakdown:i={},purchases:a=0,purchasesBreakdown:p={},netProfit:c=0,closures:m=[]}){return e.jsx(s,{title:"Sección en Construcción"})}export{f as default};

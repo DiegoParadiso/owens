@@ -4,142 +4,125 @@ import Swal from 'sweetalert2';
 import Toast from '../../Components/Toast/Toast';
 
 export default function RetroalimentacionesShowcase() {
-    const [isolate, setIsolate] = useState(null);
+    const [harnessMode, setHarnessMode] = useState(null);
+    const [isStatic, setIsStatic] = useState(false);
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
-            const iso = params.get('isolate');
-            if (iso) {
-                setIsolate(iso.toUpperCase());
-                if (iso.toUpperCase() === 'E') {
-                    openModalE(true);
-                } else if (iso.toUpperCase() === 'F') {
-                    openModalF(true);
+            const comp = params.get('component') || params.get('isolate');
+            const stat = params.get('static') === '1';
+
+            if (comp) {
+                setHarnessMode(comp.toLowerCase());
+            }
+            setIsStatic(stat);
+
+            if (comp) {
+                const target = comp.toLowerCase();
+                if (target === 'e' || target === 'modal_confirm') {
+                    openModalConfirm(stat);
+                } else if (target === 'f' || target === 'modal_delete') {
+                    openModalDelete(stat);
                 }
             }
         }
     }, []);
 
-    // Disparadores reales de producción
-    const triggerToastA = () => {
-        if (window.toast) {
-            window.toast.success(
-                'Operación Exitosa',
-                "El producto 'Bacon Burger Doble' ha sido registrado y publicado correctamente en el menú."
-            );
+    // Handlers para disparo en modo interactivo
+    const triggerToast = (type, title, message) => {
+        if (window.toast && window.toast[type]) {
+            window.toast[type](title, message);
+        } else if (window.toast && window.toast.show) {
+            window.toast.show(type, title, message);
         }
     };
 
-    const triggerToastB = () => {
-        if (window.toast) {
-            window.toast.error(
-                'Error de Validación',
-                'Faltan completar campos obligatorios exigidos por el sistema (Precio o Insumos).'
-            );
-        }
-    };
-
-    const triggerToastC = () => {
-        if (window.toast) {
-            window.toast.error(
-                'Inconsistencia de Negocio',
-                "Quiebre de stock. Materia prima 'Medallón de Carne Vacuna' insuficiente para elaborar la orden."
-            );
-        }
-    };
-
-    const triggerToastD = () => {
-        if (window.toast) {
-            window.toast.warning(
-                'Advertencia de Duplicado',
-                "Ya existe un producto registrado con la denominación 'Bacon Burger Doble'."
-            );
-        }
-    };
-
-    const openModalE = (isIso = false) => {
+    const openModalConfirm = (freeze = false) => {
         Swal.fire({
-            title: 'Confirmación de Registro de Receta',
-            text: "¿Está seguro de que desea registrar y publicar la receta comercial de 'Bacon Burger Doble' en el catálogo activo?",
+            title: 'Confirmacion de Registro de Receta',
+            text: '¿Esta seguro de que desea registrar y publicar la receta comercial de Bacon Burger Doble en el catalogo activo?',
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#0284c7',
             cancelButtonColor: '#6c757d',
             confirmButtonText: 'ACEPTAR',
             cancelButtonText: 'CANCELAR',
-            backdrop: isIso ? false : true,
-            customClass: {
-                popup: 'swal2-owens-popup',
-            }
+            backdrop: freeze ? false : true,
+            allowOutsideClick: !freeze,
         });
     };
 
-    const openModalF = (isIso = false) => {
+    const openModalDelete = (freeze = false) => {
         Swal.fire({
-            title: 'Inactivar Producto del Menú',
-            text: '¿Está seguro de que desea dar de baja lógica el producto Cheese Burger Simple? Esta acción impedirá su venta en caja y web.',
+            title: 'Inactivar Producto del Menu',
+            text: '¿Esta seguro de que desea dar de baja logica el producto Cheese Burger Simple? Esta accion impedira su venta en caja y web.',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#dc2626',
             cancelButtonColor: '#6c757d',
             confirmButtonText: 'ELIMINAR',
             cancelButtonText: 'CANCELAR',
-            backdrop: isIso ? false : true,
-            customClass: {
-                popup: 'swal2-owens-popup',
-            }
+            backdrop: freeze ? false : true,
+            allowOutsideClick: !freeze,
         });
     };
 
-    // MODO AISLADO (Para capturas limpias automatizadas sin fondo)
-    if (isolate) {
-        const allowAnimation = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('animate') === '1';
-
+    // MODO ARNES DE COMPONENTE AISLADO (Test Harness / CI Snapshot Mode)
+    if (harnessMode) {
         return (
             <div
-                id="isolate-stage"
+                id="harness-root"
                 style={{
+                    width: '100vw',
                     minHeight: '100vh',
-                    backgroundColor: '#ffffff',
+                    margin: 0,
+                    padding: '24px',
+                    boxSizing: 'border-box',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    padding: '20px',
-                    fontFamily: "'Inter', system-ui, sans-serif"
+                    backgroundColor: '#ffffff'
                 }}
             >
-                <Head title={`Captura Pantalla [${isolate}]`} />
+                <Head title={`Harness - Component [${harnessMode}]`} />
 
-                {!allowAnimation && (
+                {/* Reset industrial de animaciones: elimina condiciones de carrera en capturas estaticas */}
+                {isStatic && (
                     <style dangerouslySetInnerHTML={{ __html: `
-                        #isolate-stage *, .swal2-popup {
-                            animation: none !important;
-                            transition: none !important;
+                        *, *::before, *::after {
+                            animation-duration: 0s !important;
+                            animation-delay: 0s !important;
+                            transition-duration: 0s !important;
+                            transition-delay: 0s !important;
                             transform: none !important;
+                        }
+                        .swal2-popup {
+                            transform: none !important;
+                            animation: none !important;
                         }
                     `}} />
                 )}
 
-                {isolate === 'A' && (
-                    <div id="toast-target">
+                {(harnessMode === 'a' || harnessMode === 'toast_success') && (
+                    <div id="harness-target" style={{ width: '100%', maxWidth: '800px' }}>
                         <Toast
-                            id="isolate-a"
+                            id="harness-toast-a"
                             type="success"
-                            title="Operación Exitosa"
-                            message="El producto 'Bacon Burger Doble' ha sido registrado y publicado correctamente en el menú."
+                            title="Operacion Exitosa"
+                            message="El producto 'Bacon Burger Doble' ha sido registrado y publicado correctamente en el menu."
                             duration={0}
                             onClose={() => {}}
                         />
                     </div>
                 )}
 
-                {isolate === 'B' && (
-                    <div id="toast-target">
+                {(harnessMode === 'b' || harnessMode === 'toast_error') && (
+                    <div id="harness-target" style={{ width: '100%', maxWidth: '800px' }}>
                         <Toast
-                            id="isolate-b"
+                            id="harness-toast-b"
                             type="error"
-                            title="Error de Validación"
+                            title="Error de Validacion"
                             message="Faltan completar campos obligatorios exigidos por el sistema (Precio o Insumos)."
                             duration={0}
                             onClose={() => {}}
@@ -147,26 +130,26 @@ export default function RetroalimentacionesShowcase() {
                     </div>
                 )}
 
-                {isolate === 'C' && (
-                    <div id="toast-target">
+                {(harnessMode === 'c' || harnessMode === 'toast_conflict') && (
+                    <div id="harness-target" style={{ width: '100%', maxWidth: '800px' }}>
                         <Toast
-                            id="isolate-c"
+                            id="harness-toast-c"
                             type="error"
                             title="Inconsistencia de Negocio"
-                            message="Quiebre de stock. Materia prima 'Medallón de Carne Vacuna' insuficiente para elaborar la orden."
+                            message="Quiebre de stock. Materia prima 'Medallon de Carne Vacuna' insuficiente para elaborar la orden."
                             duration={0}
                             onClose={() => {}}
                         />
                     </div>
                 )}
 
-                {isolate === 'D' && (
-                    <div id="toast-target">
+                {(harnessMode === 'd' || harnessMode === 'toast_warning') && (
+                    <div id="harness-target" style={{ width: '100%', maxWidth: '800px' }}>
                         <Toast
-                            id="isolate-d"
+                            id="harness-toast-d"
                             type="warning"
                             title="Advertencia de Duplicado"
-                            message="Ya existe un producto registrado con la denominación 'Bacon Burger Doble'."
+                            message="Ya existe un producto registrado con la denominacion 'Bacon Burger Doble'."
                             duration={0}
                             onClose={() => {}}
                         />
@@ -176,154 +159,138 @@ export default function RetroalimentacionesShowcase() {
         );
     }
 
-    // MODO PLAYGROUND (Sin estilos decorativos, limpio y funcional para desarrollo)
+    // MODO CONSOLA / PLAYGROUND DE DESARROLLO (HTML puro, tecnico, sin estilos decorativos)
     return (
-        <div style={{
-            minHeight: '100vh',
-            backgroundColor: '#ffffff',
-            padding: '40px 24px',
-            fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-            color: '#111827'
-        }}>
-            <Head title="Feedback Playground - Owens" />
+        <div style={{ width: '100%', minHeight: '100vh', margin: 0, padding: '20px', boxSizing: 'border-box', fontFamily: 'monospace', fontSize: '13px', lineHeight: 1.5, color: '#000000', backgroundColor: '#ffffff' }}>
+            <Head title="Component Harness &amp; Feedback Playground" />
 
-            <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-                <header style={{ marginBottom: '32px', borderBottom: '1px solid #e5e7eb', paddingBottom: '16px' }}>
-                    <h1 style={{ fontSize: '22px', fontWeight: 700, margin: '0 0 6px 0', color: '#111827' }}>
-                        Feedback Playground
-                    </h1>
-                    <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>
-                        Entorno de pruebas y disparador en vivo de componentes de retroalimentación reales (Toasts y Modales).
+            <header style={{ borderBottom: '1px solid #000000', paddingBottom: '12px', marginBottom: '20px' }}>
+                <h1 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold' }}>
+                    DEV_PLAYGROUND :: COMPONENT_HARNESS
+                </h1>
+                <p style={{ margin: '4px 0 0 0', color: '#555555' }}>
+                    Consola técnica de ejecucion de componentes en aislamiento y banco de pruebas de retroalimentacion.
+                </p>
+            </header>
+
+            <main style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                {/* Modulo 1: Notificaciones Asincronas (Toasts) */}
+                <fieldset style={{ border: '1px solid #cccccc', padding: '16px', margin: 0 }}>
+                    <legend style={{ fontWeight: 'bold', padding: '0 6px' }}>
+                        MODULO_1: TOAST_NOTIFICATIONS
+                    </legend>
+                    <p style={{ margin: '0 0 12px 0', color: '#666666' }}>
+                        Disparo interactivo de notificaciones no bloqueantes montadas en el arbol del cliente.
                     </p>
-                </header>
-
-                <main style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-                    {/* Sección Notificaciones Flotantes (Toasts) */}
-                    <div>
-                        <h2 style={{ fontSize: '14px', fontWeight: 600, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '14px' }}>
-                            Toasts Asíncronos
-                        </h2>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
-                            <button
-                                onClick={triggerToastA}
-                                style={{
-                                    padding: '12px 16px',
-                                    backgroundColor: '#ffffff',
-                                    border: '1px solid #d1d5db',
-                                    borderRadius: '6px',
-                                    textAlign: 'left',
-                                    cursor: 'pointer',
-                                    fontSize: '13px'
-                                }}
-                            >
-                                <strong style={{ color: '#059669', display: 'block', marginBottom: '2px' }}>Toast [A]</strong>
-                                <span style={{ color: '#4b5563', fontSize: '12px' }}>Éxito Transaccional</span>
-                            </button>
-
-                            <button
-                                onClick={triggerToastB}
-                                style={{
-                                    padding: '12px 16px',
-                                    backgroundColor: '#ffffff',
-                                    border: '1px solid #d1d5db',
-                                    borderRadius: '6px',
-                                    textAlign: 'left',
-                                    cursor: 'pointer',
-                                    fontSize: '13px'
-                                }}
-                            >
-                                <strong style={{ color: '#dc2626', display: 'block', marginBottom: '2px' }}>Toast [B]</strong>
-                                <span style={{ color: '#4b5563', fontSize: '12px' }}>Error de Validación</span>
-                            </button>
-
-                            <button
-                                onClick={triggerToastC}
-                                style={{
-                                    padding: '12px 16px',
-                                    backgroundColor: '#ffffff',
-                                    border: '1px solid #d1d5db',
-                                    borderRadius: '6px',
-                                    textAlign: 'left',
-                                    cursor: 'pointer',
-                                    fontSize: '13px'
-                                }}
-                            >
-                                <strong style={{ color: '#b91c1c', display: 'block', marginBottom: '2px' }}>Toast [C]</strong>
-                                <span style={{ color: '#4b5563', fontSize: '12px' }}>Inconsistencia de Negocio</span>
-                            </button>
-
-                            <button
-                                onClick={triggerToastD}
-                                style={{
-                                    padding: '12px 16px',
-                                    backgroundColor: '#ffffff',
-                                    border: '1px solid #d1d5db',
-                                    borderRadius: '6px',
-                                    textAlign: 'left',
-                                    cursor: 'pointer',
-                                    fontSize: '13px'
-                                }}
-                            >
-                                <strong style={{ color: '#d97706', display: 'block', marginBottom: '2px' }}>Toast [D]</strong>
-                                <span style={{ color: '#4b5563', fontSize: '12px' }}>Advertencia de Duplicado</span>
-                            </button>
-                        </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                        <button
+                            type="button"
+                            onClick={() => triggerToast('success', 'Operacion Exitosa', "El producto 'Bacon Burger Doble' ha sido registrado y publicado correctamente en el menu.")}
+                            style={{ padding: '8px 16px', cursor: 'pointer', fontFamily: 'monospace' }}
+                        >
+                            Trigger: Toast [Success]
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => triggerToast('error', 'Error de Validacion', 'Faltan completar campos obligatorios exigidos por el sistema (Precio o Insumos).')}
+                            style={{ padding: '8px 16px', cursor: 'pointer', fontFamily: 'monospace' }}
+                        >
+                            Trigger: Toast [Validation Error]
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => triggerToast('error', 'Inconsistencia de Negocio', "Quiebre de stock. Materia prima 'Medallon de Carne Vacuna' insuficiente para elaborar la orden.")}
+                            style={{ padding: '8px 16px', cursor: 'pointer', fontFamily: 'monospace' }}
+                        >
+                            Trigger: Toast [Business Conflict]
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => triggerToast('warning', 'Advertencia de Duplicado', "Ya existe un producto registrado con la denominacion 'Bacon Burger Doble'.")}
+                            style={{ padding: '8px 16px', cursor: 'pointer', fontFamily: 'monospace' }}
+                        >
+                            Trigger: Toast [Warning Duplicate]
+                        </button>
                     </div>
+                </fieldset>
 
-                    {/* Sección Diálogos Modales */}
-                    <div>
-                        <h2 style={{ fontSize: '14px', fontWeight: 600, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '14px' }}>
-                            Diálogos Modales (SweetAlert2)
-                        </h2>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
-                            <button
-                                onClick={openModalE}
-                                style={{
-                                    padding: '12px 16px',
-                                    backgroundColor: '#ffffff',
-                                    border: '1px solid #d1d5db',
-                                    borderRadius: '6px',
-                                    textAlign: 'left',
-                                    cursor: 'pointer',
-                                    fontSize: '13px'
-                                }}
-                            >
-                                <strong style={{ color: '#0284c7', display: 'block', marginBottom: '2px' }}>Modal [E]</strong>
-                                <span style={{ color: '#4b5563', fontSize: '12px' }}>Confirmación de Operación</span>
-                            </button>
-
-                            <button
-                                onClick={openModalF}
-                                style={{
-                                    padding: '12px 16px',
-                                    backgroundColor: '#ffffff',
-                                    border: '1px solid #d1d5db',
-                                    borderRadius: '6px',
-                                    textAlign: 'left',
-                                    cursor: 'pointer',
-                                    fontSize: '13px'
-                                }}
-                            >
-                                <strong style={{ color: '#dc2626', display: 'block', marginBottom: '2px' }}>Modal [F]</strong>
-                                <span style={{ color: '#4b5563', fontSize: '12px' }}>Confirmación de Baja Lógica</span>
-                            </button>
-                        </div>
+                {/* Modulo 2: Dialogos Modales Bloqueantes */}
+                <fieldset style={{ border: '1px solid #cccccc', padding: '16px', margin: 0 }}>
+                    <legend style={{ fontWeight: 'bold', padding: '0 6px' }}>
+                        MODULO_2: MODAL_DIALOGS
+                    </legend>
+                    <p style={{ margin: '0 0 12px 0', color: '#666666' }}>
+                        Dialogos de interrupcion transaccional con resolucion de promesas (Aceptar / Cancelar).
+                    </p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                        <button
+                            type="button"
+                            onClick={() => openModalConfirm(false)}
+                            style={{ padding: '8px 16px', cursor: 'pointer', fontFamily: 'monospace' }}
+                        >
+                            Trigger: Modal [Confirm Operation]
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => openModalDelete(false)}
+                            style={{ padding: '8px 16px', cursor: 'pointer', fontFamily: 'monospace' }}
+                        >
+                            Trigger: Modal [Confirm Deletion]
+                        </button>
                     </div>
+                </fieldset>
 
-                    {/* Automatización y Documentación */}
-                    <div style={{ marginTop: '16px', padding: '16px', backgroundColor: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-                        <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827', marginBottom: '6px' }}>
-                            Generador de Assets Automatizado
-                        </div>
-                        <div style={{ fontSize: '12px', color: '#4b5563', lineHeight: '1.5' }}>
-                            Para exportar automáticamente todas las capturas individuales en PNG y las animaciones en WebP a <code>docs/4_Diseno/img/toasts/</code>, ejecuta en la terminal:
-                            <pre style={{ margin: '8px 0 0 0', padding: '8px 12px', backgroundColor: '#111827', color: '#f9fafb', borderRadius: '4px', fontSize: '12px' }}>
-                                npm run capture:toasts
-                            </pre>
-                        </div>
-                    </div>
-                </main>
-            </div>
+                {/* Modulo 3: Endpoints de Aislamiento para Herramientas de Captura (CI / Headless) */}
+                <fieldset style={{ border: '1px solid #cccccc', padding: '16px', margin: 0 }}>
+                    <legend style={{ fontWeight: 'bold', padding: '0 6px' }}>
+                        MODULO_3: HEADLESS_HARNESS_ENDPOINTS
+                    </legend>
+                    <p style={{ margin: '0 0 12px 0', color: '#666666' }}>
+                        Rutas parametrizadas para herramientas CLI, crawlers o tests de regresion visual. El parametro <code>static=1</code> deshabilita animaciones para evitar condiciones de carrera.
+                    </p>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
+                        <thead>
+                            <tr style={{ borderBottom: '1px solid #000000' }}>
+                                <th style={{ padding: '6px' }}>Identificador</th>
+                                <th style={{ padding: '6px' }}>Tipo</th>
+                                <th style={{ padding: '6px' }}>URL de Aislamiento Estático</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style={{ borderBottom: '1px solid #eeeeee' }}>
+                                <td style={{ padding: '6px' }}>Pantalla [A]</td>
+                                <td style={{ padding: '6px' }}>Toast Success</td>
+                                <td style={{ padding: '6px' }}><code>/dev/retroalimentaciones?component=toast_success&amp;static=1</code></td>
+                            </tr>
+                            <tr style={{ borderBottom: '1px solid #eeeeee' }}>
+                                <td style={{ padding: '6px' }}>Pantalla [B]</td>
+                                <td style={{ padding: '6px' }}>Toast Error</td>
+                                <td style={{ padding: '6px' }}><code>/dev/retroalimentaciones?component=toast_error&amp;static=1</code></td>
+                            </tr>
+                            <tr style={{ borderBottom: '1px solid #eeeeee' }}>
+                                <td style={{ padding: '6px' }}>Pantalla [C]</td>
+                                <td style={{ padding: '6px' }}>Toast Conflict</td>
+                                <td style={{ padding: '6px' }}><code>/dev/retroalimentaciones?component=toast_conflict&amp;static=1</code></td>
+                            </tr>
+                            <tr style={{ borderBottom: '1px solid #eeeeee' }}>
+                                <td style={{ padding: '6px' }}>Pantalla [D]</td>
+                                <td style={{ padding: '6px' }}>Toast Warning</td>
+                                <td style={{ padding: '6px' }}><code>/dev/retroalimentaciones?component=toast_warning&amp;static=1</code></td>
+                            </tr>
+                            <tr style={{ borderBottom: '1px solid #eeeeee' }}>
+                                <td style={{ padding: '6px' }}>Pantalla [E]</td>
+                                <td style={{ padding: '6px' }}>Modal Confirm</td>
+                                <td style={{ padding: '6px' }}><code>/dev/retroalimentaciones?component=modal_confirm&amp;static=1</code></td>
+                            </tr>
+                            <tr>
+                                <td style={{ padding: '6px' }}>Pantalla [F]</td>
+                                <td style={{ padding: '6px' }}>Modal Delete</td>
+                                <td style={{ padding: '6px' }}><code>/dev/retroalimentaciones?component=modal_delete&amp;static=1</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </fieldset>
+            </main>
         </div>
     );
 }
