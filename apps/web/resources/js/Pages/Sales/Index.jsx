@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
 import { Head, Link, useForm, router, usePage } from '@inertiajs/react';
-import Swal from 'sweetalert2';
+import { confirmAction } from '@/Utils/Alerts';
 
 import Pagination from '@/Components/Pagination';
 import InvoiceDrawer from '@/Components/InvoiceDrawer';
@@ -74,30 +74,21 @@ export default function Index({ sales = [], products = [], afip_config = {} }) {
         return data.split_payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
     };
 
-    const handleDelete = (id) => {
-        Swal.fire({
-            text: "¿Eliminar esta venta?",
-            showCancelButton: true,
-            confirmButtonColor: '#dc3545',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Eliminar',
-            cancelButtonText: 'Cancelar',
-            buttonsStyling: true,
-            customClass: {
-                popup: 'swal-minimal',
-                confirmButton: 'btn btn-danger px-4',
-                cancelButton: 'btn btn-secondary px-4'
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                router.delete(route('sales.destroy', id), {
-                    preserveScroll: true,
-                    onSuccess: () => {
-                        window.toast.success('Venta eliminada', 'La venta ha sido eliminada correctamente.');
-                    }
-                });
-            }
+    const handleDelete = async (id) => {
+        const ok = await confirmAction({
+            title: 'Eliminar Venta',
+            message: '¿Está seguro de que desea eliminar esta venta?',
+            variant: 'danger',
+            confirmText: 'Eliminar'
         });
+        if (ok) {
+            router.delete(route('sales.destroy', id), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    window.toast.success('Venta eliminada', 'La venta ha sido eliminada correctamente.');
+                }
+            });
+        }
     };
 
 
@@ -258,21 +249,14 @@ export default function Index({ sales = [], products = [], afip_config = {} }) {
             onError: (errors) => {
                 if (errors.register_closed) {
                     setShowDrawer(false);
-                    Swal.fire({
-                        text: 'No has abierto caja. ¿Deseas abrirla ahora?',
-                        showCancelButton: true,
-                        confirmButtonText: 'Abrir Caja',
-                        cancelButtonText: 'Cancelar',
-                        confirmButtonColor: '#dc3545',
-                        cancelButtonColor: '#6c757d',
-                        buttonsStyling: true,
-                        customClass: {
-                            popup: 'swal-medium',
-                            confirmButton: 'btn btn-primary px-4',
-                            cancelButton: 'btn btn-secondary px-4'
-                        }
-                    }).then((result) => {
-                        if (result.isConfirmed) {
+                    confirmAction({
+                        title: 'Caja cerrada',
+                        message: 'No has abierto caja. ¿Deseas abrirla ahora?',
+                        variant: 'warning',
+                        confirmText: 'Abrir Caja',
+                        cancelText: 'Cancelar'
+                    }).then((ok) => {
+                        if (ok) {
                             router.visit(route('cash_register.index'));
                         } else {
                             setShowDrawer(true);

@@ -855,76 +855,7 @@ body.dark-mode .btn-segmented-inactive:hover {
     visibility: hidden;
 }
 
-/* Toast Notification Styling */
-.swal2-popup.swal2-toast {
-    box-shadow: none !important;
-    border: 1px solid var(--border-color) !important;
-    border-left: 4px solid #28a745 !important;
-    background-color: var(--bg-card) !important;
-    color: var(--text-main) !important;
-    padding: 0.75rem 1rem !important;
-    border-radius: 4px !important;
-    min-width: 280px !important;
-    max-width: 400px !important;
-}
 
-.swal2-popup.swal2-toast .swal2-title,
-.swal2-popup.swal2-toast .swal2-html-container {
-    margin: 0 !important;
-    padding: 0 0.5rem 0 0 !important;
-    font-size: 0.875rem !important;
-    font-weight: 500 !important;
-    color: var(--text-main) !important;
-    text-align: left !important;
-}
-
-.swal2-popup.swal2-toast .swal2-icon {
-    margin: 0 0.75rem 0 0 !important;
-    width: 1.25rem !important;
-    height: 1.25rem !important;
-    font-size: 0.75rem !important;
-}
-
-.swal2-popup.swal2-toast .swal2-icon.swal2-success {
-    border-color: #28a745 !important;
-}
-
-.swal2-popup.swal2-toast .swal2-icon.swal2-success [class^='swal2-success-line'] {
-    background-color: #28a745 !important;
-}
-
-.swal2-popup.swal2-toast .swal2-icon.swal2-success .swal2-success-ring {
-    border-color: rgba(40, 167, 69, 0.3) !important;
-}
-
-/* Close button styling */
-.swal2-popup.swal2-toast .swal2-close {
-    position: absolute !important;
-    top: 0.5rem !important;
-    right: 0.5rem !important;
-    width: 1.25rem !important;
-    height: 1.25rem !important;
-    font-size: 1.25rem !important;
-    line-height: 1rem !important;
-    color: var(--text-muted) !important;
-    opacity: 0.6 !important;
-    transition: opacity 0.2s !important;
-}
-
-.swal2-popup.swal2-toast .swal2-close:hover {
-    opacity: 1 !important;
-    color: var(--text-main) !important;
-}
-
-/* Container layout */
-.swal2-popup.swal2-toast .swal2-content {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: flex-start !important;
-    padding: 0 !important;
-    margin: 0 !important;
-}
 
 /* Adaptive Contrast Text (Black in Light Mode, White in Dark Mode) */
 .text-adaptive-contrast {
@@ -1106,67 +1037,7 @@ body.dark-mode .table th {
     min-width: 120px;
 }
 
-/* --- SweetAlert Minimal (Migrated from style.css) --- */
-.swal-minimal {
-    width: 600px !important;
-    max-width: 90vw !important;
-    padding: 1.5rem !important;
-}
 
-.swal-minimal .swal2-html-container {
-    margin: 0 !important;
-    padding: 0 !important;
-    font-size: 0.95rem !important;
-}
-
-.swal-minimal .swal2-actions {
-    margin-top: 1.5rem !important;
-}
-
-.swal-minimal .swal2-confirm {
-    border: none !important;
-    box-shadow: none !important;
-}
-
-.swal-minimal .swal2-cancel {
-    border: none !important;
-    box-shadow: none !important;
-}
-
-/* --- New Medium Modal (Cache busting) --- */
-.swal-medium {
-    width: 380px !important;
-    /* Balanced width */
-    max-width: 90vw !important;
-    padding: 2.5rem 2rem !important;
-    /* Visual balance: Top/Bottom 2.5rem, Sides 2rem */
-}
-
-.swal-medium .swal2-input-label {
-    margin-top: 0 !important;
-}
-
-.swal-medium .swal2-html-container {
-    margin: 0 !important;
-    padding: 0 !important;
-    font-size: 0.95rem !important;
-    /* Restored font size */
-    line-height: 1.5 !important;
-}
-
-.swal-medium .swal2-actions {
-    margin-top: 1.5rem !important;
-}
-
-.swal-medium .swal2-confirm {
-    border: none !important;
-    box-shadow: none !important;
-}
-
-.swal-medium .swal2-cancel {
-    border: none !important;
-    box-shadow: none !important;
-}
 
 /* --- FINAL MERGE: Drawer Styles --- */
 .bg-minimal-success {
@@ -1243,31 +1114,7 @@ body.dark-mode .table th {
     min-width: 120px;
 }
 
-/* --- FINAL MERGE: SweetAlert Minimal --- */
-.swal-minimal {
-    width: 320px !important;
-    padding: 1.5rem !important;
-}
 
-.swal-minimal .swal2-html-container {
-    margin: 0 !important;
-    padding: 0 !important;
-    font-size: 0.95rem !important;
-}
-
-.swal-minimal .swal2-actions {
-    margin-top: 1.5rem !important;
-}
-
-.swal-minimal .swal2-confirm {
-    border: none !important;
-    box-shadow: none !important;
-}
-
-.swal-minimal .swal2-cancel {
-    border: none !important;
-    box-shadow: none !important;
-}
 
 /* --- Print Styles for Reports --- */
 @media print {
@@ -1408,26 +1255,7 @@ body.dark-mode .table th {
     z-index: 10;
 }
 
-/* --- SweetAlert2 Dark Mode Overrides --- */
-body.dark-mode .swal2-popup {
-    background-color: var(--bg-card) !important;
-    color: var(--text-main) !important;
-    border: 1px solid var(--border-color);
-}
 
-body.dark-mode .swal2-title,
-body.dark-mode .swal2-html-container,
-body.dark-mode .swal2-content {
-    color: var(--text-main) !important;
-}
-
-body.dark-mode .swal2-close {
-    color: var(--text-muted) !important;
-}
-
-body.dark-mode .swal2-timer-progress-bar {
-    background-color: var(--border-color) !important;
-}
 
 /* --- Delete Button for Tables (Theme Adaptive) --- */
 .btn-delete-table {

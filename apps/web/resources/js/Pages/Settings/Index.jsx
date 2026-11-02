@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
 import { Head, useForm, router } from '@inertiajs/react';
-import Swal from 'sweetalert2';
+import { confirmAction } from '@/Utils/Alerts';
 
 
 export default function Index({ users, system_mode, manage_stock }) {
@@ -57,32 +57,23 @@ export default function Index({ users, system_mode, manage_stock }) {
         }
     };
 
-    const handleDelete = (user) => {
-        Swal.fire({
-            text: "¿Eliminar este usuario?",
-            showCancelButton: true,
-            confirmButtonColor: '#dc3545',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Eliminar',
-            cancelButtonText: 'Cancelar',
-            buttonsStyling: true,
-            customClass: {
-                popup: 'swal-minimal',
-                confirmButton: 'btn btn-danger px-4',
-                cancelButton: 'btn btn-secondary px-4'
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                router.delete(route('settings.destroyUser', user.id), {
-                    onSuccess: () => {
-                        window.toast.success('Usuario eliminado', 'El usuario ha sido eliminado correctamente.');
-                    },
-                    onError: (errors) => {
-                        window.toast.error('Error', 'No se pudo eliminar el usuario.');
-                    }
-                });
-            }
+    const handleDelete = async (user) => {
+        const ok = await confirmAction({
+            title: 'Eliminar Usuario',
+            message: '¿Está seguro de que desea eliminar este usuario?',
+            variant: 'danger',
+            confirmText: 'Eliminar'
         });
+        if (ok) {
+            router.delete(route('settings.destroyUser', user.id), {
+                onSuccess: () => {
+                    window.toast.success('Usuario eliminado', 'El usuario ha sido eliminado correctamente.');
+                },
+                onError: (errors) => {
+                    window.toast.error('Error', 'No se pudo eliminar el usuario.');
+                }
+            });
+        }
     };
 
     const handleModeChange = (mode) => {
@@ -110,32 +101,23 @@ export default function Index({ users, system_mode, manage_stock }) {
         });
     };
 
-    const handleResetDatabase = () => {
-        Swal.fire({
-            text: "Se borrarán todos los datos de la base de datos, esta acción es irreversible.",
-            showCancelButton: true,
-            confirmButtonColor: '#dc3545',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Si, borrar todo',
-            cancelButtonText: 'Cancelar',
-            buttonsStyling: true,
-            customClass: {
-                popup: 'swal-minimal',
-                confirmButton: 'btn btn-danger px-4',
-                cancelButton: 'btn btn-secondary px-4'
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                router.post(route('settings.resetDatabase'), {}, {
-                    onSuccess: () => {
-                        window.toast.success('Base de datos reiniciada', 'Todos los datos han sido borrados.');
-                    },
-                    onError: () => {
-                        window.toast.error('Error', 'Error al reiniciar la base de datos.');
-                    }
-                });
-            }
+    const handleResetDatabase = async () => {
+        const ok = await confirmAction({
+            title: 'Reiniciar Base de Datos',
+            message: 'Se borrarán todos los datos de la base de datos, esta acción es irreversible.',
+            variant: 'danger',
+            confirmText: 'Sí, borrar todo'
         });
+        if (ok) {
+            router.post(route('settings.resetDatabase'), {}, {
+                onSuccess: () => {
+                    window.toast.success('Base de datos reiniciada', 'Todos los datos han sido borrados.');
+                },
+                onError: () => {
+                    window.toast.error('Error', 'Error al reiniciar la base de datos.');
+                }
+            });
+        }
     };
 
     return (

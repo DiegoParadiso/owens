@@ -63,8 +63,19 @@ try {
     console.warn('[ANIMATION] Warning: ImageMagick execution failed:', e.message);
 }
 
+// 4. Compilacion de lamina compuesta para memoria tecnica (Figura 4.2.0.1)
+try {
+    const compositePath = path.resolve(OUTPUT_DIR, '../retroalimentaciones.png');
+    const montageCmd = `/opt/homebrew/bin/magick montage +label "${path.join(OUTPUT_DIR, 'pantalla_a_exito.png')}" "${path.join(OUTPUT_DIR, 'pantalla_b_validacion.png')}" "${path.join(OUTPUT_DIR, 'pantalla_c_inconsistencia.png')}" "${path.join(OUTPUT_DIR, 'pantalla_d_duplicado.png')}" "${path.join(OUTPUT_DIR, 'pantalla_e_confirmacion.png')}" "${path.join(OUTPUT_DIR, 'pantalla_f_inactivacion.png')}" -tile 2x3 -geometry +20+20 -background "#ffffff" -font /System/Library/Fonts/Helvetica.ttc "${compositePath}"`;
+    execSync(montageCmd, { stdio: 'pipe' });
+    console.log('[COMPOSITE] Success: retroalimentaciones.png (Figura 4.2.0.1)');
+} catch (e) {
+    console.warn('[COMPOSITE] Warning: Montage composite generation failed:', e.message);
+}
+
 try {
     fs.rmSync(framesDir, { recursive: true, force: true });
 } catch (e) {}
 
 console.log('[COMPLETED] Snapshot pipeline completed successfully.');
+

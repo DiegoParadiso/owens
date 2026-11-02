@@ -3,7 +3,7 @@ import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
 import CurrencyInput from '@/Components/CurrencyInput';
 import { Head, Link, useForm, router } from '@inertiajs/react';
-import Swal from 'sweetalert2';
+import { confirmAction } from '@/Utils/Alerts';
 
 import Pagination from '@/Components/Pagination';
 import FinanceNavbar from '@/Components/FinanceNavbar';
@@ -111,21 +111,14 @@ export default function Index({ expenses = [], categories = [] }) {
             twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
 
             if (selectedDate < twoDaysAgo) {
-                Swal.fire({
-                    text: 'Estás registrando un gasto con fecha pasada en la caja actual, ¿es correcto?',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#df0f13',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Sí, continuar',
-                    cancelButtonText: 'Cancelar',
-                    customClass: {
-                        popup: 'swal-minimal',
-                        confirmButton: 'btn btn-primary px-4',
-                        cancelButton: 'btn btn-secondary px-4'
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
+                confirmAction({
+                    title: 'Fecha pasada detectada',
+                    message: 'Estás registrando un gasto con fecha pasada en la caja actual, ¿es correcto?',
+                    variant: 'warning',
+                    confirmText: 'Sí, continuar',
+                    cancelText: 'Cancelar'
+                }).then((ok) => {
+                    if (ok) {
                         submitExpense();
                     }
                 });
@@ -168,21 +161,14 @@ export default function Index({ expenses = [], categories = [] }) {
             onError: (errors) => {
                 if (errors.register_closed) {
                     setShowDrawer(false);
-                    Swal.fire({
-                        text: 'No has abierto caja. ¿Deseas abrirla ahora?',
-                        showCancelButton: true,
-                        confirmButtonText: 'Abrir Caja',
-                        cancelButtonText: 'Cancelar',
-                        confirmButtonColor: '#dc3545',
-                        cancelButtonColor: '#6c757d',
-                        buttonsStyling: true,
-                        customClass: {
-                            popup: 'swal-medium',
-                            confirmButton: 'btn btn-primary px-4',
-                            cancelButton: 'btn btn-secondary px-4'
-                        }
-                    }).then((result) => {
-                        if (result.isConfirmed) {
+                    confirmAction({
+                        title: 'Caja cerrada',
+                        message: 'No has abierto caja. ¿Deseas abrirla ahora?',
+                        variant: 'warning',
+                        confirmText: 'Abrir Caja',
+                        cancelText: 'Cancelar'
+                    }).then((ok) => {
+                        if (ok) {
                             router.visit(route('cash_register.index'));
                         } else {
                             setShowDrawer(true);
@@ -210,30 +196,21 @@ export default function Index({ expenses = [], categories = [] }) {
         reset();
     };
 
-    const handleDelete = (id) => {
-        Swal.fire({
-            text: "¿Eliminar este gasto?",
-            showCancelButton: true,
-            confirmButtonColor: '#dc3545',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Eliminar',
-            cancelButtonText: 'Cancelar',
-            buttonsStyling: true,
-            customClass: {
-                popup: 'swal-minimal',
-                confirmButton: 'btn btn-danger px-4',
-                cancelButton: 'btn btn-secondary px-4'
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                router.delete(route('expense.destroy', id), {
-                    preserveScroll: true,
-                    onSuccess: () => {
-                        window.toast.success('Eliminado', 'El gasto ha sido eliminado correctamente.');
-                    },
-                });
-            }
+    const handleDelete = async (id) => {
+        const ok = await confirmAction({
+            title: 'Eliminar Gasto',
+            message: '¿Está seguro de que desea eliminar este gasto?',
+            variant: 'danger',
+            confirmText: 'Eliminar'
         });
+        if (ok) {
+            router.delete(route('expense.destroy', id), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    window.toast.success('Eliminado', 'El gasto ha sido eliminado correctamente.');
+                },
+            });
+        }
     };
 
     return (

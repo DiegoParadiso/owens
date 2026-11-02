@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Head } from '@inertiajs/react';
-import Swal from 'sweetalert2';
 import Toast from '../../Components/Toast/Toast';
+import ConfirmDialog from '../../Components/Modal/ConfirmDialog';
 
 export default function RetroalimentacionesShowcase() {
     const [component, setComponent] = useState(null);
@@ -15,11 +15,6 @@ export default function RetroalimentacionesShowcase() {
 
             if (comp) {
                 setComponent(comp);
-                if (comp === 'e' || comp === 'modal_confirm') {
-                    openModalConfirm(stat);
-                } else if (comp === 'f' || comp === 'modal_delete') {
-                    openModalDelete(stat);
-                }
             }
             setIsStatic(stat);
         }
@@ -33,34 +28,28 @@ export default function RetroalimentacionesShowcase() {
         }
     };
 
-    const openModalConfirm = (freeze = false) => {
-        Swal.fire({
-            title: 'Confirmación de Registro de Receta',
-            text: '¿Está seguro de que desea registrar y publicar la receta comercial de Bacon Burger Doble en el catálogo activo?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#0284c7',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'ACEPTAR',
-            cancelButtonText: 'CANCELAR',
-            backdrop: freeze ? false : true,
-            allowOutsideClick: !freeze,
-        });
+    const openModalConfirm = () => {
+        if (window.confirmAction) {
+            window.confirmAction({
+                title: 'Confirmación de Registro de Receta',
+                message: '¿Está seguro de que desea registrar y publicar la receta comercial de Bacon Burger Doble en el catálogo activo?',
+                variant: 'info',
+                confirmText: 'ACEPTAR',
+                cancelText: 'CANCELAR'
+            });
+        }
     };
 
-    const openModalDelete = (freeze = false) => {
-        Swal.fire({
-            title: 'Inactivar Producto del Menú',
-            text: '¿Está seguro de que desea dar de baja lógica el producto Cheese Burger Simple? Esta acción impedirá su venta en caja y web.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#dc2626',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'ELIMINAR',
-            cancelButtonText: 'CANCELAR',
-            backdrop: freeze ? false : true,
-            allowOutsideClick: !freeze,
-        });
+    const openModalDelete = () => {
+        if (window.confirmAction) {
+            window.confirmAction({
+                title: 'Inactivar Producto del Menú',
+                message: '¿Está seguro de que desea dar de baja lógica el producto Cheese Burger Simple? Esta acción impedirá su venta en caja y web.',
+                variant: 'danger',
+                confirmText: 'ELIMINAR',
+                cancelText: 'CANCELAR'
+            });
+        }
     };
 
     // Modo de captura aislada para snapshots limpios
@@ -73,10 +62,6 @@ export default function RetroalimentacionesShowcase() {
                         *, *::before, *::after {
                             animation: none !important;
                             transition: none !important;
-                            transform: none !important;
-                        }
-                        .swal2-popup {
-                            animation: none !important;
                             transform: none !important;
                         }
                     `}} />
@@ -119,6 +104,28 @@ export default function RetroalimentacionesShowcase() {
                         message="Ya existe un producto registrado con la denominación 'Bacon Burger Doble'."
                         duration={0}
                         onClose={() => {}}
+                    />
+                )}
+                {(component === 'e' || component === 'modal_confirm') && (
+                    <ConfirmDialog
+                        isOpen={true}
+                        variant="info"
+                        title="Confirmación de Registro de Receta"
+                        message="¿Está seguro de que desea registrar y publicar la receta comercial de Bacon Burger Doble en el catálogo activo?"
+                        confirmText="ACEPTAR"
+                        cancelText="CANCELAR"
+                        freeze={true}
+                    />
+                )}
+                {(component === 'f' || component === 'modal_delete') && (
+                    <ConfirmDialog
+                        isOpen={true}
+                        variant="danger"
+                        title="Inactivar Producto del Menú"
+                        message="¿Está seguro de que desea dar de baja lógica el producto Cheese Burger Simple? Esta acción impedirá su venta en caja y web."
+                        confirmText="ELIMINAR"
+                        cancelText="CANCELAR"
+                        freeze={true}
                     />
                 )}
             </div>

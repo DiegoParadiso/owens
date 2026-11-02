@@ -1,7 +1,7 @@
 import React from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import { Head, Link, router } from '@inertiajs/react';
-import Swal from 'sweetalert2';
+import { confirmAction } from '@/Utils/Alerts';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -66,30 +66,21 @@ export default function Dashboard({ stats, recentSales, chartData, cashRegister 
         return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
     };
 
-    const handleDelete = (id) => {
-        Swal.fire({
-            text: "¿Eliminar esta venta?",
-            showCancelButton: true,
-            confirmButtonColor: '#dc3545',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Eliminar',
-            cancelButtonText: 'Cancelar',
-            buttonsStyling: true,
-            customClass: {
-                popup: 'swal-minimal',
-                confirmButton: 'btn btn-danger px-4',
-                cancelButton: 'btn btn-secondary px-4'
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                router.delete(route('sales.destroy', id), {
+    const handleDelete = async (id) => {
+        const ok = await confirmAction({
+            title: 'Eliminar Venta',
+            message: '¿Está seguro de que desea eliminar esta venta?',
+            variant: 'danger',
+            confirmText: 'Eliminar'
+        });
+        if (ok) {
+            router.delete(route('sales.destroy', id), {
                     preserveScroll: true,
                     onSuccess: () => {
                         window.toast.success('Venta eliminada', 'La venta ha sido eliminada correctamente.');
                     }
                 });
-            }
-        });
+        }
     };
 
     return (

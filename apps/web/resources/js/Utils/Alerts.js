@@ -1,28 +1,39 @@
-import Swal from 'sweetalert2';
-
+/**
+ * Owens Native Confirm Helper (replaces SweetAlert2 with React-native ConfirmDialog)
+ */
 export const confirmAction = ({
     title = '¿Estás seguro?',
     text = 'No podrás revertir esto',
+    message,
     icon = 'warning',
-    confirmButtonText = 'Sí, eliminar',
-    cancelButtonText = 'Cancelar',
+    variant,
+    confirmButtonText,
+    confirmText,
+    cancelButtonText,
+    cancelText = 'Cancelar',
     onConfirm,
-    onCancel
-}) => {
-    Swal.fire({
+    onCancel,
+    freeze = false,
+} = {}) => {
+    const fn = (typeof window !== 'undefined' && window.confirmAction)
+        ? window.confirmAction
+        : () => Promise.resolve({ isConfirmed: false, isDismissed: true });
+
+    return fn({
         title,
-        text,
-        icon,
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText,
-        cancelButtonText,
+        message: message || text,
+        variant: variant || icon,
+        confirmText: confirmText || confirmButtonText,
+        cancelText: cancelText || cancelButtonText,
+        freeze
     }).then((result) => {
-        if (result.isConfirmed) {
+        if (result && result.isConfirmed) {
             if (onConfirm) onConfirm();
         } else {
             if (onCancel) onCancel();
         }
+        return result;
     });
 };
+
+export default { confirmAction };

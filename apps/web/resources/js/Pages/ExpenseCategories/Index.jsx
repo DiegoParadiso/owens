@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
 import { Head, Link, useForm, router } from '@inertiajs/react';
-import Swal from 'sweetalert2';
+import { confirmAction } from '@/Utils/Alerts';
 
 
 export default function Index({ categories }) {
@@ -14,34 +14,25 @@ export default function Index({ categories }) {
         type: 'fixed',
     });
 
-    const handleDelete = (id) => {
-        Swal.fire({
-            text: "¿Eliminar esta categoría?",
-            showCancelButton: true,
-            confirmButtonColor: '#dc3545',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Eliminar',
-            cancelButtonText: 'Cancelar',
-            buttonsStyling: true,
-            customClass: {
-                popup: 'swal-minimal',
-                confirmButton: 'btn btn-danger px-4',
-                cancelButton: 'btn btn-secondary px-4'
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                router.delete(route('expense-categories.destroy', id), {
-                    preserveScroll: true,
-                    onSuccess: () => {
-                        window.toast.success('Eliminado', 'La categoría ha sido eliminada correctamente.');
-                    },
-                    onError: (errors) => {
-                        const errorMessage = errors.error || 'No se puede eliminar esta categoría';
-                        window.toast.error('Error', errorMessage);
-                    }
-                });
-            }
+    const handleDelete = async (id) => {
+        const ok = await confirmAction({
+            title: 'Eliminar Categoría',
+            message: '¿Está seguro de que desea eliminar esta categoría?',
+            variant: 'danger',
+            confirmText: 'Eliminar'
         });
+        if (ok) {
+            router.delete(route('expense-categories.destroy', id), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    window.toast.success('Eliminado', 'La categoría ha sido eliminada correctamente.');
+                },
+                onError: (errors) => {
+                    const errorMessage = errors.error || 'No se puede eliminar esta categoría';
+                    window.toast.error('Error', errorMessage);
+                }
+            });
+        }
     };
 
     const handleEdit = (category) => {

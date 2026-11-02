@@ -3,7 +3,7 @@ import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
 import CurrencyInput from '@/Components/CurrencyInput';
 import { Head, Link, useForm, router, usePage } from '@inertiajs/react';
-import Swal from 'sweetalert2';
+import { confirmAction } from '@/Utils/Alerts';
 
 import Pagination from '@/Components/Pagination';
 
@@ -71,30 +71,21 @@ export default function Index({ products }) {
         }
     };
 
-    const handleDelete = (id) => {
-        Swal.fire({
-            text: "¿Eliminar este producto?",
-            showCancelButton: true,
-            confirmButtonColor: '#dc3545',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Eliminar',
-            cancelButtonText: 'Cancelar',
-            buttonsStyling: true,
-            customClass: {
-                popup: 'swal-minimal',
-                confirmButton: 'btn btn-danger px-4',
-                cancelButton: 'btn btn-secondary px-4'
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                destroy(route('product.destroy', id), {
-                    preserveScroll: true,
-                    onSuccess: () => {
-                        window.toast.success('Eliminado', 'El producto ha sido eliminado correctamente.');
-                    },
-                });
-            }
+    const handleDelete = async (id) => {
+        const ok = await confirmAction({
+            title: 'Inactivar Producto',
+            message: '¿Está seguro de que desea eliminar este producto?',
+            variant: 'danger',
+            confirmText: 'Eliminar'
         });
+        if (ok) {
+            destroy(route('product.destroy', id), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    window.toast.success('Eliminado', 'El producto ha sido eliminado correctamente.');
+                },
+            });
+        }
     };
 
     const handleEdit = (product) => {

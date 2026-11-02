@@ -3,7 +3,6 @@ import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
 import CurrencyInput from '@/Components/CurrencyInput';
 import { Head, Link, useForm } from '@inertiajs/react';
-import Swal from 'sweetalert2';
 
 
 export default function Index({ openRegister, currentBalance, income, expense, movements }) {
