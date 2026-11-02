@@ -150,16 +150,17 @@ export default function Index({ products = [], supplies = [], category = 'burger
 
     const handleDelete = async (id) => {
         const ok = await confirmAction({
-            title: 'Inactivar Ítem',
-            message: '¿Está seguro de que desea eliminar este ítem?',
+            title: 'Inactivar Ítem del Menú',
+            category: 'Inactivación',
+            message: '¿Confirma que desea inactivar este ítem del menú? Esta acción impedirá su venta en mostrador.',
             variant: 'danger',
-            confirmText: 'Eliminar'
+            confirmText: 'Inactivar'
         });
         if (ok) {
             destroy(route('product.destroy', id), {
                 preserveScroll: true,
                 onSuccess: () => {
-                    window.toast.success('Eliminado', 'El ítem ha sido eliminado correctamente.');
+                    window.toast.success('Ítem inactivado', 'El ítem ha sido inactivado correctamente.');
                 },
             });
         }

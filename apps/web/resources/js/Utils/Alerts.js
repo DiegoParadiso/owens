@@ -5,6 +5,7 @@ export const confirmAction = ({
     title = '¿Estás seguro?',
     text = 'No podrás revertir esto',
     message,
+    category,
     icon = 'warning',
     variant,
     confirmButtonText,
@@ -21,6 +22,7 @@ export const confirmAction = ({
 
     return fn({
         title,
+        category,
         message: message || text,
         variant: variant || icon,
         confirmText: confirmText || confirmButtonText,

@@ -42,7 +42,7 @@ export default function ConfirmDialog({
     const isDanger = variant === 'danger';
     const isWarning = variant === 'warning';
 
-    const defaultConfirmText = isDanger ? 'Eliminar' : 'Aceptar';
+    const defaultConfirmText = isDanger ? 'Inactivar' : 'Aceptar';
     const finalConfirmText = confirmText || defaultConfirmText;
 
     const confirmBtnBg = isDanger ? '#df0f13' : isWarning ? '#d97706' : '#0284c7';
@@ -88,6 +88,7 @@ export default function ConfirmDialog({
                     boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.06)',
                     width: '100%',
                     maxWidth: '430px',
+                    minWidth: '320px',
                     padding: '24px',
                     textAlign: 'left',
                     animation: freeze ? 'none' : 'owensModalPopIn 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
@@ -144,7 +145,7 @@ export default function ConfirmDialog({
                         type="button"
                         onClick={onCancel}
                         style={{
-                            padding: '8px 16px',
+                            padding: '8px 18px',
                             fontSize: '13px',
                             fontWeight: 500,
                             borderRadius: '8px',
@@ -152,6 +153,7 @@ export default function ConfirmDialog({
                             backgroundColor: 'transparent',
                             color: 'var(--text-main, #334155)',
                             cursor: 'pointer',
+                            whiteSpace: 'nowrap',
                             transition: 'background-color 0.15s ease'
                         }}
                     >
@@ -163,7 +165,7 @@ export default function ConfirmDialog({
                         type="button"
                         onClick={onConfirm}
                         style={{
-                            padding: '8px 16px',
+                            padding: '8px 20px',
                             fontSize: '13px',
                             fontWeight: 600,
                             borderRadius: '8px',
@@ -171,6 +173,7 @@ export default function ConfirmDialog({
                             backgroundColor: confirmBtnBg,
                             color: '#ffffff',
                             cursor: 'pointer',
+                            whiteSpace: 'nowrap',
                             boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
                             transition: 'opacity 0.15s ease'
                         }}

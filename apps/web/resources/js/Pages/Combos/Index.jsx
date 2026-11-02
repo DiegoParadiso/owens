@@ -134,16 +134,17 @@ export default function Index({ combos = [], products = [] }) {
 
     const handleDelete = async (id) => {
         const ok = await confirmAction({
-            title: 'Eliminar Combo',
-            message: '¿Está seguro de que desea eliminar este combo?',
+            title: 'Inactivar Combo',
+            category: 'Inactivación',
+            message: '¿Confirma que desea inactivar este combo? Esta acción impedirá su venta en mostrador.',
             variant: 'danger',
-            confirmText: 'Eliminar'
+            confirmText: 'Inactivar'
         });
         if (ok) {
             destroy(route('product.destroy', id), {
                 preserveScroll: true,
                 onSuccess: () => {
-                    window.toast.success('Eliminado', 'El combo ha sido eliminado correctamente.');
+                    window.toast.success('Combo inactivado', 'El combo ha sido inactivado correctamente.');
                 },
             });
         }

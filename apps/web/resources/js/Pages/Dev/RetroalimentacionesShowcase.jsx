@@ -45,10 +45,10 @@ export default function RetroalimentacionesShowcase() {
         if (window.confirmAction) {
             window.confirmAction({
                 title: 'Inactivar Producto del Menú',
-                category: 'Baja Lógica',
-                message: '¿Está seguro de que desea dar de baja Cheese Burger Simple? Esta acción impedirá su venta en mostrador y pausará su receta en cocina.',
+                category: 'Inactivación',
+                message: '¿Confirma que desea inactivar Cheese Burger Simple? Esta acción impedirá su venta en mostrador y pausará su receta en cocina.',
                 variant: 'danger',
-                confirmText: 'INACTIVAR PRODUCTO',
+                confirmText: 'INACTIVAR',
                 cancelText: 'CANCELAR'
             });
         }
@@ -124,10 +124,10 @@ export default function RetroalimentacionesShowcase() {
                     <ConfirmDialog
                         isOpen={true}
                         variant="danger"
-                        category="Baja Lógica"
+                        category="Inactivación"
                         title="Inactivar Producto del Menú"
-                        message="¿Está seguro de que desea dar de baja Cheese Burger Simple? Esta acción impedirá su venta en mostrador y pausará su receta en cocina."
-                        confirmText="INACTIVAR PRODUCTO"
+                        message="¿Confirma que desea inactivar Cheese Burger Simple? Esta acción impedirá su venta en mostrador y pausará su receta en cocina."
+                        confirmText="INACTIVAR"
                         cancelText="CANCELAR"
                         freeze={true}
                     />
@@ -185,7 +185,7 @@ export default function RetroalimentacionesShowcase() {
                     type="button"
                     onClick={() => openModalDelete(false)}
                 >
-                    Modal de baja
+                    Modal de inactivación
                 </button>
             </div>
 

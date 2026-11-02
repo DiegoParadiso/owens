@@ -74,15 +74,16 @@ export default function Index({ products }) {
     const handleDelete = async (id) => {
         const ok = await confirmAction({
             title: 'Inactivar Producto',
-            message: '¿Está seguro de que desea eliminar este producto?',
+            category: 'Inactivación',
+            message: '¿Confirma que desea inactivar este producto? Esta acción impedirá su venta en mostrador.',
             variant: 'danger',
-            confirmText: 'Eliminar'
+            confirmText: 'Inactivar'
         });
         if (ok) {
             destroy(route('product.destroy', id), {
                 preserveScroll: true,
                 onSuccess: () => {
-                    window.toast.success('Eliminado', 'El producto ha sido eliminado correctamente.');
+                    window.toast.success('Producto inactivado', 'El producto ha sido inactivado correctamente.');
                 },
             });
         }
