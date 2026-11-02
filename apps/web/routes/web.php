@@ -32,6 +32,11 @@ Route::post('/admin/login', [UserController::class, 'loginCheck'])
     ->middleware(['throttle:5,1'])
     ->name('login.check');
 
+// Ruta técnica de desarrollo para captura de interfaces y pruebas de feedback visual
+Route::get('/dev/retroalimentaciones', function () {
+    return Inertia::render('Dev/RetroalimentacionesShowcase');
+})->name('dev.retroalimentaciones');
+
 // Rutas protegidas con autenticación
 Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/logout', [UserController::class, 'logout'])->name('logout');
