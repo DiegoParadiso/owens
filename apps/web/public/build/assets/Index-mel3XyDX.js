@@ -1,1 +1,0 @@
-import{j as o}from"./app-Blr6kVPG.js";import"./lottie-react.esm-Bqcz0zOQ.js";import"./sweetalert2.esm.all-B3GDCxSY.js";import t from"./ComingSoon-D1J8wVgi.js";import"./MainLayout-0zds5Zd9.js";function s({products:r}){return o.jsx(t,{title:"Sección en Construcción"})}export{s as default};
