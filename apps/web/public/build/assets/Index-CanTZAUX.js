@@ -1,0 +1,1 @@
+import{j as o}from"./app-BYGGM5o8.js";import"./lottie-react.esm-CSS3x0QW.js";import r from"./ComingSoon-_k3RtgoM.js";import"./MainLayout-DIonJEl9.js";function u({products:t=[],supplies:e=[],category:i="burger"}){return o.jsx(r,{title:"Sección en Construcción"})}export{u as default};
