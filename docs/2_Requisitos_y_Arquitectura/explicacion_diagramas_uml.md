@@ -64,10 +64,10 @@ Si el tribunal te pide explicar cómo están conectadas las entidades, enfocate 
     *   Los pagos se desacoplaron en `pago_ventas` para permitir **pagos múltiples** (ej. cobrar una parte en efectivo y otra con QR), apoyándose en la tabla maestra `metodos_pago`.
     *   El efectivo físico se encapsula en las `sesiones_caja` (turnos). Una sesión abierta agrupa `transacciones_caja` (retiros para pagar proveedores o ingresos manuales) asegurando el control del flujo de caja.
 
-3.  **La Composición de Menú e Inventario (Patrón Estructural BOM):**
-    *   A diferencia de modelos simplistas, separamos la lógica de negocio en dos tablas fundamentales: `productos` (menú de venta final, con precio) e `insumos` (materia prima acopiada, con lote, vencimiento, costo y stock).
-    *   La tabla `recetas` actúa como puente de una relación de Muchos a Muchos (M:N) resolviendo la lista de materiales (BOM - Bill of Materials).
-    *   **¿Qué significa?** La tabla `recetas` vincula un `id_producto` (el producto terminado) con múltiples `id_insumo` (sus ingredientes). Esta estructura estricta evita catálogos "híbridos" confusos y permite la famosa *explosión de materiales* al vender, deduciendo el stock de la materia prima real que compone al menú sin mezclar la naturaleza de las entidades.
+3.  **La Composición de Menú e Inventario (Patrón Composite y Trazabilidad Bromatológica):**
+    *   Bajo el paradigma del modelo unificado ("Todo es Insumo"), no existe una frontera artificial entre materias primas y menús finales: tanto los ingredientes básicos (pan, carne molida), como las preparaciones intermedias (medallón casero) y los platos comercializables (hamburguesa completa) son entidades de la tabla `insumo`.
+    *   La receta actúa como una **plantilla abierta versionada** (`receta`, `receta_version`, `receta_insumo`) con rangos de tolerancia (`cantidad_minima` y `cantidad_maxima`, donde mínimo = 0 modela ingredientes opcionales).
+    *   **¿Qué significa?** Se desacopla la configuración teórica de la existencia real: las existencias físicas se gestionan en lotes (`insumo_existencias`) con fechas de origen y vencimiento. Cuando un lote padre (ej. medallón o hamburguesa) se elabora, la tabla `insumo_insumos` almacena los lotes hijos exactos que se consumieron, posibilitando una **trazabilidad bromatológica ascendente y descendente** completa y resolviendo la explosión recursiva de materiales en múltiples niveles.
 
 ### 5.6. ¿Cómo leer las líneas del diagrama (Notación "Pata de Gallo")?
 El tribunal puede señalar una línea específica del diagrama ER y preguntarte *"¿Qué significa esta relación?"*. El diagrama utiliza la notación **Crow's Foot (Pata de Gallo)**. Así es como debés leer los símbolos en los extremos de cada línea:
@@ -94,14 +94,16 @@ En un modelo físico de base de datos relacional (DER), **toda línea representa
 
 *   **Línea `clientes` — `usuarios` (Eliminada):** 
     *   *Por qué no debe estar:* Ni `clientes` tiene `id_usuario`, ni `usuarios` tiene `id_cliente`. Vincularlos con una línea implicaría erróneamente una relación de dependencia existencial o herencia. La interacción entre un usuario (ej. cajero) y un cliente ocurre exclusivamente **en el contexto de una transacción** (`ventas`), donde coinciden `id_usuario` e `id_cliente`. La autoría de creación de un cliente se audita de forma no invasiva a través de `logs_auditoria_sistema`.
-*   **Línea `movimientos_inventario` — `productos` (Eliminada):**
-    *   *Por qué no debe estar:* En gastronomía bajo el patrón BOM, el inventario real y los movimientos de stock (Kardex) se gestionan **a nivel de materias primas e insumos** (`insumos`). La tabla `movimientos_inventario` solo posee la FK `id_insumo`. La deducción de stock por la venta de un producto terminado se realiza mediante la **explosión de materiales** definida en la tabla intermedia `recetas`. Conectar directamente `movimientos_inventario` con `productos` sin una clave foránea violaría la normalización y duplicaría erróneamente la lógica de recetas.
+*   **Línea directa entre `ventas` e `insumo_existencias` (Desacoplada):**
+    *   *Por qué no debe estar:* Las ventas se asocian al catálogo comercial mediante `detalle_ventas` apuntando a `insumos` (el ítem comercializable con su precio). La deducción de los lotes físicos exactos (`insumo_existencias`) y su trazabilidad bromatológica se gestiona mediante la asignación FIFO o manual de lotes en la capa de servicio de inventario y la tabla `insumo_insumos`, preservando la normalización de la cabecera/detalle de facturación.
 
 ## 6. Speech de Defensa (El "Elevator Pitch")
 Si el tribunal te pide que resumas o justifiques tu arquitectura de software y el modelado, podés usar este speech como guía:
 
-> *"El diseño del sistema Owens prioriza la escalabilidad y la mantenibilidad sin caer en la sobre-ingeniería. En los **diagramas de Casos de Uso**, definimos actores basados en **roles**, lo que nos permite escalar desde un dueño único hasta una plantilla completa de empleados usando exactamente el mismo sistema de permisos, sin tocar una línea de código.*
+> *"El diseño del sistema Owens prioriza la escalabilidad y la robustez técnica en dos niveles:
 > 
-> *A nivel de **Modelo de Datos**, aplicamos la Tercera Forma Normal, pero tomamos decisiones pragmáticas justificadas. Por ejemplo, gestionamos los roles en la capa de aplicación en lugar de crear un entramado de tablas de permisos dinámicos. Para la seguridad y trazabilidad, combinamos **Borrado Lógico** con una tabla centralizada de **Auditoría (Audit Trail) Polimórfica**, capaz de registrar de forma inmutable quién, cuándo y qué modificó (valores viejos y nuevos) en cualquier tabla del dominio.*
+> En los **diagramas de Casos de Uso**, definimos actores basados en **roles (RBAC)**, permitiendo operar tanto con un emprendedor solitario como con múltiples puestos simultáneos sin alterar la arquitectura.
 > 
-> *La composición estricta de las recetas (separando físicamente insumos de productos) y el control atómico del stock mediante un Kardex propio (`movimientos_inventario`) son nuestro núcleo duro, garantizando costeo e inventario precisos. Todo lo externo, como AFIP o el bot de mensajería, se maneja como interfaces o servicios periféricos, impactando mínimamente en el core."* 
+> En el **Modelo de Datos y Clases**, adoptamos el paradigma integral propuesto para la industria gastronómica: **unificación de catálogo bajo Patrón Composite ('Todo es Insumo')**. No dividimos artificialmente materias primas de productos terminados; modelamos recetas multinivel abiertas y versionadas (`receta_version`, `receta_insumo`) con rangos de tolerancia. Además, desacoplamos la configuración teórica de la existencia física mediante lotes bromatológicos (`insumo_existencias`) y una genealogía de consumo padre-hijo (`insumo_insumos`), lo que permite saber con qué lote exacto de insumos se elaboró cada preparación.
+> 
+> Para la seguridad y auditoría, combinamos **Borrado Lógico** con una bitácora inmutable (`logs_auditoria_sistema`) y movimientos atómicos de stock. Por último, servicios como AFIP y mensajería externa están desacoplados mediante interfaces claras, aislando el núcleo transaccional del negocio."* 

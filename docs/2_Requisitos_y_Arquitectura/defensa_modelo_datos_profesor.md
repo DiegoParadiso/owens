@@ -13,127 +13,96 @@
 Cuando el tribunal evaluador analiza el **Diagrama Entidad-Relación (DER Físico)** del Sistema Owens, evalúa tres pilares innegociables de la ingeniería de software:
 1. **Integridad Referencial Estricta:** Cada relación física (línea) debe corresponderse unívocamente con una Clave Foránea (`FK`) real en la base de datos relacional.
 2. **Normalización en Tercera Forma Normal (3FN):** Ausencia de redundancias, eliminación de anomalías de actualización y desacople de entidades operativas.
-3. **Alineación con el Dominio Gastronómico:** Separación estricta entre **Materia Prima** (compras, lotes, vencimientos) y **Menú Comercial** (precios de venta, comandas), resuelta mediante el patrón de Lista de Materiales (**BOM - Bill of Materials**).
-
-A continuación se detallan las decisiones de modelado, las adiciones realizadas a partir de las observaciones de cátedra y el razonamiento exacto para defender cada una.
+3. **Alineación con el Dominio Gastronómico Industrial:** Implementación de la arquitectura de manufactura por capas: **Capa de Configuración (Fórmulas Teóricas y Versionado)** disociada tajantemente de la **Capa de Existencia Física (Lotes y Trazabilidad Bromatológica)**, bajo la premisa ontológica de que *"todo es insumo"*.
 
 ---
 
-## 2. Los 6 Ejes Clave Agregados y Corregidos en el DER
+## 2. Los Ejes Clave del Modelo de Datos Owens
 
 ```
-                  ┌───────────────────────────────────────────────┐
-                  │                 usuarios                      │
-                  └──────┬──────────────────┬─────────────────────┘
-                         │ 1                │ 1
-                         │                  │
-                         │ 0..*             │ 0..*
-                  ┌──────▼────────┐  ┌──────▼────────┐
-                  │ sesiones_caja │  │    compras    │
-                  └──────┬────────┘  └──────┬────────┘
-                         │ 1                │ 1
-                         │                  │
-                         │ 0..*             │ 1..*
-                  ┌──────▼───────────┐┌─────▼──────────┐
-                  │transacciones_caja││ detalle_compras│
-                  └──────────────────┘└─────┬──────────┘
-                                            │ 0..*
-                                            │
-                                     ┌──────▼────────┐
-                                     │    insumos    │
-                                     └──────┬────────┘
-                                            │ 0..*
-                                            │
-                                     ┌──────▼────────┐
-                                     │    recetas    │◄──── 1:N ──── productos
-                                     └───────────────┘
+========================================================================================
+1. CAPA DE CONFIGURACIÓN (Plantillas Abiertas y Versionadas - Fórmulas Teóricas)
+========================================================================================
+┌──────────────┐ 1      0..* ┌──────────────┐ 1      1..* ┌──────────────────┐
+│   insumos    ├────────────►│   recetas    ├────────────►│ receta_versiones │
+│ (Catálogo    │             │ (Fórmula     │             │ (Vigencia temporal│
+│  Unificado)  │◄────────────┤  asociada)   │             │  fecha_desde/has)│
+└──────┬───────┘ 1 (producido)└──────────────┘             └─────────┬────────┘
+       │                                                             │ 1
+       │ 1 (ingrediente)                                             │
+       │                                                             │ 1..*
+       │                     ┌──────────────────┐                    │
+       └────────────────────►│  receta_insumos  │◄───────────────────┘
+                             │ (cant_min/max)   │
+                             └──────────────────┘
+
+========================================================================================
+2. CAPA DE EXISTENCIA FÍSICA Y TRAZABILIDAD BROMATOLÓGICA (Instanciación de Lotes)
+========================================================================================
+                             ┌──────────────────────┐
+                             │  insumo_existencias  │◄───── (Respaldado por receta_versión
+                             │ (Lotes con fecha de  │        o remito de compra)
+                             │  origen y vencim.)   │
+                             └──────────┬───────────┘
+                                        │ 1 (padre)  ▲ 0..* (hijo)
+                                        │            │
+                             ┌──────────▼────────────┴┐
+                             │     insumo_insumos     │
+                             │ (Árbol genealógico de  │
+                             │  manufactura por lote) │
+                             └────────────────────────┘
 ```
 
 ---
 
-### Eje 1: Ciclo de Vida y Arqueo en Turnos de Caja (`sesiones_caja`)
+### Eje 1: Unificación Ontológica ("Todo es Insumo") y la Capa de Configuración
 
-* **Atributos Clave Agregados:**
-  * `monto_cierre : decimal(10,2) <<N>>` (efectivo real contado en la gaveta física al cerrar el turno).
-  * `fecha_apertura : timestamp` (sello de tiempo de habilitación del turno).
-  * `fecha_cierre : timestamp <<N>>` (sello de tiempo de clausura del turno).
-* **Pregunta Típica del Profesor:**
-  > *"¿Dónde queda asentado el dinero con el que el cajero cerró su turno? ¿Y cómo calculan sobrantes o faltantes si el local abre a las 20:00 del viernes y cierra a las 04:00 del sábado?"*
-* **Defensa Técnica:**
-  1. **Uso de `TIMESTAMP` en lugar de `TIME`:** En gastronomía, la mayoría de los turnos cruzan la medianoche. Si usáramos tipo `TIME`, las 04:00 sería menor a las 20:00, impidiendo calcular la duración real del turno y perdiendo la fecha calendario del arqueo. Con `TIMESTAMP` se preserva la fecha y la hora exacta.
-  2. **Ecuación del Arqueo (UC-03 y UC-29):** El sistema calcula la diferencia matemática de gaveta física:
-     $$\Delta_{\text{caja}} = \text{monto\_cierre} - (\text{monto\_apertura} + \sum \text{ventas\_efectivo} + \sum \text{ingresos\_manuales} - \sum \text{retiros})$$
-  3. **Trazabilidad en Código:** Coincide 1:1 con la migración real en Laravel (`cash_sessions`: `opening_amount`, `closing_amount`, `opened_at`, `closed_at`).
+* **Fundamento:** En gastronomía real, un restaurante no solo compra lechuga y vende hamburguesas; realiza **producción intermedia (*mise en place*)**. El cocinero elabora un lote de 40 *Medallones de carne caseros* a las 11:00 AM mezclando carne picada, huevo, cebolla y ajo; a las 14:00 PM, ese medallón se utiliza para ensamblar una *Hamburguesa Completa*.
+* **Defensa Técnica ante el Profesor:**
+  1. Si tuviéramos una tabla `productos` y otra `insumos`, el medallón casero quedaría atrapado en una contradicción: no se compra a proveedores (no es materia prima pura) ni se vende solo en el menú (no es producto comercial).
+  2. En Owens, **todo ítem físico es un `insumo`** (`insumos`). Aquellos comercializables al comensal llevan la bandera `es_comercializable = true`, `precio_venta` y `alicuota_iva`.
+  3. La tabla `recetas` define la fórmula teórica del insumo elaborado (`id_insumo_producido`).
+  4. La tabla `receta_versiones` parametriza la evolución de la fórmula con sellos temporales (`fecha_desde`, `fecha_hasta`), resolviendo cambios estacionales de ingredientes sin romper la historia contable.
+  5. La tabla `receta_insumos` modela la **plantilla abierta**: permite rangos operativos (`cantidad_minima`, `cantidad_maxima`) para soportar ingredientes opcionales (donde la cantidad mínima es 0, ej. pepinos o aderezos).
 
 ---
 
-### Eje 2: Simetría Contable y Balances Periódicos (`compras`)
+### Eje 2: Capa de Existencia Física y Trazabilidad Bromatológica (`insumo_existencias` e `insumo_insumos`)
 
-* **Atributo Clave Agregado:**
-  * `fecha_compra : timestamp` en la cabecera de la tabla `compras`.
-* **Pregunta Típica del Profesor:**
-  > *"Si la tabla `ventas` tiene `fecha_venta`, ¿por qué la tabla `compras` no tenía fecha de compra? ¿Cómo obtienen el flujo de caja (Cash Flow) mensual en el módulo de reportería?"*
-* **Defensa Técnica:**
-  1. **Simetría Temporal:** Para emitir balances contables y reportes de rentabilidad bruta (UC-26 y UC-27), el sistema debe contrastar ingresos devengados vs. egresos de mercadería en una ventana temporal idéntica.
-  2. **Independencia del Framework:** No se debe depender del atributo técnico `created_at` de Eloquent/Laravel para la lógica de negocio contable, ya que una compra puede ser asentada con fecha de factura/remito retroactiva. La `fecha_compra` es un atributo de negocio explícito.
-
----
-
-### Eje 3: Eliminación de Líneas "Fantasma" (Conexiones Espurias)
-
-En versiones preliminares del diagrama existían dos líneas que conectaban tablas sin claves foráneas:
-1. Línea `clientes` — `usuarios`.
-2. Línea `movimientos_inventario` — `productos`.
-
-* **Pregunta Típica del Profesor:**
-  > *"Veo una línea conectando Clientes con Usuarios, pero en la tabla Clientes no veo ningún `id_usuario`, ni en Usuarios veo `id_cliente`. ¿Qué significa esa relación en una base de datos relacional física?"*
-* **Defensa Técnica:**
-  * **La regla relacional:** En un DER físico formal, **toda línea entre dos entidades representa obligatoriamente una Clave Foránea (`FK`)**. Si no hay FK, no existe relación física en PostgreSQL y la línea es una conexión espuria que confunde la semántica.
-  * **Por qué `clientes` no se conecta con `usuarios`:** Un cliente no pertenece a un empleado particular; pertenece a la empresa. El punto de convergencia entre el cajero (`usuarios`) y el comensal (`clientes`) ocurre en el contexto transaccional de una venta (`ventas.id_usuario` y `ventas.id_cliente`). La autoría de creación o edición de un cliente se registra de forma limpia en la bitácora de auditoría (`logs_auditoria_sistema`).
-  * **Por qué `movimientos_inventario` no se conecta con `productos`:** En gastronomía bajo el patrón BOM, el stock físico real reside en las **materias primas** (`insumos`). `movimientos_inventario` representa el Kardex de insumos (entradas, salidas por venta, mermas). El producto comercial es una entidad abstracta cuya composición de insumos se resuelve dinámicamente mediante la tabla `recetas`. Conectar movimientos directamente a productos duplicaría erróneamente la lógica de recetas.
+* **Fundamento:** Un contador numérico abstracto de stock (`stock: integer`) no sirve en gastronomía porque los alimentos son perecederos y están sujetos a normativas de bromatología y sanidad alimentaria.
+* **Defensa Técnica ante el Profesor:**
+  1. La tabla `insumo_existencias` modela los lotes físicos reales acopiados en heladera o estantería. Posee `fecha_origen` (cuándo se recibió o elaboró), `fecha_vencimiento` (calculada dinámicamente según `duracion_cerrado` o `duracion_abierto`) y `cantidad` remanente.
+  2. La tabla asociativa recursiva `insumo_insumos` preserva el árbol genealógico completo de manufactura:
+     > *"La existencia #4580 de Hamburguesa Completa del 04/11/2026 fue armada a partir de la existencia #1024 de Medallón Casero (elaborado el 01/11/2026), el cual a su vez provino de la existencia #205 de Carne Molida del lote proveedor #L-998".*
+  3. Esta estructura permite auditoría bromatológica ascendente y descendente inmediata ante cualquier reporte de inocuidad alimentaria o auditoría sanitaria.
 
 ---
 
-### Eje 4: Corrección de Claves Foráneas en Compras e Inventario
+### Eje 3: Ciclo de Vida y Arqueo en Turnos de Caja (`sesiones_caja` y `transacciones_caja`)
 
-* **Ajustes:**
-  * En `detalle_compras`: la columna foránea se llama **`id_insumo BIGINT (FK)`** (en lugar de `id_producto`).
-  * En `movimientos_inventario`: la columna foránea se llama **`id_insumo BIGINT (FK)`** (en lugar del remanente erróneo `id_consumo`).
-* **Pregunta Típica del Profesor:**
-  > *"¿Por qué la orden de compra adquiere insumos y no productos terminados?"*
+* **Atributos Clave:**
+  * `monto_cierre : decimal(10,2) <<N>>` (efectivo real contado a ciegas en gaveta física).
+  * `fecha_apertura : timestamp` y `fecha_cierre : timestamp <<N>>` (sellos de tiempo que cruzan la medianoche).
 * **Defensa Técnica:**
-  * Un restaurante adquiere materia prima (harina, queso, carne, verduras) a proveedores mayoristas mediante órdenes de compra (`detalle_compras.id_insumo`).
-  * Luego, mediante el caso de uso `UC-15 (Asignar Receta)` y la explosión de materiales al vender (`UC-02`), esa materia prima se descuenta automáticamente. Comprar "productos de venta" rompería el desacople del patrón BOM.
+  * **Uso de `TIMESTAMP`:** En gastronomía los turnos cruzan la medianoche (ej. de 20:00 a 04:00). El uso de `TIMESTAMP` evita la pérdida del día calendario del arqueo.
+  * **Arqueo Ciego (UC-03 y UC-29):** El cajero declara el efectivo físico sin conocer el saldo teórico del sistema. El sistema computa la diferencia:
+    $$\Delta_{\text{caja}} = \text{monto\_cierre} - (\text{monto\_apertura} + \sum \text{ventas\_efectivo} + \sum \text{ingresos\_manuales} - \sum \text{retiros})$$
 
 ---
 
-### Eje 5: Normalización 3FN en Medios de Pago (`pago_ventas` y `metodos_pago`)
+### Eje 4: Simetría Contable en Compras (`compras`) y Normalización 3FN en Pagos (`pagos_ventas`)
 
-* **Ajustes:**
-  * `metodos_pago`: Posee `id BIGINT (PK)`, `nombre VARCHAR(255)`, `activo BOOLEAN`.
-  * `pago_ventas`: Contiene `id_metodo_pago BIGINT (FK)` apuntando a la tabla maestra, `id_venta BIGINT (FK)` y `monto DECIMAL(10,2)`.
-* **Pregunta Típica del Profesor:**
-  > *"¿Cómo soporta el sistema un cobro mixto donde un cliente abona una parte en efectivo y el resto por transferencia o código QR?"*
-* **Defensa Técnica:**
-  * La cabecera `ventas` no guarda un string estático `metodo_pago`.
-  * Al normalizar en 3FN mediante la tabla intermedia `pago_ventas`, se soporta una cardinalidad `ventas 1 -- 1..* pago_ventas`. Una comanda de $25.000 puede tener dos registros de pago: $10.000 asociados a `id_metodo_pago = 1` (Efectivo) y $15.000 asociados a `id_metodo_pago = 2` (Mercado Pago QR), garantizando consistencia contable exacta.
+* **Compras:** La cabecera `compras` posee `fecha_compra : timestamp`, desacoplándose de los metadatos de framework (`created_at`) y permitiendo contrastar ventas vs. compras en una ventana idéntica para reportes de rentabilidad bruta (UC-30 y UC-31).
+* **Pagos Divididos (Split Payments):** La relación `ventas 1 -- 1..* pagos_ventas` vinculada a la tabla maestra `metodos_pago` permite cobrar una comanda con múltiples medios de pago (ej. $10.000 en efectivo y $15.000 con QR/transferencia), garantizando cumplimiento estricto de la 3FN.
 
 ---
 
-### Eje 6: Auditoría Global Inmutable Polimórfica (`logs_auditoria_sistema`)
+### Eje 5: Auditoría Global Inmutable Polimórfica (`logs_auditoria_sistema`) y Borrado Lógico
 
-* **Estructura:**
-  * `id BIGINT (PK)`
-  * `id_usuario BIGINT (FK, N)` (usuario responsable del evento).
-  * `tabla_afectada VARCHAR(255)` (nombre de la tabla: 'clientes', 'insumos', 'recetas', etc.).
-  * `registro_id BIGINT` (ID de la fila impactada).
-  * `valores_anteriores JSON` y `valores_nuevos JSON` (estado del registro antes y después).
-  * `fecha_hora TIMESTAMP` y `ip_origen VARCHAR(45)`.
-* **Pregunta Típica del Profesor:**
-  > *"¿Cómo auditan qué cajero o administrador modificó un precio, borró un cliente o alteró una receta sin llenar la base de datos de tablas auxiliares de auditoría?"*
+* **Estructura:** Centraliza en una única tabla polimórfica: `id_usuario`, `tabla_afectada`, `registro_id`, `valores_anteriores (JSON)`, `valores_nuevos (JSON)`, `fecha_hora` e `ip_origen`.
 * **Defensa Técnica:**
-  1. **Patrón Audit Trail Polimórfico:** En lugar de sobre-ingeniar creando 15 tablas redundantes (`auditoria_clientes`, `auditoria_productos`, etc.), se utiliza una tabla polimórfica única desacoplada que almacena snapshots en formato JSON (`valores_anteriores` y `valores_nuevos`).
-  2. **Combinación con Borrado Lógico (*Soft Deletes*):** Las entidades maestras poseen `fecha_eliminacion TIMESTAMP`. Si un registro se "borra", no se destruye físicamente de la base de datos (preservando la integridad de compras y ventas pasadas según Codd, 1970), y simultáneamente se graba la traza inmutable en `logs_auditoria_sistema`.
+  * Evita la proliferación de tablas redundantes de auditoría.
+  * Combinado con `fecha_eliminacion` (*Soft Deletes*), garantiza que ningún comprobante fiscal, venta o insumo sea destruido físicamente de la base de datos (Codd, 1970).
 
 ---
 
@@ -141,11 +110,8 @@ En versiones preliminares del diagrama existían dos líneas que conectaban tabl
 
 | Si el Profesor Caballero pregunta... | Tu respuesta técnica concisa |
 | :--- | :--- |
-| **"¿Por qué no hay una tabla `facturas` separada de `ventas`?"** | *"Porque la facturación en este dominio es la confirmación fiscal de la comanda. Agregamos `afip_cae` y `afip_vencimiento` directamente a `ventas` (1:1), evitando joins innecesarios hacia una tabla satélite que tendría exactamente el mismo ciclo de vida."* |
-| **"¿Por qué `recetas` es una tabla asociativa con atributo?"** | *"Porque resuelve la relación Muchos a Muchos (M:N) del patrón BOM entre `productos` e `insumos`. Su atributo `cantidad DECIMAL(10,4)` permite modelar las proporciones exactas de cada ingrediente (ej. 0.150 kg de queso por hamburguesa) para la explosión de stock."* |
-| **"¿Por qué separaron `alicuotas_iva`?"** | *"Para cumplir estrictamente con la 3FN y las normativas fiscales argentinas de AFIP. Centraliza los porcentajes (21%, 10.5%, 0%) vinculándolos tanto a productos de venta como a insumos de compra, evitando anomalías si la legislación modifica una alícuota."* |
-| **"¿Dónde está el carrito de compras en la base de datos?"** | *"El carrito de compras temporal se mantiene en la memoria volátil de la sesión del cliente (frontend/estado de React). Persistir pedidos incompletos en PostgreSQL saturaría el motor de base de datos con operaciones de I/O innecesarias; solo impacta en tablas relacionales bajo transacción atómica (ACID) cuando la orden es confirmada."* |
-
----
-
-*Este documento refleja fielmente el esquema físico implementado en las migraciones de PostgreSQL y el archivo [`docs/2_Requisitos_y_Arquitectura/2.4_modelo_de_datos.md`](file:///Users/diego/Documents/builds/owens-system/docs/2_Requisitos_y_Arquitectura/2.4_modelo_de_datos.md).*
+| **"¿Por qué unificaron productos e insumos en una sola entidad?"** | *"Porque en manufactura culinaria existe producción intermedia (semielaborados como medallones caseros o aderezos). Unificar en `insumos` permite que cualquier ítem pueda ser tanto materia prima de una receta como producto final de otra mediante el patrón Composite."* |
+| **"¿Cómo modelan que una receta cambie con el tiempo?"** | *"Mediante la entidad `receta_versiones`. Cada versión tiene `fecha_desde` y `fecha_hasta`. Las ventas y producciones pasadas quedan vinculadas históricamente a la versión con la que fueron elaboradas, impidiendo que la edición de una fórmula distorsione el histórico."* |
+| **"¿Cómo soportan ingredientes opcionales o proporciones variables?"** | *"En `receta_insumos`, definimos `cantidad_minima` y `cantidad_maxima`. Si un ingrediente es opcional (como pepinos o cebolla), su cantidad mínima es 0."* |
+| **"¿Dónde está el stock físico real si no hay un campo `stock` en `insumos`?"** | *"El stock reside en `insumo_existencias`, donde cada lote tiene su fecha de elaboración, fecha de vencimiento y remanente. Se totaliza mediante funciones agregadas (`SUM(cantidad)`) filtrando lotes vigentes bajo política FEFO."* |
+| **"¿Cómo garantizan la trazabilidad bromatológica si hay un lote de carne en mal estado?"** | *"A través de la tabla recursiva `insumo_insumos`. Permite una consulta de grafo que recorre desde el lote de carne molida del proveedor hasta cada lote de medallón casero y cada hamburguesa vendida a comensales en una fecha determinada."* |
