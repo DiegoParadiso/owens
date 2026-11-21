@@ -6,7 +6,7 @@ export default defineConfig({
     viewportWidth: 1280,
     viewportHeight: 720,
     video: true,
-    supportFile: false,
+    supportFile: 'cypress/support/e2e.js',
     setupNodeEvents(on, config) {
       // implement node event listeners here
     },

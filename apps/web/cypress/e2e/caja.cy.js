@@ -1,160 +1,84 @@
 /**
- * Suite E2E: Gestión de Sesión de Caja
- *
- * Cubre los Casos de Uso críticos UC-01 y UC-03, los cuales representan
- * el ciclo de vida operativo diario de la caja registradora.
- *
- * Metodología: BDD (Behavior-Driven Development) con Cypress.
- * Cada escenario es determinístico: establece su precondición vía API
- * antes de ejecutar la interacción UI, garantizando independencia total
- * entre pruebas y alineación con el ciclo Rojo-Verde-Refactor (TDD).
- *
- * @see docs/4_Implementacion_y_Calidad/4.1_estrategia_calidad_qa.md
- * @see docs/2_Requisitos_y_Arquitectura/2.2_matriz_rastreabilidad.md
+ * Suite E2E: Gestión de Sesión de Caja (UC-01, UC-03 Cierre Ciego, UC-04 Movimientos Manuales)
+ * Arquitectura: Page Object Model (CashRegisterPage) + Network Interception (cy.intercept)
  */
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+import { CashRegisterPage } from '../pages/CashRegisterPage';
 
-const loginViaUI = () => {
-    cy.clearCookies();
-    cy.clearLocalStorage();
-    cy.visit('/admin');
-    cy.get('input[type="email"]').should('not.be.disabled').type('admin@owens.com');
-    cy.get('input[type="password"]').should('not.be.disabled').type('password');
-    cy.get('button[type="submit"]').click();
-    cy.url({ timeout: 15000 }).should('include', '/dashboard');
-};
-
-/**
- * Cierra la caja si está abierta, para garantizar precondición de UC-01.
- * Se hace vía API para no contaminar la prueba UI con pasos no relacionados.
- */
-const cerrarCajaSiEstaAbierta = () => {
-    cy.request({
-        method: 'GET',
-        url: '/admin/cash-register',
-        failOnStatusCode: false,
-    }).then(() => {
-        cy.visit('/admin/cash-register');
-        cy.get('body').then(($body) => {
-            if ($body.find('button:contains("Cerrar Caja")').length > 0) {
-                cy.log('Precondición UC-01: cerrando caja abierta antes del test...');
-                cy.contains('button', 'Cerrar Caja').click();
-                cy.get('input#closing_amount', { timeout: 5000 }).should('be.visible').type('0');
-                cy.get('.drawer-footer').contains('button', 'Confirmar Cierre').click();
-                cy.contains('La caja se ha cerrado correctamente', { timeout: 8000 }).should('exist');
-            }
-        });
-    });
-};
-
-/**
- * Abre la caja si está cerrada, para garantizar precondición de UC-03.
- */
-const abrirCajaSiEstaCerrada = () => {
-    cy.visit('/admin/cash-register');
-    cy.get('body').then(($body) => {
-        if ($body.find('button:contains("Abrir Caja")').length > 0) {
-            cy.log('Precondición UC-03: abriendo caja antes del test...');
-            cy.contains('button', 'Abrir Caja').click();
-            cy.get('input#opening_amount', { timeout: 5000 }).should('be.visible').type('10000');
-            cy.get('.drawer-footer').contains('button', 'Abrir Caja').click();
-            cy.contains('La caja se ha abierto correctamente', { timeout: 8000 }).should('exist');
-        }
-    });
-};
-
-// ─── UC-01: Apertura de Sesión de Caja ───────────────────────────────────────
+const cashPage = new CashRegisterPage();
 
 describe('UC-01: Apertura de Sesión de Caja', () => {
-
-    before(() => {
-        loginViaUI();
-        cerrarCajaSiEstaAbierta();
-    });
-
     beforeEach(() => {
-        cy.visit('/admin/cash-register');
-        cy.get('.container-fluid', { timeout: 10000 }).should('exist');
+        cy.loginAsAdmin();
+        cy.ensureCashRegisterClosed();
+        cashPage.visit();
     });
 
-    /**
-     * Escenario Positivo
-     * DADO que el Cajero está autenticado y no hay caja abierta
-     * CUANDO ingresa un monto inicial válido y confirma la apertura
-     * ENTONCES el sistema debe registrar la apertura y mostrar el panel operativo
-     */
-    it('DADO que no hay caja abierta, CUANDO el Cajero ingresa un monto válido, ENTONCES el sistema debe abrir la caja correctamente', () => {
-        // DADO: verificar precondición
+    it('DADO que no hay caja abierta, CUANDO el Cajero ingresa un monto válido, ENTONCES el servidor confirma la apertura y habilita la caja', () => {
         cy.contains('Abrir Caja').should('exist');
 
-        // CUANDO: interacción del actor
-        cy.contains('button', 'Abrir Caja').click();
-        cy.get('input#opening_amount', { timeout: 5000 }).should('be.visible').clear().type('15000');
-        cy.get('.drawer-footer').contains('button', 'Abrir Caja').click();
+        cashPage.openRegister(15000).then((interception) => {
+            expect(interception.request.body.opening_amount).to.eq(15000);
+            expect(interception.response.statusCode).to.be.oneOf([200, 302, 303]);
+        });
 
-        // ENTONCES: validar resultado esperado del sistema
         cy.contains('La caja se ha abierto correctamente', { matchCase: false, timeout: 8000 }).should('exist');
         cy.contains('button', 'Cerrar Caja', { timeout: 8000 }).should('exist');
-        cy.contains('Caja Registradora').should('exist');
     });
-
 });
 
-// ─── UC-03: Cierre de Sesión de Caja ─────────────────────────────────────────
-
-describe('UC-03: Cierre de Sesión de Caja', () => {
-
-    before(() => {
-        loginViaUI();
-        abrirCajaSiEstaCerrada();
-    });
-
+describe('UC-04: Registrar Movimiento Manual de Caja', () => {
     beforeEach(() => {
-        // Login explícito en cada test para garantizar sesión activa
-        // (independencia total entre escenarios, incluso si el anterior falla)
-        loginViaUI();
-        cy.visit('/admin/cash-register');
-        cy.get('.container-fluid', { timeout: 10000 }).should('exist');
+        cy.loginAsAdmin();
+        cy.ensureCashRegisterOpen();
+        cashPage.visit();
     });
 
-    /**
-     * Escenario de Validación (flujo alternativo)
-     * DADO que el Cajero intenta ingresar caracteres no numéricos en el monto de cierre
-     * CUANDO tipea letras en el campo de monto
-     * ENTONCES el sistema NO DEBE aceptar el valor (campo debe quedar vacío)
-     */
-    it('DADO que el campo de cierre espera un monto, CUANDO el Cajero ingresa letras, ENTONCES el sistema NO DEBE aceptar el valor', () => {
-        // DADO: caja abierta, abrir Drawer de cierre
-        cy.contains('button', 'Cerrar Caja').click();
-        cy.get('input#closing_amount', { timeout: 5000 }).should('be.visible');
+    it('DADO que hay caja abierta, CUANDO el Cajero registra un ingreso manual extraordinario, ENTONCES el sistema valida el payload HTTP y lo lista en movimientos', () => {
+        const motivo = `Refuerzo cambio ${Date.now()}`;
 
-        // CUANDO: ingreso inválido
-        cy.get('input#closing_amount').type('abcd');
+        cashPage.registerManualMovement('income', 2500, motivo).then((interception) => {
+            expect(interception.request.body.type).to.eq('income');
+            expect(interception.request.body.amount).to.eq(2500);
+            expect(interception.request.body.description).to.eq(motivo);
+            expect(interception.response.statusCode).to.be.oneOf([200, 302, 303]);
+        });
 
-        // ENTONCES: el CurrencyInput strip-ea los no-numéricos y sólo conserva el prefijo '$'.
-        // Un campo con valor '$' sin dígitos es funcionalmente vacío/inválido para el negocio.
-        cy.get('input#closing_amount').should('have.value', '$');
+        cy.contains('El movimiento manual ha sido asentado en caja', { timeout: 8000 }).should('exist');
+        cy.contains(motivo).should('exist');
     });
 
-    /**
-     * Escenario Positivo
-     * DADO que la caja está abierta y el Cajero quiere cerrar el turno
-     * CUANDO ingresa el monto de cierre válido y confirma
-     * ENTONCES el sistema debe registrar el cierre y volver al estado inicial
-     */
-    it('DADO que la caja está abierta, CUANDO el Cajero ingresa un monto válido y confirma, ENTONCES el sistema DEBE cerrar la caja correctamente', () => {
-        // DADO: verificar precondición
-        cy.contains('button', 'Cerrar Caja').should('exist');
+    it('DADO que hay caja abierta, CUANDO intenta retirar un monto superior al efectivo disponible, ENTONCES el backend rechaza la petición por efectivo insuficiente', () => {
+        cashPage.registerManualMovement('expense', 999999999, 'Retiro excesivo').then((interception) => {
+            expect(interception.request.body.type).to.eq('expense');
+            expect(interception.response.statusCode).to.be.oneOf([200, 302, 303, 422]);
+        });
 
-        // CUANDO: interacción del actor
-        cy.contains('button', 'Cerrar Caja').click();
-        cy.get('input#closing_amount', { timeout: 5000 }).should('be.visible').type('25000');
-        cy.get('.drawer-footer').contains('button', 'Confirmar Cierre').click();
+        cy.contains('Efectivo insuficiente en caja', { timeout: 8000 }).should('exist');
+    });
+});
 
-        // ENTONCES: validar resultado esperado del sistema
+describe('UC-03: Cierre de Sesión de Caja (Cierre Ciego)', () => {
+    beforeEach(() => {
+        cy.loginAsAdmin();
+        cy.ensureCashRegisterOpen();
+        cashPage.visit();
+    });
+
+    it('DADO que el campo de cierre espera un monto, CUANDO el Cajero ingresa letras, ENTONCES el sistema NO DEBE aceptar caracteres no numéricos', () => {
+        cashPage.openCloseDrawer();
+        cy.get('input#closing_amount').type('abcd').should('have.value', '$');
+    });
+
+    it('DADO que la caja está abierta, CUANDO el Cajero confirma el conteo a ciegas, ENTONCES oculta el saldo esperado antes de confirmar y exhibe el resultado después', () => {
+        cashPage.closeRegisterBlindly(25000).then((interception) => {
+            expect(interception.request.body.closing_amount).to.eq(25000);
+            expect(interception.response.statusCode).to.be.oneOf([200, 302, 303]);
+        });
+
         cy.contains('La caja se ha cerrado correctamente', { matchCase: false, timeout: 8000 }).should('exist');
+        cy.contains('Resultado de Arqueo Ciego', { timeout: 8000 }).should('exist');
+        cy.contains('Descargar Reporte de Arqueo (PDF)').should('exist');
         cy.contains('button', 'Abrir Caja', { timeout: 8000 }).should('exist');
     });
-
 });
