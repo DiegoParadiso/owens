@@ -30,7 +30,7 @@ class SettingsController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
-            'role' => 'required|string|in:admin,employee,owner',
+            'role' => 'required|string|in:admin,owner,cajero,cocinero,encargado,auditor,employee',
         ], [
             'name.required' => 'El nombre es obligatorio.',
             'email.required' => 'El correo es obligatorio.',
@@ -55,7 +55,7 @@ class SettingsController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'role' => 'required|string|in:admin,employee,owner',
+            'role' => 'required|string|in:admin,owner,cajero,cocinero,encargado,auditor,employee',
             'password' => 'nullable|string|min:8',
         ], [
             'name.required' => 'El nombre es obligatorio.',
@@ -88,9 +88,17 @@ class SettingsController extends Controller
             return redirect()->back()->with('error', 'No se puede eliminar al usuario administrador.');
         }
 
+        // UC-38 Precondición: El empleado no debe tener turnos de caja abiertos
+        $hasOpenRegister = \App\Models\CashRegister::where('user_id', $user->id)
+            ->where('status', 'open')
+            ->exists();
+        if ($hasOpenRegister) {
+            return redirect()->back()->with('error', 'El usuario posee una sesión de caja abierta. Cierra su turno antes de darle de baja.');
+        }
+
         $user->delete();
 
-        return redirect()->back()->with('success', 'Usuario eliminado correctamente.');
+        return redirect()->back()->with('success', 'Usuario dado de baja correctamente.');
     }
 
     public function resetDatabase(Request $request)
@@ -101,19 +109,31 @@ class SettingsController extends Controller
         }
 
         try {
-            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-
-            $tables = DB::select('SHOW TABLES');
+            $driver = DB::getDriverName();
             $tablesToKeep = ['users', 'migrations', 'failed_jobs', 'password_reset_tokens', 'personal_access_tokens', 'sessions', 'cache', 'jobs', 'job_batches'];
 
-            foreach ($tables as $table) {
-                $tableName = reset($table);
-                if (!in_array($tableName, $tablesToKeep)) {
-                    DB::table($tableName)->truncate();
+            if ($driver === 'pgsql') {
+                $tables = DB::select("SELECT tablename FROM pg_tables WHERE schemaname = 'public'");
+                $toTruncate = [];
+                foreach ($tables as $table) {
+                    if (!in_array($table->tablename, $tablesToKeep)) {
+                        $toTruncate[] = '"' . $table->tablename . '"';
+                    }
                 }
+                if (!empty($toTruncate)) {
+                    DB::statement('TRUNCATE TABLE ' . implode(', ', $toTruncate) . ' RESTART IDENTITY CASCADE');
+                }
+            } else {
+                DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+                $tables = DB::select('SHOW TABLES');
+                foreach ($tables as $table) {
+                    $tableName = reset($table);
+                    if (!in_array($tableName, $tablesToKeep)) {
+                        DB::table($tableName)->truncate();
+                    }
+                }
+                DB::statement('SET FOREIGN_KEY_CHECKS=1;');
             }
-
-            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
             return redirect()->back()->with('success', 'Base de datos reiniciada correctamente (Usuarios conservados).');
         } catch (\Exception $e) {

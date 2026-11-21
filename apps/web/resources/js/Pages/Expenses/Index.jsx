@@ -8,10 +8,7 @@ import { confirmAction } from '@/Utils/Alerts';
 import Pagination from '@/Components/Pagination';
 import FinanceNavbar from '@/Components/FinanceNavbar';
 
-import ComingSoon from '@/Pages/ComingSoon';
-
 export default function Index({ expenses = [], categories = [] }) {
-    return <ComingSoon title="Sección en Construcción" />;
     const [showDrawer, setShowDrawer] = useState(false);
     const [editingExpense, setEditingExpense] = useState(null);
     const now = new Date();
@@ -55,11 +52,15 @@ export default function Index({ expenses = [], categories = [] }) {
         setData('split_payments', data.split_payments.filter((_, i) => i !== index));
     };
 
-    // Helper to clean currency string to float
+    // Helper to clean currency string to float (handles both $1.500,00 and raw 1500.00)
     const cleanCurrency = (val) => {
-        if (!val) return 0;
+        if (val === '' || val === null || val === undefined) return 0;
         if (typeof val === 'number') return val;
-        return parseFloat(String(val).replace(/[$,]/g, '')) || 0;
+        const str = String(val).trim();
+        if (str.startsWith('$') || str.includes(',')) {
+            return parseFloat(str.replace(/[$.]/g, '').replace(',', '.')) || 0;
+        }
+        return parseFloat(str) || 0;
     };
 
     const calculateSplitTotal = () => {
@@ -67,9 +68,9 @@ export default function Index({ expenses = [], categories = [] }) {
     };
 
     const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', {
+        return new Intl.NumberFormat('es-AR', {
             style: 'currency',
-            currency: 'USD',
+            currency: 'ARS',
             minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
             maximumFractionDigits: 2
         }).format(amount);
@@ -198,16 +199,17 @@ export default function Index({ expenses = [], categories = [] }) {
 
     const handleDelete = async (id) => {
         const ok = await confirmAction({
-            title: 'Eliminar Gasto',
-            message: '¿Está seguro de que desea eliminar este gasto?',
+            title: 'Anular Gasto Operativo',
+            category: 'Contabilidad y Caja',
+            message: '¿Confirma que desea anular este gasto? Si fue abonado en efectivo en el turno actual, se registrará un asiento compensatorio en caja.',
             variant: 'danger',
-            confirmText: 'Eliminar'
+            confirmText: 'Anular'
         });
         if (ok) {
             router.delete(route('expense.destroy', id), {
                 preserveScroll: true,
                 onSuccess: () => {
-                    window.toast.success('Eliminado', 'El gasto ha sido eliminado correctamente.');
+                    window.toast.success('Gasto anulado', 'El gasto ha sido anulado y revertido correctamente.');
                 },
             });
         }

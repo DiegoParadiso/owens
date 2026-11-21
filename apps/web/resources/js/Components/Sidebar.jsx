@@ -41,7 +41,14 @@ export default function Sidebar({ isOpen, toggleSidebar, darkMode }) {
                             <div className="ms-3">
                                 <h6 className="mb-0">{user.name}</h6>
                                 <span className="small text-muted">
-                                    {user.role === 'admin' ? 'Administrador' : (user.role === 'owner' ? 'Dueño' : 'Empleado')}
+                                    {{
+                                        admin: 'Administrador',
+                                        owner: 'Dueño',
+                                        cajero: 'Cajero',
+                                        cocinero: 'Cocinero',
+                                        encargado: 'Encargado',
+                                        auditor: 'Auditor',
+                                    }[user.role] || 'Empleado'}
                                 </span>
                             </div>
                         </div>
@@ -87,7 +94,7 @@ export default function Sidebar({ isOpen, toggleSidebar, darkMode }) {
                             )}
 
                             {(user.role === 'admin' || user.role === 'owner' || user.role === 'auditor') && (
-                                <Link href="/admin/expenses" className={`nav-item nav-link d-flex align-items-center ${isActive('/admin/expenses') || isActive('/admin/purchases') || isActive('/admin/suppliers') ? 'active' : ''}`}>
+                                <Link href="/admin/expenses" className={`nav-item nav-link d-flex align-items-center ${isActive('/admin/expenses') || isActive('/admin/purchases') || isActive('/admin/suppliers') || isActive('/admin/expense-categories') ? 'active' : ''}`}>
                                     <i className="fa fa-wallet me-3" style={{ width: '24px', textAlign: 'center' }}></i>Finanzas
                                 </Link>
                             )}
@@ -99,13 +106,13 @@ export default function Sidebar({ isOpen, toggleSidebar, darkMode }) {
                             )}
 
                             {(user.role === 'admin' || user.role === 'owner') && moduleConfig.staff && (
-                                <Link href="/admin/coming-soon" className={`nav-item nav-link d-flex align-items-center ${isActive('/admin/staff')}`}>
+                                <Link href="/admin/settings?tab=profiles" className={`nav-item nav-link d-flex align-items-center ${url.includes('tab=profiles') ? 'active' : ''}`}>
                                     <i className="fa fa-id-badge me-3" style={{ width: '24px', textAlign: 'center' }}></i>Personal
                                 </Link>
                             )}
                             
                             {(user.role === 'admin' || user.role === 'owner') && moduleConfig.settings && (
-                                <Link href="/admin/settings" className={`nav-item nav-link d-flex align-items-center ${isActive('/admin/settings')}`}>
+                                <Link href="/admin/settings?tab=system" className={`nav-item nav-link d-flex align-items-center ${isActive('/admin/settings') && !url.includes('tab=profiles') ? 'active' : ''}`}>
                                     <i className="fa fa-cog me-3" style={{ width: '24px', textAlign: 'center' }}></i>Configuración
                                 </Link>
                             )}

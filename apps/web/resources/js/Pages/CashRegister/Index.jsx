@@ -1,13 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
 import CurrencyInput from '@/Components/CurrencyInput';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 
 
 export default function Index({ openRegister, currentBalance, income, expense, movements }) {
+    const { flash } = usePage().props;
     const [showCloseDrawer, setShowCloseDrawer] = useState(false);
     const [showOpenDrawer, setShowOpenDrawer] = useState(false);
+    const [showMovementDrawer, setShowMovementDrawer] = useState(false);
+    const [closureSummary, setClosureSummary] = useState(null);
+
+    useEffect(() => {
+        if (flash?.closure_summary) {
+            setClosureSummary(flash.closure_summary);
+        }
+    }, [flash?.closure_summary]);
 
     const { data: closeData, setData: setCloseData, post: postClose, processing: closeProsessing, errors: closeErrors, reset: resetClose, transform: transformClose } = useForm({
         closing_amount: '',
@@ -15,6 +24,12 @@ export default function Index({ openRegister, currentBalance, income, expense, m
 
     const { data: openData, setData: setOpenData, post: postOpen, processing: openProcessing, errors: openErrors, reset: resetOpen, transform: transformOpen } = useForm({
         opening_amount: '',
+    });
+
+    const { data: movData, setData: setMovData, post: postMov, processing: movProcessing, errors: movErrors, reset: resetMov, transform: transformMov } = useForm({
+        type: 'expense',
+        amount: '',
+        description: '',
     });
 
     const cleanCurrency = (val) => {
@@ -73,11 +88,39 @@ export default function Index({ openRegister, currentBalance, income, expense, m
             preserveScroll: true,
             onSuccess: () => {
                 resetOpen();
+                setClosureSummary(null);
                 window.toast.success('Caja abierta', 'La caja se ha abierto correctamente.');
             },
             onError: (errors) => {
                 setShowOpenDrawer(true);
                 window.toast.error('Error', 'Error al abrir la caja.');
+            }
+        });
+    };
+
+    const submitMovement = (e) => {
+        e.preventDefault();
+        const numericAmount = cleanCurrency(movData.amount);
+        if (numericAmount <= 0 || !movData.description.trim()) {
+            window.toast.error('Datos inválidos', 'Ingresa un monto mayor a cero y un motivo.');
+            return;
+        }
+
+        transformMov((data) => ({
+            ...data,
+            amount: cleanCurrency(data.amount)
+        }));
+
+        postMov(route('cash_register.storeMovement', openRegister.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                setShowMovementDrawer(false);
+                resetMov();
+                window.toast.success('Movimiento registrado', 'El movimiento manual ha sido asentado en caja.');
+            },
+            onError: (errors) => {
+                const msg = errors.amount || errors.description || 'No se pudo registrar el movimiento.';
+                window.toast.error('Error', msg);
             }
         });
     };
@@ -101,6 +144,34 @@ export default function Index({ openRegister, currentBalance, income, expense, m
                             >
                                 <i className="bi bi-unlock me-2"></i>Abrir Caja
                             </button>
+
+                            {closureSummary && (
+                                <div className="card-minimal mt-4 mx-auto text-start" style={{ maxWidth: '460px' }}>
+                                    <div className="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 className="fw-bold mb-0">Resultado de Arqueo Ciego (#{closureSummary.id})</h6>
+                                        <button type="button" className="btn-close btn-sm" onClick={() => setClosureSummary(null)} aria-label="Cerrar"></button>
+                                    </div>
+                                    <div className="d-flex justify-content-between small mb-1">
+                                        <span className="text-muted">Saldo teórico esperado:</span>
+                                        <strong className="font-tabular">{formatCurrency(closureSummary.expected_balance)}</strong>
+                                    </div>
+                                    <div className="d-flex justify-content-between small mb-1">
+                                        <span className="text-muted">Efectivo físico declarado:</span>
+                                        <strong className="font-tabular">{formatCurrency(closureSummary.closing_amount)}</strong>
+                                    </div>
+                                    <div className="d-flex justify-content-between pt-2 mt-2 border-top">
+                                        <span className="fw-semibold">Diferencia ({closureSummary.difference === 0 ? 'Exacto' : closureSummary.difference > 0 ? 'Sobrante' : 'Faltante'}):</span>
+                                        <strong className={`font-tabular ${closureSummary.difference < 0 ? 'text-danger' : closureSummary.difference > 0 ? 'text-success' : ''}`}>
+                                            {formatCurrency(closureSummary.difference)}
+                                        </strong>
+                                    </div>
+                                    <div className="mt-3 text-end">
+                                        <a href={route('cash_register.downloadPdf', closureSummary.id)} className="btn btn-sm btn-outline-primary rounded-pill">
+                                            <i className="bi bi-file-earmark-pdf me-1"></i>Descargar Reporte de Arqueo (PDF)
+                                        </a>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -150,7 +221,14 @@ export default function Index({ openRegister, currentBalance, income, expense, m
                         <h4 className="mb-0 fw-bold">Caja Registradora</h4>
                         <span className="ms-3 rounded-circle bg-minimal-success shadow-sm" style={{ width: '10px', height: '10px' }} title="Caja Abierta"></span>
                     </div>
-                    <div>
+                    <div className="d-flex gap-2">
+                        <button
+                            type="button"
+                            className="btn btn-primary rounded-pill px-3"
+                            onClick={() => setShowMovementDrawer(true)}
+                        >
+                            <i className="bi bi-plus-lg me-2"></i>Movimiento Manual
+                        </button>
                         <button
                             type="button"
                             className="btn btn-outline-secondary rounded-pill px-3"
@@ -295,8 +373,10 @@ export default function Index({ openRegister, currentBalance, income, expense, m
             >
                 <form id="closeRegisterForm" onSubmit={submitClose}>
                     <div className="alert alert-light border mb-4">
-                        <small className="text-muted d-block text-uppercase mb-1">Saldo Esperado</small>
-                        <h3 className="font-tabular fw-semibold mb-0">{formatCurrency(currentBalance)}</h3>
+                        <small className="text-muted d-block text-uppercase mb-1">Arqueo con Cierre Ciego</small>
+                        <span className="small text-muted">
+                            Por seguridad contable, el saldo teórico esperado permanece oculto hasta confirmar el conteo físico.
+                        </span>
                     </div>
 
                     <div className="mb-3">
@@ -312,6 +392,61 @@ export default function Index({ openRegister, currentBalance, income, expense, m
                         />
                         {closeErrors.closing_amount && <div className="text-danger small mt-1">{closeErrors.closing_amount}</div>}
                         <div className="form-text mt-2">Ingresa SOLO el efectivo físico. No incluir transferencias.</div>
+                    </div>
+                </form>
+            </Drawer>
+
+            <Drawer
+                isOpen={showMovementDrawer}
+                onClose={() => setShowMovementDrawer(false)}
+                title="Registrar Movimiento Manual de Caja"
+                footer={
+                    <>
+                        <button type="button" className="btn btn-light" onClick={() => setShowMovementDrawer(false)}>Cancelar</button>
+                        <button type="button" className="btn btn-primary" onClick={submitMovement} disabled={movProcessing}>
+                            {movProcessing ? 'Guardando...' : 'Guardar Movimiento'}
+                        </button>
+                    </>
+                }
+            >
+                <form id="manualMovementForm" onSubmit={submitMovement}>
+                    <div className="mb-3">
+                        <label htmlFor="mov_type" className="form-label">Tipo de Movimiento</label>
+                        <select
+                            id="mov_type"
+                            className="form-select input-clean"
+                            value={movData.type}
+                            onChange={(e) => setMovData('type', e.target.value)}
+                            required
+                        >
+                            <option value="income">Ingreso Extraordinario (Refuerzo de cambio)</option>
+                            <option value="expense">Egreso Operativo (Retiro de efectivo)</option>
+                        </select>
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="mov_amount" className="form-label">Monto</label>
+                        <CurrencyInput
+                            className="form-control input-clean"
+                            id="mov_amount"
+                            required
+                            value={movData.amount}
+                            onChange={(e) => setMovData('amount', e.target.value)}
+                            placeholder="$0.00"
+                        />
+                        {movErrors.amount && <div className="text-danger small mt-1">{movErrors.amount}</div>}
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="mov_description" className="form-label">Motivo / Justificación</label>
+                        <textarea
+                            id="mov_description"
+                            className="form-control input-clean"
+                            rows="3"
+                            required
+                            value={movData.description}
+                            onChange={(e) => setMovData('description', e.target.value)}
+                            placeholder="Ej. Refuerzo de cambio en billetes chicos o retiro parcial"
+                        ></textarea>
+                        {movErrors.description && <div className="text-danger small mt-1">{movErrors.description}</div>}
                     </div>
                 </form>
             </Drawer>

@@ -28,8 +28,9 @@ Route::get('/admin', function () {
     return Inertia::render('Auth/Login');
 })->name('login');
 
+$loginThrottle = app()->environment('local', 'testing') ? 'throttle:60,1' : 'throttle:5,1';
 Route::post('/admin/login', [UserController::class, 'loginCheck'])
-    ->middleware(['throttle:5,1'])
+    ->middleware([$loginThrottle])
     ->name('login.check');
 
 // Rutas técnicas de desarrollo (aisladas exclusivamente para local/testing)
@@ -97,11 +98,14 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     // Cash Register
     Route::get('/cash-register', [CashRegisterController::class, 'index'])->name('cash_register.index');
     Route::post('/cash-register', [CashRegisterController::class, 'store'])->name('cash_register.store');
+    Route::post('/cash-register/{id}/movement', [CashRegisterController::class, 'storeMovement'])->name('cash_register.storeMovement');
     Route::post('/cash-register/{id}/close', [CashRegisterController::class, 'close'])->name('cash_register.close');
     Route::get('/cash-register/{id}/pdf', [CashRegisterController::class, 'downloadPdf'])->name('cash_register.downloadPdf');
 
     // Reports
     Route::get('/reports', [ReportController::class, 'index'])->name('report.index');
+    Route::get('/reports/pdf', [ReportController::class, 'downloadPdf'])->name('report.pdf');
+    Route::get('/reports/csv', [ReportController::class, 'downloadCsv'])->name('report.csv');
 
     // Settings
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');

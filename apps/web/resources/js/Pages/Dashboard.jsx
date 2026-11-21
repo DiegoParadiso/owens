@@ -28,10 +28,7 @@ ChartJS.register(
     Filler
 );
 
-import ComingSoon from '@/Pages/ComingSoon';
-
 export default function Dashboard({ stats, recentSales, chartData, cashRegister }) {
-    return <ComingSoon title="Sección en Construcción" />;
 
     const chartLabels = chartData.labels;
 
@@ -63,7 +60,7 @@ export default function Dashboard({ stats, recentSales, chartData, cashRegister 
     };
 
     const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
+        return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(amount || 0);
     };
 
     const handleDelete = async (id) => {

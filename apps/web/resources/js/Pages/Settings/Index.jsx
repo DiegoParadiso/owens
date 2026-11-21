@@ -1,12 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
-import { Head, useForm, router } from '@inertiajs/react';
+import { Head, useForm, router, usePage } from '@inertiajs/react';
 import { confirmAction } from '@/Utils/Alerts';
 
+const ROLE_LABELS = {
+    admin: 'Administrador',
+    owner: 'Dueño',
+    cajero: 'Cajero',
+    cocinero: 'Cocinero',
+    encargado: 'Encargado de Depósito',
+    auditor: 'Auditor',
+    employee: 'Empleado',
+};
 
 export default function Index({ users, system_mode, manage_stock }) {
-    const [activeTab, setActiveTab] = useState('profiles');
+    const { url } = usePage();
+    const getTabFromUrl = () => {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('tab') === 'system' ? 'system' : 'profiles';
+    };
+    const [activeTab, setActiveTab] = useState(getTabFromUrl);
+
+    useEffect(() => {
+        setActiveTab(getTabFromUrl());
+    }, [url]);
+
     const [showDrawer, setShowDrawer] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
 
@@ -14,7 +33,7 @@ export default function Index({ users, system_mode, manage_stock }) {
         name: '',
         email: '',
         password: '',
-        role: 'employee',
+        role: 'cajero',
     });
 
     const handleEdit = (user) => {
@@ -59,18 +78,23 @@ export default function Index({ users, system_mode, manage_stock }) {
 
     const handleDelete = async (user) => {
         const ok = await confirmAction({
-            title: 'Eliminar Usuario',
-            message: '¿Está seguro de que desea eliminar este usuario?',
+            title: 'Dar de Baja Usuario',
+            category: 'Seguridad y Personal',
+            message: `¿Confirma que desea revocar el acceso operativo de "${user.name}"?`,
             variant: 'danger',
-            confirmText: 'Eliminar'
+            confirmText: 'Dar de Baja'
         });
         if (ok) {
             router.delete(route('settings.destroyUser', user.id), {
-                onSuccess: () => {
-                    window.toast.success('Usuario eliminado', 'El usuario ha sido eliminado correctamente.');
+                onSuccess: (page) => {
+                    if (page.props.flash?.error) {
+                        window.toast.error('Operación bloqueada', page.props.flash.error);
+                    } else {
+                        window.toast.success('Usuario dado de baja', 'El acceso del usuario ha sido revocado correctamente.');
+                    }
                 },
-                onError: (errors) => {
-                    window.toast.error('Error', 'No se pudo eliminar el usuario.');
+                onError: () => {
+                    window.toast.error('Error', 'No se pudo dar de baja al usuario.');
                 }
             });
         }
@@ -179,8 +203,8 @@ export default function Index({ users, system_mode, manage_stock }) {
                                             <td>{user.name}</td>
                                             <td>{user.email}</td>
                                             <td>
-                                                <span className={`badge ${user.role === 'employee' ? 'bg-secondary' : 'bg-primary'}`}>
-                                                    {user.role === 'admin' ? 'Administrador' : (user.role === 'owner' ? 'Dueño' : 'Empleado')}
+                                                <span className={`badge ${['admin', 'owner'].includes(user.role) ? 'bg-primary' : 'bg-secondary'}`}>
+                                                    {ROLE_LABELS[user.role] || user.role}
                                                 </span>
                                             </td>
                                             <td className="text-end">
@@ -299,7 +323,10 @@ export default function Index({ users, system_mode, manage_stock }) {
                             onChange={e => setData('role', e.target.value)}
                             required
                         >
-                            <option value="employee">Empleado</option>
+                            <option value="cajero">Cajero</option>
+                            <option value="cocinero">Cocinero</option>
+                            <option value="encargado">Encargado de Depósito</option>
+                            <option value="auditor">Auditor</option>
                             <option value="admin">Administrador</option>
                             <option value="owner">Dueño</option>
                         </select>

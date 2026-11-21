@@ -182,18 +182,32 @@ class ExpenseController extends Controller
     {
         try {
             DB::beginTransaction();
-            
-            // Delete cash movement
-            CashMovement::where('type', 'expense')->where('related_id', $expense->id)->delete();
-            
+
+            // UC-30: Preservar la trazabilidad financiera de cajas ya cerradas y generar registro compensatorio en cajas abiertas
+            $movements = CashMovement::where('type', 'expense')
+                ->where('related_id', $expense->id)
+                ->with('cashRegister')
+                ->get();
+
+            foreach ($movements as $mov) {
+                if ($mov->cashRegister && $mov->cashRegister->status === 'open') {
+                    CashMovement::create([
+                        'cash_session_id' => $mov->cash_session_id,
+                        'type' => 'income',
+                        'amount' => $mov->amount,
+                        'description' => 'Anulación compensatoria de Gasto #' . $expense->id . ': ' . $expense->description,
+                    ]);
+                }
+            }
+
             $expense->payments()->delete();
             $expense->delete();
-            
+
             DB::commit();
-            return redirect()->route('expense.index')->with('success', 'Gasto eliminado exitosamente');
+            return redirect()->route('expense.index')->with('success', 'Gasto anulado y revertido correctamente.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->route('expense.index')->with('error', 'Error al eliminar el gasto: ' . $e->getMessage());
+            return redirect()->route('expense.index')->with('error', 'Error al anular el gasto: ' . $e->getMessage());
         }
     }
 

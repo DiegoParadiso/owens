@@ -39,9 +39,13 @@ export default function Index({ purchases = [], suppliers = [], products = [] })
     };
 
     const cleanCurrency = (val) => {
-        if (!val) return 0;
+        if (val === '' || val === null || val === undefined) return 0;
         if (typeof val === 'number') return val;
-        return parseFloat(String(val).replace(/[$,]/g, '')) || 0;
+        const str = String(val).trim();
+        if (str.startsWith('$') || str.includes(',')) {
+            return parseFloat(str.replace(/[$.]/g, '').replace(',', '.')) || 0;
+        }
+        return parseFloat(str) || 0;
     };
 
     // Split payment helper functions

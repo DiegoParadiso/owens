@@ -3,6 +3,7 @@ import MainLayout from '@/Layouts/MainLayout';
 import Drawer from '@/Components/Drawer';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import { confirmAction } from '@/Utils/Alerts';
+import FinanceNavbar from '@/Components/FinanceNavbar';
 
 
 export default function Index({ categories }) {
@@ -88,9 +89,10 @@ export default function Index({ categories }) {
         <MainLayout>
             <Head title="Categorías de Gastos" />
             <div className="container-fluid pt-4 px-4">
+                <FinanceNavbar />
 
                 <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h4 className="mb-0 fw-bold">Categorías de Gastos</h4>
+                    <h5 className="mb-0 fw-bold">Categorías de Gastos</h5>
                     <button
                         className="btn btn-primary rounded-pill px-3"
                         onClick={() => setShowDrawer(true)}

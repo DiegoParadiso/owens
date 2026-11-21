@@ -64,8 +64,8 @@ class DashboardController extends Controller
 
             $currentBalance = 0;
             if ($openRegister) {
-                $income = $openRegister->movements()->where('type', 'income')->sum('amount') ?? 0;
-                $expense = $openRegister->movements()->where('type', 'expense')->sum('amount') ?? 0;
+                $income = $openRegister->movements()->whereIn('type', ['income', 'sale'])->sum('amount') ?? 0;
+                $expense = $openRegister->movements()->whereIn('type', ['expense', 'purchase'])->sum('amount') ?? 0;
                 $currentBalance = $openRegister->opening_amount + $income - $expense;
             }
         } catch (\Exception $e) {
@@ -78,6 +78,7 @@ class DashboardController extends Controller
             $chartLabels = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
             $chartSalesData = [0, 0, 0, 0, 0, 0, 0];
             $chartRevenueData = [0, 0, 0, 0, 0, 0, 0];
+            $openRegister = null;
             $currentBalance = 0;
         }
 
@@ -112,7 +113,7 @@ class DashboardController extends Controller
                 'revenue' => $chartRevenueData,
             ],
             'cashRegister' => [
-                'isOpen' => false,
+                'isOpen' => (bool) ($openRegister ?? false),
                 'currentBalance' => $currentBalance,
             ],
         ]);

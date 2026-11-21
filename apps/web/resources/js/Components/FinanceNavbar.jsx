@@ -6,6 +6,7 @@ export default function FinanceNavbar() {
 
     const tabs = [
         { name: 'Gastos', route: '/admin/expenses', active: url.startsWith('/admin/expenses') },
+        { name: 'Categorías de Gastos', route: '/admin/expense-categories', active: url.startsWith('/admin/expense-categories') },
         { name: 'Compras', route: '/admin/purchases', active: url.startsWith('/admin/purchases') },
         { name: 'Proveedores', route: '/admin/suppliers', active: url.startsWith('/admin/suppliers') },
     ];

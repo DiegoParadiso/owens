@@ -87,7 +87,7 @@ export default function ConfirmDialog({
                     borderRadius: '14px',
                     boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.06)',
                     width: '100%',
-                    maxWidth: '430px',
+                    maxWidth: '460px',
                     minWidth: '320px',
                     padding: '24px',
                     textAlign: 'left',
@@ -174,6 +174,7 @@ export default function ConfirmDialog({
                             color: '#ffffff',
                             cursor: 'pointer',
                             whiteSpace: 'nowrap',
+                            outline: 'none',
                             boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
                             transition: 'opacity 0.15s ease'
                         }}

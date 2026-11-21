@@ -17,16 +17,20 @@ class CashRegisterController extends Controller
              $morphTo->morphWith([
                 \App\Models\Sale::class => ['saleDetails.product'],
                 \App\Models\Expense::class => [],
+                \App\Models\Purchase::class => ['details.product'],
             ]);
         }])->findOrFail($id);
 
-        if ($register->user_id !== Auth::id()) {
+        $user = Auth::user();
+        $isPrivileged = in_array($user->role, ['admin', 'owner', 'auditor']);
+
+        if ($register->user_id !== $user->id && !$isPrivileged) {
             abort(403);
         }
 
         // Calculate totals for the report
         $income = $register->movements->whereIn('type', ['income', 'sale'])->sum('amount');
-        $expense = $register->movements->whereIn('type', ['expense'])->sum('amount');
+        $expense = $register->movements->whereIn('type', ['expense', 'purchase'])->sum('amount');
         $balance = $register->opening_amount + $income - $expense;
 
         $pdf = Pdf::loadView('reports.cash_register_pdf', compact('register', 'income', 'expense', 'balance'));
@@ -62,7 +66,7 @@ class CashRegisterController extends Controller
 
         // Calcular totales
         $income = $openRegister->movements()->whereIn('type', ['income', 'sale'])->sum('amount');
-        $expense = $openRegister->movements()->whereIn('type', ['expense'])->sum('amount');
+        $expense = $openRegister->movements()->whereIn('type', ['expense', 'purchase'])->sum('amount');
         $currentBalance = $openRegister->opening_amount + $income - $expense;
 
         $movements = $openRegister->movements()
@@ -128,6 +132,52 @@ class CashRegisterController extends Controller
         return redirect()->route('cash_register.index')->with('success', 'Caja abierta exitosamente');
     }
 
+    public function storeMovement(Request $request, $id)
+    {
+        $register = CashRegister::findOrFail($id);
+
+        if ($register->user_id !== Auth::id() && !in_array(Auth::user()->role, ['admin', 'owner'])) {
+            abort(403);
+        }
+
+        if ($register->status !== 'open') {
+            return redirect()->back()->with('error', 'No se pueden registrar movimientos en una caja cerrada.');
+        }
+
+        $validated = $request->validate([
+            'type' => 'required|in:income,expense',
+            'amount' => 'required|numeric|gt:0',
+            'description' => 'required|string|max:255',
+        ], [
+            'type.required' => 'El tipo de movimiento es obligatorio.',
+            'amount.required' => 'El monto es obligatorio.',
+            'amount.gt' => 'El monto debe ser mayor a cero.',
+            'description.required' => 'El motivo del movimiento es obligatorio.',
+        ]);
+
+        // UC-04 Paso 5: Verificar efectivo disponible antes de permitir un egreso manual
+        if ($validated['type'] === 'expense') {
+            $income = $register->movements()->whereIn('type', ['income', 'sale'])->sum('amount');
+            $expense = $register->movements()->whereIn('type', ['expense', 'purchase'])->sum('amount');
+            $currentBalance = $register->opening_amount + $income - $expense;
+
+            if ((float) $validated['amount'] > $currentBalance) {
+                return redirect()->back()->withErrors([
+                    'amount' => 'Efectivo insuficiente en caja. Saldo disponible: $' . number_format($currentBalance, 2, ',', '.')
+                ]);
+            }
+        }
+
+        CashMovement::create([
+            'cash_session_id' => $register->id,
+            'type' => $validated['type'],
+            'amount' => $validated['amount'],
+            'description' => ($validated['type'] === 'income' ? 'Ingreso manual: ' : 'Retiro manual: ') . $validated['description'],
+        ]);
+
+        return redirect()->route('cash_register.index')->with('success', 'Movimiento manual registrado correctamente.');
+    }
+
     public function close(Request $request, $id)
     {
         $register = CashRegister::findOrFail($id);
@@ -143,12 +193,26 @@ class CashRegisterController extends Controller
             'closing_amount.numeric' => 'El monto debe ser numérico.',
         ]);
 
+        $income = $register->movements()->whereIn('type', ['income', 'sale'])->sum('amount');
+        $expense = $register->movements()->whereIn('type', ['expense', 'purchase'])->sum('amount');
+        $expectedBalance = (float) $register->opening_amount + (float) $income - (float) $expense;
+        $closingAmount = (float) $request->closing_amount;
+        $difference = $closingAmount - $expectedBalance;
+
         $register->update([
-            'closing_amount' => $request->closing_amount,
+            'closing_amount' => $closingAmount,
             'status' => 'closed',
             'closed_at' => Carbon::now(),
         ]);
 
-        return redirect()->route('dashboard')->with('success', 'Caja cerrada exitosamente');
+        return redirect()->route('cash_register.index')
+            ->with('success', 'Caja cerrada exitosamente')
+            ->with('closure_summary', [
+                'id' => $register->id,
+                'opening_amount' => (float) $register->opening_amount,
+                'expected_balance' => $expectedBalance,
+                'closing_amount' => $closingAmount,
+                'difference' => $difference,
+            ]);
     }
 }
